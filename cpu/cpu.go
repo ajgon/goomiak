@@ -1,7 +1,16 @@
 package cpu
 
+import "z80/dma"
+
 type CPU struct {
 	PC uint16
+	BC uint16
+
+	dma *dma.DMA
+}
+
+func (c *CPU) readWord(address uint16) uint16 {
+	return uint16(c.dma.GetMemory(address+1))<<8 | uint16(c.dma.GetMemory(address))
 }
 
 func (c *CPU) nop() uint8 {
@@ -10,11 +19,20 @@ func (c *CPU) nop() uint8 {
 	return 4
 }
 
-func (c *CPU) Reset() {
-	c.PC = 0
+func (c *CPU) ldBcXx() uint8 {
+	c.BC = c.readWord(c.PC + 1)
+	c.PC += 3
+
+	return 10
 }
 
-func CPUNew() *CPU {
+func (c *CPU) Reset() {
+	c.PC = 0
+	c.BC = 0
+}
+
+func CPUNew(dma *dma.DMA) *CPU {
 	cpu := new(CPU)
+	cpu.dma = dma
 	return cpu
 }
