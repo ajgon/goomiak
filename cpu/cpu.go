@@ -33,6 +33,12 @@ func (c *CPU) ldBcA() uint8 {
 	return 7
 }
 
+func (c *CPU) incBc() uint8 {
+	c.BC++
+	c.PC++
+	return 6
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.BC = 0

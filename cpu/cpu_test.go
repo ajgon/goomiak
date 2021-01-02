@@ -67,3 +67,10 @@ func TestLdBcA(t *testing.T) {
 		t.Errorf("got %x, want %x", got, want)
 	}
 }
+
+func TestIncBc(t *testing.T) {
+	cpu.Reset()
+	cpu.BC = 0x1020
+
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "BC": 0x1021}, cpu.incBc)
+}
