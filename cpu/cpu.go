@@ -76,6 +76,42 @@ func (c *CPU) incB() uint8 {
 	return 4
 }
 
+func (c *CPU) decB() uint8 {
+	c.BC -= 256
+	c.PC++
+
+	b := uint8(c.BC >> 8)
+
+	// C (carry) is not set
+	// N (sub/add flag)
+	c.Flags = c.Flags | 0b00000010
+	// P/V (overflow) flag
+	if b == 0x7f {
+		c.Flags = c.Flags | 0b00000100
+	} else {
+		c.Flags = c.Flags & 0b11111011
+	}
+	// H (half carry) flag
+	if b&0b00001111 == 15 {
+		c.Flags = c.Flags | 0b00010000
+	} else {
+		c.Flags = c.Flags & 0b11101111
+	}
+	// Z (zero) flag
+	if b == 0 {
+		c.Flags = c.Flags | 0b01000000
+	} else {
+		c.Flags = c.Flags & 0b10111111
+	}
+	// S (sign) flag
+	if b > 127 {
+		c.Flags = c.Flags | 0b10000000
+	} else {
+		c.Flags = c.Flags & 0b01111111
+	}
+	return 4
+}
+
 func (c *CPU) Reset() {
 	c.AF = 0
 	c.PC = 0
