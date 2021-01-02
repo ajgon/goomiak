@@ -31,6 +31,12 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 		}
 	}
 
+	if af_, ok := expected["AF_"]; ok {
+		if cpu.AF_ != af_ {
+			t.Errorf("AF': got %d, want %d", cpu.AF_, af_)
+		}
+	}
+
 	if bc, ok := expected["BC"]; ok {
 		if cpu.BC != bc {
 			t.Errorf("BC: got %d, want %d", cpu.BC, bc)
@@ -134,4 +140,11 @@ func TestRlca(t *testing.T) {
 	cpu.AF = 0x4d05
 	cpu.Flags = 0b11010111
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x9a05, "Flags": 0b11000100}, cpu.rlca)
+}
+
+func TestExAfAf_(t *testing.T) {
+	cpu.Reset()
+	cpu.AF = 0x1234
+	cpu.AF_ = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x5678, "AF_": 0x1234}, cpu.exAfAf_)
 }

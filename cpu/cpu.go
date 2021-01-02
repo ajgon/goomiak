@@ -7,6 +7,7 @@ type CPU struct {
 	BC    uint16
 	AF    uint16
 	Flags uint8 // [  S  ][  Z  ][     ][  H  ][     ][ P/V ][  N  ][  C  ]
+	AF_   uint16
 
 	dma *dma.DMA
 }
@@ -146,9 +147,17 @@ func (c *CPU) rlca() uint8 {
 	return 4
 }
 
+func (c *CPU) exAfAf_() uint8 {
+	c.AF, c.AF_ = c.AF_, c.AF
+	c.PC++
+
+	return 4
+}
+
 func (c *CPU) Reset() {
 	c.AF = 0
 	c.PC = 0
+	c.AF_ = 0
 	c.Flags = 0
 	c.BC = 0
 }
