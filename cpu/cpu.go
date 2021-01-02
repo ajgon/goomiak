@@ -11,6 +11,10 @@ type CPU struct {
 	dma *dma.DMA
 }
 
+func (c *CPU) readByte(address uint16) uint8 {
+	return c.dma.GetMemory(address)
+}
+
 func (c *CPU) readWord(address uint16) uint16 {
 	return uint16(c.dma.GetMemory(address+1))<<8 | uint16(c.dma.GetMemory(address))
 }
@@ -110,6 +114,14 @@ func (c *CPU) decB() uint8 {
 		c.Flags = c.Flags & 0b01111111
 	}
 	return 4
+}
+
+func (c *CPU) ldBX() uint8 {
+	c.PC++
+	c.BC = (c.BC & 0x00ff) | (uint16(c.readByte(c.PC)) << 8)
+	c.PC++
+
+	return 7
 }
 
 func (c *CPU) Reset() {
