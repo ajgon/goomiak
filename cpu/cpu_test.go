@@ -43,6 +43,12 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 		}
 	}
 
+	if hl, ok := expected["HL"]; ok {
+		if cpu.HL != hl {
+			t.Errorf("HL: got %x, want %x", cpu.HL, hl)
+		}
+	}
+
 	if flags, ok := expected["Flags"]; ok {
 		if cpu.Flags != uint8(flags) {
 			t.Errorf("Flags: got %d, want %d", cpu.Flags, flags)
@@ -147,4 +153,20 @@ func TestExAfAf_(t *testing.T) {
 	cpu.AF = 0x1234
 	cpu.AF_ = 0x5678
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x5678, "AF_": 0x1234}, cpu.exAfAf_)
+}
+
+func TestAddHlBc(t *testing.T) {
+	cpu.Reset()
+	cpu.BC = 0xa76c //  1010 0111 0110 1100
+	cpu.HL = 0x5933 //  0101 1001 0011 0011
+	cpu.Flags = 0b00000010
+
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "BC": 0xa76c, "HL": 0x009f, "Flags": 0b00010001}, cpu.addHlBc)
+
+	cpu.Reset()
+	cpu.BC = 0x7fff
+	cpu.HL = 0x7fff
+	cpu.Flags = 0b00000010
+
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "BC": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlBc)
 }

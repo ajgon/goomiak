@@ -7,6 +7,7 @@ type CPU struct {
 	BC    uint16
 	AF    uint16
 	Flags uint8 // [  S  ][  Z  ][     ][  H  ][     ][ P/V ][  N  ][  C  ]
+	HL    uint16
 	AF_   uint16
 
 	dma *dma.DMA
@@ -154,10 +155,38 @@ func (c *CPU) exAfAf_() uint8 {
 	return 4
 }
 
+func (c *CPU) addHlBc() uint8 {
+	sum := c.HL + c.BC
+
+	// C (carry) flag
+	if sum < c.HL || sum < c.BC {
+		c.Flags = c.Flags | 0b00000001
+	} else {
+		c.Flags = c.Flags & 0b11111110
+	}
+
+	// N (sub/add) flag
+	c.Flags = c.Flags & 0b11111101
+
+	// H (half carry) flag
+	h := (c.HL ^ c.BC ^ sum) & 0x1000
+
+	if h == 0x1000 {
+		c.Flags = c.Flags | 0b00010000
+	} else {
+		c.Flags = c.Flags & 0b11101111
+	}
+
+	c.HL = sum
+	c.PC++
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.AF = 0
 	c.PC = 0
 	c.AF_ = 0
+	c.HL = 0
 	c.Flags = 0
 	c.BC = 0
 }
