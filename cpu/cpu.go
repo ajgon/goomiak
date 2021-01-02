@@ -5,6 +5,7 @@ import "z80/dma"
 type CPU struct {
 	PC uint16
 	BC uint16
+	AF uint16
 
 	dma *dma.DMA
 }
@@ -24,6 +25,12 @@ func (c *CPU) ldBcXx() uint8 {
 	c.PC += 3
 
 	return 10
+}
+
+func (c *CPU) ldBcA() uint8 {
+	c.dma.SetMemoryByte(c.BC, uint8(c.AF>>8))
+	c.PC++
+	return 7
 }
 
 func (c *CPU) Reset() {
