@@ -170,3 +170,12 @@ func TestAddHlBc(t *testing.T) {
 
 	checkCpu(t, 11, map[string]uint16{"PC": 1, "BC": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlBc)
 }
+
+func TestLdABc(t *testing.T) {
+	cpu.Reset()
+	dmaX.SetMemoryByte(0x1257, 0x64)
+	cpu.AF = 0xffff
+	cpu.BC = 0x1257
+
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0x64ff, "BC": 0x1257}, cpu.ldABc)
+}

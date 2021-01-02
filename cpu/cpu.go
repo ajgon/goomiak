@@ -182,6 +182,14 @@ func (c *CPU) addHlBc() uint8 {
 	return 11
 }
 
+func (c *CPU) ldABc() uint8 {
+	value := c.dma.GetMemory(c.BC)
+	c.AF = (c.AF & 0x00ff) | uint16(value)<<8
+	c.PC++
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.AF = 0
 	c.PC = 0
