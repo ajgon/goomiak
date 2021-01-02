@@ -179,3 +179,10 @@ func TestLdABc(t *testing.T) {
 
 	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0x64ff, "BC": 0x1257}, cpu.ldABc)
 }
+
+func TestDecBc(t *testing.T) {
+	cpu.Reset()
+	cpu.BC = 0x1000
+
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "BC": 0x0fff}, cpu.decBc)
+}

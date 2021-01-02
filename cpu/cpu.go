@@ -190,6 +190,13 @@ func (c *CPU) ldABc() uint8 {
 	return 7
 }
 
+func (c *CPU) decBc() uint8 {
+	c.BC--
+	c.PC++
+
+	return 6
+}
+
 func (c *CPU) Reset() {
 	c.AF = 0
 	c.PC = 0
