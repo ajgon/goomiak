@@ -360,3 +360,23 @@ func TestRla(t *testing.T) {
 	cpu.Flags = 0b11010111
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x9b05, "Flags": 0b11000100}, cpu.rla)
 }
+
+func TestJrX(t *testing.T) {
+	cpu.Reset()
+	cpu.PC = 3
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x18, 0x32})
+
+	checkCpu(t, 12, map[string]uint16{"PC": 0x37}, cpu.jrX)
+
+	cpu.Reset()
+	cpu.PC = 3
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x18, 0x32})
+
+	checkCpu(t, 12, map[string]uint16{"PC": 0x37}, cpu.jrX)
+
+	cpu.Reset()
+	cpu.PC = 3
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x18, 0xfb})
+
+	checkCpu(t, 12, map[string]uint16{"PC": 0x00}, cpu.jrX)
+}

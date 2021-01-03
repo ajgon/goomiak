@@ -342,6 +342,12 @@ func (c *CPU) rla() uint8 {
 	return 4
 }
 
+func (c *CPU) jrX() uint8 {
+	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.readByte(c.PC+1))))
+
+	return 12
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0
