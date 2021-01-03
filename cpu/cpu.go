@@ -81,6 +81,9 @@ func (c *CPU) decreaseRegister(name rune) uint8 {
 	case 'C':
 		register = uint8(c.BC) - 1
 		c.BC = (c.BC & 0xff00) | uint16(register)
+	case 'D':
+		c.DE -= 256
+		register = uint8(c.DE >> 8)
 	}
 
 	// C (carry) is not set
@@ -297,6 +300,10 @@ func (c *CPU) incDe() uint8 {
 
 func (c *CPU) incD() uint8 {
 	return c.increaseRegister('D')
+}
+
+func (c *CPU) decD() uint8 {
+	return c.decreaseRegister('D')
 }
 
 func (c *CPU) Reset() {

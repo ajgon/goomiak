@@ -323,3 +323,21 @@ func TestIncD(t *testing.T) {
 	cpu.DE = 0x7f02
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x8002, "Flags": 0b10010100}, cpu.incD)
 }
+
+func TestDecD(t *testing.T) {
+	cpu.Reset()
+	cpu.Flags = 0b11010101
+	cpu.DE = 0x0102
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x0002, "Flags": 0b01000011}, cpu.decD)
+
+	cpu.Reset()
+	cpu.Flags = 0b01000100
+	cpu.DE = 0x0002
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0xff02, "Flags": 0b10010010}, cpu.decD)
+
+	cpu.Reset()
+	cpu.Flags = 0b11000000
+	cpu.DE = 0x8002
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x7f02, "Flags": 0b00010110}, cpu.decD)
+}
