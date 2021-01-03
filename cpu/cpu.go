@@ -280,6 +280,12 @@ func (c *CPU) ldDeXx() uint8 {
 	return 10
 }
 
+func (c *CPU) ldDeA() uint8 {
+	c.dma.SetMemoryByte(c.DE, uint8(c.AF>>8))
+	c.PC++
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0

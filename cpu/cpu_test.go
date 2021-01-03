@@ -284,3 +284,17 @@ func TestLdDeXx(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 3, "DE": 0x3264}, cpu.ldDeXx)
 }
+
+func TestLdDeA(t *testing.T) {
+	cpu.Reset()
+	cpu.AF = 0x7A05
+	cpu.DE = 0x1015
+
+	checkCpu(t, 7, map[string]uint16{"PC": 1}, cpu.ldDeA)
+
+	got := dmaX.GetMemory(0x1015)
+	want := uint8(0x7A)
+	if got != want {
+		t.Errorf("got %x, want %x", got, want)
+	}
+}
