@@ -298,3 +298,10 @@ func TestLdDeA(t *testing.T) {
 		t.Errorf("got %x, want %x", got, want)
 	}
 }
+
+func TestIncDe(t *testing.T) {
+	cpu.Reset()
+	cpu.DE = 0x1020
+
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "DE": 0x1021}, cpu.incDe)
+}
