@@ -380,3 +380,19 @@ func TestJrX(t *testing.T) {
 
 	checkCpu(t, 12, map[string]uint16{"PC": 0x00}, cpu.jrX)
 }
+
+func TestAddHlDe(t *testing.T) {
+	cpu.Reset()
+	cpu.DE = 0xa76c //  1010 0111 0110 1100
+	cpu.HL = 0x5933 //  0101 1001 0011 0011
+	cpu.Flags = 0b00000010
+
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "DE": 0xa76c, "HL": 0x009f, "Flags": 0b00010001}, cpu.addHlDe)
+
+	cpu.Reset()
+	cpu.DE = 0x7fff
+	cpu.HL = 0x7fff
+	cpu.Flags = 0b00000010
+
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "DE": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlDe)
+}

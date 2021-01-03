@@ -188,11 +188,12 @@ func (c *CPU) exAfAf_() uint8 {
 	return 4
 }
 
-func (c *CPU) addHlBc() uint8 {
-	sum := c.HL + c.BC
+// left stores the result
+func (c *CPU) addRegisters(left, right *uint16) uint8 {
+	sum := *left + *right
 
 	// C (carry) flag
-	if sum < c.HL || sum < c.BC {
+	if sum < *left || sum < *right {
 		c.Flags = c.Flags | 0b00000001
 	} else {
 		c.Flags = c.Flags & 0b11111110
@@ -202,7 +203,7 @@ func (c *CPU) addHlBc() uint8 {
 	c.Flags = c.Flags & 0b11111101
 
 	// H (half carry) flag
-	h := (c.HL ^ c.BC ^ sum) & 0x1000
+	h := (*left ^ *right ^ sum) & 0x1000
 
 	if h == 0x1000 {
 		c.Flags = c.Flags | 0b00010000
@@ -210,9 +211,14 @@ func (c *CPU) addHlBc() uint8 {
 		c.Flags = c.Flags & 0b11101111
 	}
 
-	c.HL = sum
+	*left = sum
 	c.PC++
 	return 11
+
+}
+
+func (c *CPU) addHlBc() uint8 {
+	return c.addRegisters(&c.HL, &c.BC)
 }
 
 func (c *CPU) ldABc() uint8 {
@@ -346,6 +352,10 @@ func (c *CPU) jrX() uint8 {
 	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.readByte(c.PC+1))))
 
 	return 12
+}
+
+func (c *CPU) addHlDe() uint8 {
+	return c.addRegisters(&c.HL, &c.DE)
 }
 
 func (c *CPU) Reset() {
