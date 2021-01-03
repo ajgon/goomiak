@@ -366,6 +366,13 @@ func (c *CPU) ldADe() uint8 {
 	return 7
 }
 
+func (c *CPU) decDe() uint8 {
+	c.DE--
+	c.PC++
+
+	return 6
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0

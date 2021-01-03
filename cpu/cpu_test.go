@@ -405,3 +405,10 @@ func TestLdADe(t *testing.T) {
 
 	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0x64ff, "DE": 0x1257}, cpu.ldADe)
 }
+
+func TestDecDe(t *testing.T) {
+	cpu.Reset()
+	cpu.DE = 0x1000
+
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "DE": 0x0fff}, cpu.decDe)
+}
