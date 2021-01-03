@@ -348,3 +348,15 @@ func TestLdDX(t *testing.T) {
 
 	checkCpu(t, 7, map[string]uint16{"PC": 2, "DE": 0x6400}, cpu.ldDX)
 }
+
+func TestRla(t *testing.T) {
+	cpu.Reset()
+	cpu.AF = 0x8c05
+	cpu.Flags = 0b11010110
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x1805, "Flags": 0b11000101}, cpu.rla)
+
+	cpu.Reset()
+	cpu.AF = 0x4d05
+	cpu.Flags = 0b11010111
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x9b05, "Flags": 0b11000100}, cpu.rla)
+}
