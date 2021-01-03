@@ -241,3 +241,33 @@ func TestRrca(t *testing.T) {
 	cpu.Flags = 0b11010111
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x2605, "Flags": 0b11000100}, cpu.rrca)
 }
+
+func TestDjnzX(t *testing.T) {
+	cpu.Reset()
+	cpu.PC = 3
+	cpu.BC = 0x1234
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0x32})
+
+	checkCpu(t, 13, map[string]uint16{"PC": 0x37, "BC": 0x1134}, cpu.djnzX)
+
+	cpu.Reset()
+	cpu.PC = 3
+	cpu.BC = 0x0134
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0x32})
+
+	checkCpu(t, 8, map[string]uint16{"PC": 0x05, "BC": 0x0034}, cpu.djnzX)
+
+	cpu.Reset()
+	cpu.PC = 3
+	cpu.BC = 0x0034
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0x32})
+
+	checkCpu(t, 13, map[string]uint16{"PC": 0x37, "BC": 0xff34}, cpu.djnzX)
+
+	cpu.Reset()
+	cpu.PC = 3
+	cpu.BC = 0x0534
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0xfb})
+
+	checkCpu(t, 13, map[string]uint16{"PC": 0x00, "BC": 0x0434}, cpu.djnzX)
+}

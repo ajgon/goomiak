@@ -1,6 +1,8 @@
 package cpu
 
-import "z80/dma"
+import (
+	"z80/dma"
+)
 
 type CPU struct {
 	PC    uint16
@@ -257,6 +259,17 @@ func (c *CPU) rrca() uint8 {
 	c.Flags = c.Flags & 0b11111101
 
 	return 4
+}
+
+func (c *CPU) djnzX() uint8 {
+	c.BC -= 256
+	if c.BC < 256 {
+		c.PC += 2
+		return 8
+	}
+
+	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.readByte(c.PC+1))))
+	return 13
 }
 
 func (c *CPU) Reset() {
