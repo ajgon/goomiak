@@ -387,6 +387,14 @@ func (c *CPU) decE() uint8 {
 	return c.decreaseRegister('E')
 }
 
+func (c *CPU) ldEX() uint8 {
+	c.PC++
+	c.DE = (c.DE & 0xff00) | uint16(c.readByte(c.PC))
+	c.PC++
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0
