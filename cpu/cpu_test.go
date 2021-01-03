@@ -341,3 +341,10 @@ func TestDecD(t *testing.T) {
 	cpu.DE = 0x8002
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x7f02, "Flags": 0b00010110}, cpu.decD)
 }
+
+func TestLdDX(t *testing.T) {
+	cpu.Reset()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0x06, 0x64})
+
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "DE": 0x6400}, cpu.ldDX)
+}
