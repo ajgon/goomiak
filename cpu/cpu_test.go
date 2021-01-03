@@ -27,19 +27,19 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 
 	if af, ok := expected["AF"]; ok {
 		if cpu.AF != af {
-			t.Errorf("AF: got %d, want %d", cpu.AF, af)
+			t.Errorf("AF: got %x, want %x", cpu.AF, af)
 		}
 	}
 
 	if af_, ok := expected["AF_"]; ok {
 		if cpu.AF_ != af_ {
-			t.Errorf("AF': got %d, want %d", cpu.AF_, af_)
+			t.Errorf("AF': got %x, want %x", cpu.AF_, af_)
 		}
 	}
 
 	if bc, ok := expected["BC"]; ok {
 		if cpu.BC != bc {
-			t.Errorf("BC: got %d, want %d", cpu.BC, bc)
+			t.Errorf("BC: got %x, want %x", cpu.BC, bc)
 		}
 	}
 
@@ -51,7 +51,7 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 
 	if flags, ok := expected["Flags"]; ok {
 		if cpu.Flags != uint8(flags) {
-			t.Errorf("Flags: got %d, want %d", cpu.Flags, flags)
+			t.Errorf("Flags: got %b, want %b", cpu.Flags, flags)
 		}
 	}
 
@@ -185,4 +185,22 @@ func TestDecBc(t *testing.T) {
 	cpu.BC = 0x1000
 
 	checkCpu(t, 6, map[string]uint16{"PC": 1, "BC": 0x0fff}, cpu.decBc)
+}
+
+func TestIncC(t *testing.T) {
+	cpu.Reset()
+	cpu.Flags = 0b11010111
+	cpu.BC = 0x0210
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x0211, "Flags": 0b00000001}, cpu.incC)
+
+	cpu.Reset()
+	cpu.Flags = 0b10000110
+	cpu.BC = 0x02ff
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x0200, "Flags": 0b01010000}, cpu.incC)
+
+	cpu.Reset()
+	cpu.Flags = 0b01000010
+	cpu.BC = 0x027f
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x0280, "Flags": 0b10010100}, cpu.incC)
 }

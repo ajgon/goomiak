@@ -21,6 +21,50 @@ func (c *CPU) readWord(address uint16) uint16 {
 	return uint16(c.dma.GetMemory(address+1))<<8 | uint16(c.dma.GetMemory(address))
 }
 
+func (c *CPU) increaseRegister(name rune) uint8 {
+	var register uint8
+
+	switch name {
+	case 'B':
+		c.BC += 256
+		register = uint8(c.BC >> 8)
+	case 'C':
+		register = uint8(c.BC) + 1
+		c.BC = (c.BC & 0xff00) | uint16(register)
+	}
+
+	// C (carry) is not set
+	// N (sub/add) flag
+	c.Flags = c.Flags & 0b11111101
+	// P/V (overflow) flag
+	if register == 0x80 {
+		c.Flags = c.Flags | 0b00000100
+	} else {
+		c.Flags = c.Flags & 0b11111011
+	}
+	// H (half carry) flag
+	if register&0b00001111 == 0 {
+		c.Flags = c.Flags | 0b00010000
+	} else {
+		c.Flags = c.Flags & 0b11101111
+	}
+	// Z (zero) flag
+	if register == 0 {
+		c.Flags = c.Flags | 0b01000000
+	} else {
+		c.Flags = c.Flags & 0b10111111
+	}
+	// S (sign) flag
+	if register > 127 {
+		c.Flags = c.Flags | 0b10000000
+	} else {
+		c.Flags = c.Flags & 0b01111111
+	}
+	c.PC++
+
+	return 4
+}
+
 func (c *CPU) nop() uint8 {
 	c.PC++
 
@@ -47,39 +91,7 @@ func (c *CPU) incBc() uint8 {
 }
 
 func (c *CPU) incB() uint8 {
-	c.BC += 256
-	c.PC++
-
-	b := uint8(c.BC >> 8)
-
-	// C (carry) is not set
-	// N (sub/add) flag
-	c.Flags = c.Flags & 0b11111101
-	// P/V (overflow) flag
-	if b == 0x80 {
-		c.Flags = c.Flags | 0b00000100
-	} else {
-		c.Flags = c.Flags & 0b11111011
-	}
-	// H (half carry) flag
-	if b&0b00001111 == 0 {
-		c.Flags = c.Flags | 0b00010000
-	} else {
-		c.Flags = c.Flags & 0b11101111
-	}
-	// Z (zero) flag
-	if b == 0 {
-		c.Flags = c.Flags | 0b01000000
-	} else {
-		c.Flags = c.Flags & 0b10111111
-	}
-	// S (sign) flag
-	if b > 127 {
-		c.Flags = c.Flags | 0b10000000
-	} else {
-		c.Flags = c.Flags & 0b01111111
-	}
-	return 4
+	return c.increaseRegister('B')
 }
 
 func (c *CPU) decB() uint8 {
@@ -195,6 +207,10 @@ func (c *CPU) decBc() uint8 {
 	c.PC++
 
 	return 6
+}
+
+func (c *CPU) incC() uint8 {
+	return c.increaseRegister('C')
 }
 
 func (c *CPU) Reset() {
