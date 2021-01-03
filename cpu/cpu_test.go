@@ -412,3 +412,21 @@ func TestDecDe(t *testing.T) {
 
 	checkCpu(t, 6, map[string]uint16{"PC": 1, "DE": 0x0fff}, cpu.decDe)
 }
+
+func TestIncE(t *testing.T) {
+	cpu.Reset()
+	cpu.Flags = 0b11010111
+	cpu.DE = 0x0210
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x0211, "Flags": 0b00000001}, cpu.incE)
+
+	cpu.Reset()
+	cpu.Flags = 0b10000110
+	cpu.DE = 0x02ff
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x0200, "Flags": 0b01010000}, cpu.incE)
+
+	cpu.Reset()
+	cpu.Flags = 0b01000010
+	cpu.DE = 0x027f
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x0280, "Flags": 0b10010100}, cpu.incE)
+}
