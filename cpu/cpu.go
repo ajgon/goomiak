@@ -395,6 +395,34 @@ func (c *CPU) ldEX() uint8 {
 	return 7
 }
 
+func (c *CPU) rra() uint8 {
+	a := uint8(c.AF >> 8)
+	signed := a&1 == 1
+	a = a >> 1
+
+	if c.Flags&1 == 1 {
+		a = a | 0b10000000
+	} else {
+		a = a & 0b01111111
+	}
+
+	c.AF = (c.AF & 0x00ff) | (uint16(a) << 8)
+	c.PC++
+
+	// C (carry) flag
+	if signed {
+		c.Flags = c.Flags | 0b00000001
+	} else {
+		c.Flags = c.Flags & 0b11111110
+	}
+	// H (half carry) flag
+	c.Flags = c.Flags & 0b11101111
+	// N (sub/add) flag
+	c.Flags = c.Flags & 0b11111101
+
+	return 4
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0
