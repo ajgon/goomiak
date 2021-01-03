@@ -43,6 +43,12 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 		}
 	}
 
+	if de, ok := expected["DE"]; ok {
+		if cpu.DE != de {
+			t.Errorf("DE: got %x, want %x", cpu.DE, de)
+		}
+	}
+
 	if hl, ok := expected["HL"]; ok {
 		if cpu.HL != hl {
 			t.Errorf("HL: got %x, want %x", cpu.HL, hl)
@@ -270,4 +276,11 @@ func TestDjnzX(t *testing.T) {
 	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0xfb})
 
 	checkCpu(t, 13, map[string]uint16{"PC": 0x00, "BC": 0x0434}, cpu.djnzX)
+}
+
+func TestLdDeXx(t *testing.T) {
+	cpu.Reset()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0x01, 0x64, 0x32})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 3, "DE": 0x3264}, cpu.ldDeXx)
 }

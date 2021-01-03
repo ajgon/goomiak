@@ -6,11 +6,12 @@ import (
 
 type CPU struct {
 	PC    uint16
-	BC    uint16
 	AF    uint16
-	Flags uint8 // [  S  ][  Z  ][     ][  H  ][     ][ P/V ][  N  ][  C  ]
-	HL    uint16
 	AF_   uint16
+	BC    uint16
+	DE    uint16
+	HL    uint16
+	Flags uint8 // [  S  ][  Z  ][     ][  H  ][     ][ P/V ][  N  ][  C  ]
 
 	dma *dma.DMA
 }
@@ -272,13 +273,21 @@ func (c *CPU) djnzX() uint8 {
 	return 13
 }
 
+func (c *CPU) ldDeXx() uint8 {
+	c.DE = c.readWord(c.PC + 1)
+	c.PC += 3
+
+	return 10
+}
+
 func (c *CPU) Reset() {
-	c.AF = 0
 	c.PC = 0
+	c.AF = 0
 	c.AF_ = 0
+	c.BC = 0
+	c.DE = 0
 	c.HL = 0
 	c.Flags = 0
-	c.BC = 0
 }
 
 func CPUNew(dma *dma.DMA) *CPU {
