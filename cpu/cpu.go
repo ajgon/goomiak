@@ -229,6 +229,14 @@ func (c *CPU) decC() uint8 {
 	return c.decreaseRegister('C')
 }
 
+func (c *CPU) ldCX() uint8 {
+	c.PC++
+	c.BC = (c.BC & 0xff00) | uint16(c.readByte(c.PC))
+	c.PC++
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.AF = 0
 	c.PC = 0
