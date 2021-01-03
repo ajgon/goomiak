@@ -358,6 +358,14 @@ func (c *CPU) addHlDe() uint8 {
 	return c.addRegisters(&c.HL, &c.DE)
 }
 
+func (c *CPU) ldADe() uint8 {
+	value := c.dma.GetMemory(c.DE)
+	c.AF = (c.AF & 0x00ff) | uint16(value)<<8
+	c.PC++
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0

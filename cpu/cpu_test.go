@@ -396,3 +396,12 @@ func TestAddHlDe(t *testing.T) {
 
 	checkCpu(t, 11, map[string]uint16{"PC": 1, "DE": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlDe)
 }
+
+func TestLdADe(t *testing.T) {
+	cpu.Reset()
+	dmaX.SetMemoryByte(0x1257, 0x64)
+	cpu.AF = 0xffff
+	cpu.DE = 0x1257
+
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0x64ff, "DE": 0x1257}, cpu.ldADe)
+}
