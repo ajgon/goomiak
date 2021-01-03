@@ -204,3 +204,21 @@ func TestIncC(t *testing.T) {
 	cpu.BC = 0x027f
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x0280, "Flags": 0b10010100}, cpu.incC)
 }
+
+func TestDecC(t *testing.T) {
+	cpu.Reset()
+	cpu.Flags = 0b11010101
+	cpu.BC = 0x0201
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x0200, "Flags": 0b01000011}, cpu.decC)
+
+	cpu.Reset()
+	cpu.Flags = 0b01000100
+	cpu.BC = 0x0200
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x02ff, "Flags": 0b10010010}, cpu.decC)
+
+	cpu.Reset()
+	cpu.Flags = 0b11000000
+	cpu.BC = 0x0280
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x027f, "Flags": 0b00010110}, cpu.decC)
+}
