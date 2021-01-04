@@ -4,6 +4,48 @@ import (
 	"z80/dma"
 )
 
+type CPUFlags struct {
+	S  bool
+	Z  bool
+	H  bool
+	PV bool
+	N  bool
+	C  bool
+}
+
+func (cf *CPUFlags) toRegister() uint8 {
+	var register uint8 = 0x00
+	if cf.S {
+		register = register | 0x80
+	}
+	if cf.Z {
+		register = register | 0x40
+	}
+	if cf.H {
+		register = register | 0x10
+	}
+	if cf.PV {
+		register = register | 0x04
+	}
+	if cf.N {
+		register = register | 0x02
+	}
+	if cf.C {
+		register = register | 0x01
+	}
+
+	return register
+}
+
+func (cf *CPUFlags) fromRegister(register uint8) {
+	cf.S = register&0x80 == 0x80
+	cf.Z = register&0x40 == 0x40
+	cf.H = register&0x10 == 0x10
+	cf.PV = register&0x04 == 0x04
+	cf.N = register&0x02 == 0x02
+	cf.C = register&0x01 == 0x01
+}
+
 type CPU struct {
 	PC    uint16
 	AF    uint16
@@ -11,7 +53,7 @@ type CPU struct {
 	BC    uint16
 	DE    uint16
 	HL    uint16
-	Flags uint8 // [  S  ][  Z  ][     ][  H  ][     ][ P/V ][  N  ][  C  ]
+	Flags CPUFlags
 
 	dma *dma.DMA
 }
@@ -57,33 +99,11 @@ func (c *CPU) increaseRegister(name rune) uint8 {
 		register = uint8(c.HL >> 8)
 	}
 
-	// C (carry) is not set
-	// N (sub/add) flag
-	c.Flags = c.Flags & 0b11111101
-	// P/V (overflow) flag
-	if register == 0x80 {
-		c.Flags = c.Flags | 0b00000100
-	} else {
-		c.Flags = c.Flags & 0b11111011
-	}
-	// H (half carry) flag
-	if register&0b00001111 == 0 {
-		c.Flags = c.Flags | 0b00010000
-	} else {
-		c.Flags = c.Flags & 0b11101111
-	}
-	// Z (zero) flag
-	if register == 0 {
-		c.Flags = c.Flags | 0b01000000
-	} else {
-		c.Flags = c.Flags & 0b10111111
-	}
-	// S (sign) flag
-	if register > 127 {
-		c.Flags = c.Flags | 0b10000000
-	} else {
-		c.Flags = c.Flags & 0b01111111
-	}
+	c.Flags.N = false
+	c.Flags.PV = register == 0x80
+	c.Flags.H = register&0x0f == 0
+	c.Flags.Z = register == 0
+	c.Flags.S = register > 127
 	c.PC++
 
 	return 4
@@ -110,33 +130,11 @@ func (c *CPU) decreaseRegister(name rune) uint8 {
 		register = uint8(c.HL >> 8)
 	}
 
-	// C (carry) is not set
-	// N (sub/add flag)
-	c.Flags = c.Flags | 0b00000010
-	// P/V (overflow) flag
-	if register == 0x7f {
-		c.Flags = c.Flags | 0b00000100
-	} else {
-		c.Flags = c.Flags & 0b11111011
-	}
-	// H (half carry) flag
-	if register&0b00001111 == 15 {
-		c.Flags = c.Flags | 0b00010000
-	} else {
-		c.Flags = c.Flags & 0b11101111
-	}
-	// Z (zero) flag
-	if register == 0 {
-		c.Flags = c.Flags | 0b01000000
-	} else {
-		c.Flags = c.Flags & 0b10111111
-	}
-	// S (sign) flag
-	if register > 127 {
-		c.Flags = c.Flags | 0b10000000
-	} else {
-		c.Flags = c.Flags & 0b01111111
-	}
+	c.Flags.N = true
+	c.Flags.PV = register == 0x7f
+	c.Flags.H = register&0x0f == 0x0f
+	c.Flags.Z = register == 0
+	c.Flags.S = register > 127
 
 	c.PC++
 	return 4
@@ -189,17 +187,12 @@ func (c *CPU) rlca() uint8 {
 	c.AF = (c.AF & 0x00ff) | (uint16(a) << 8)
 	c.PC++
 
-	// C (carry) flag
 	if signed {
-		c.Flags = c.Flags | 0b00000001
 		c.AF = c.AF | 0x0100
-	} else {
-		c.Flags = c.Flags & 0b11111110
 	}
-	// H (half carry) flag
-	c.Flags = c.Flags & 0b11101111
-	// N (sub/add) flag
-	c.Flags = c.Flags & 0b11111101
+	c.Flags.C = signed
+	c.Flags.H = false
+	c.Flags.N = false
 
 	return 4
 }
@@ -215,24 +208,9 @@ func (c *CPU) exAfAf_() uint8 {
 func (c *CPU) addRegisters(left, right *uint16) uint8 {
 	sum := *left + *right
 
-	// C (carry) flag
-	if sum < *left || sum < *right {
-		c.Flags = c.Flags | 0b00000001
-	} else {
-		c.Flags = c.Flags & 0b11111110
-	}
-
-	// N (sub/add) flag
-	c.Flags = c.Flags & 0b11111101
-
-	// H (half carry) flag
-	h := (*left ^ *right ^ sum) & 0x1000
-
-	if h == 0x1000 {
-		c.Flags = c.Flags | 0b00010000
-	} else {
-		c.Flags = c.Flags & 0b11101111
-	}
+	c.Flags.C = sum < *left || sum < *right
+	c.Flags.N = false
+	c.Flags.H = (*left^*right^sum)&0x1000 == 0x1000
 
 	*left = sum
 	c.PC++
@@ -281,17 +259,12 @@ func (c *CPU) rrca() uint8 {
 	c.AF = (c.AF & 0x00ff) | (uint16(a) << 8)
 	c.PC++
 
-	// C (carry) flag
 	if signed {
-		c.Flags = c.Flags | 0b00000001
 		c.AF = c.AF | 0x8000
-	} else {
-		c.Flags = c.Flags & 0b11111110
 	}
-	// H (half carry) flag
-	c.Flags = c.Flags & 0b11101111
-	// N (sub/add) flag
-	c.Flags = c.Flags & 0b11111101
+	c.Flags.C = signed
+	c.Flags.H = false
+	c.Flags.N = false
 
 	return 4
 }
@@ -346,7 +319,7 @@ func (c *CPU) rla() uint8 {
 	signed := a&128 == 128
 	a = a << 1
 
-	if c.Flags&1 == 1 {
+	if c.Flags.C {
 		a = a | 0b00000001
 	} else {
 		a = a & 0b11111110
@@ -356,15 +329,9 @@ func (c *CPU) rla() uint8 {
 	c.PC++
 
 	// C (carry) flag
-	if signed {
-		c.Flags = c.Flags | 0b00000001
-	} else {
-		c.Flags = c.Flags & 0b11111110
-	}
-	// H (half carry) flag
-	c.Flags = c.Flags & 0b11101111
-	// N (sub/add) flag
-	c.Flags = c.Flags & 0b11111101
+	c.Flags.C = signed
+	c.Flags.H = false
+	c.Flags.N = false
 
 	return 4
 }
@@ -414,7 +381,7 @@ func (c *CPU) rra() uint8 {
 	signed := a&1 == 1
 	a = a >> 1
 
-	if c.Flags&1 == 1 {
+	if c.Flags.C {
 		a = a | 0b10000000
 	} else {
 		a = a & 0b01111111
@@ -423,22 +390,15 @@ func (c *CPU) rra() uint8 {
 	c.AF = (c.AF & 0x00ff) | (uint16(a) << 8)
 	c.PC++
 
-	// C (carry) flag
-	if signed {
-		c.Flags = c.Flags | 0b00000001
-	} else {
-		c.Flags = c.Flags & 0b11111110
-	}
-	// H (half carry) flag
-	c.Flags = c.Flags & 0b11101111
-	// N (sub/add) flag
-	c.Flags = c.Flags & 0b11111101
+	c.Flags.C = signed
+	c.Flags.H = false
+	c.Flags.N = false
 
 	return 4
 }
 
 func (c *CPU) jrNzX() uint8 {
-	if c.Flags&64 == 64 {
+	if c.Flags.Z {
 		c.PC += 2
 		return 7
 	}
@@ -488,7 +448,7 @@ func (c *CPU) Reset() {
 	c.BC = 0
 	c.DE = 0
 	c.HL = 0
-	c.Flags = 0
+	c.Flags = CPUFlags{}
 }
 
 func CPUNew(dma *dma.DMA) *CPU {

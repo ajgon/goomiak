@@ -56,8 +56,8 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 	}
 
 	if flags, ok := expected["Flags"]; ok {
-		if cpu.Flags != uint8(flags) {
-			t.Errorf("Flags: got %b, want %b", cpu.Flags, flags)
+		if cpu.Flags.toRegister() != uint8(flags) {
+			t.Errorf("Flags: got %b, want %b", cpu.Flags.toRegister(), flags)
 		}
 	}
 
@@ -151,36 +151,36 @@ func TestIncBc(t *testing.T) {
 
 func TestIncB(t *testing.T) {
 	resetAll()
-	cpu.Flags = 0b11010111
+	cpu.Flags.fromRegister(0b11010111)
 	cpu.BC = 0x1002
 
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x1102, "Flags": 0b00000001}, cpu.incB)
 
 	resetAll()
-	cpu.Flags = 0b10000110
+	cpu.Flags.fromRegister(0b10000110)
 	cpu.BC = 0xff02
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x0002, "Flags": 0b01010000}, cpu.incB)
 
 	resetAll()
-	cpu.Flags = 0b01000010
+	cpu.Flags.fromRegister(0b01000010)
 	cpu.BC = 0x7f02
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x8002, "Flags": 0b10010100}, cpu.incB)
 }
 
 func TestDecB(t *testing.T) {
 	resetAll()
-	cpu.Flags = 0b11010101
+	cpu.Flags.fromRegister(0b11010101)
 	cpu.BC = 0x0102
 
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x0002, "Flags": 0b01000011}, cpu.decB)
 
 	resetAll()
-	cpu.Flags = 0b01000100
+	cpu.Flags.fromRegister(0b01000100)
 	cpu.BC = 0x0002
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0xff02, "Flags": 0b10010010}, cpu.decB)
 
 	resetAll()
-	cpu.Flags = 0b11000000
+	cpu.Flags.fromRegister(0b11000000)
 	cpu.BC = 0x8002
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x7f02, "Flags": 0b00010110}, cpu.decB)
 }
@@ -195,12 +195,12 @@ func TestLdBX(t *testing.T) {
 func TestRlca(t *testing.T) {
 	resetAll()
 	cpu.AF = 0x8c05
-	cpu.Flags = 0b11010110
+	cpu.Flags.fromRegister(0b11010110)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x1905, "Flags": 0b11000101}, cpu.rlca)
 
 	resetAll()
 	cpu.AF = 0x4d05
-	cpu.Flags = 0b11010111
+	cpu.Flags.fromRegister(0b11010111)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x9a05, "Flags": 0b11000100}, cpu.rlca)
 }
 
@@ -215,14 +215,14 @@ func TestAddHlBc(t *testing.T) {
 	resetAll()
 	cpu.BC = 0xa76c //  1010 0111 0110 1100
 	cpu.HL = 0x5933 //  0101 1001 0011 0011
-	cpu.Flags = 0b00000010
+	cpu.Flags.fromRegister(0b00000010)
 
 	checkCpu(t, 11, map[string]uint16{"PC": 1, "BC": 0xa76c, "HL": 0x009f, "Flags": 0b00010001}, cpu.addHlBc)
 
 	resetAll()
 	cpu.BC = 0x7fff
 	cpu.HL = 0x7fff
-	cpu.Flags = 0b00000010
+	cpu.Flags.fromRegister(0b00000010)
 
 	checkCpu(t, 11, map[string]uint16{"PC": 1, "BC": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlBc)
 }
@@ -245,36 +245,36 @@ func TestDecBc(t *testing.T) {
 
 func TestIncC(t *testing.T) {
 	resetAll()
-	cpu.Flags = 0b11010111
+	cpu.Flags.fromRegister(0b11010111)
 	cpu.BC = 0x0210
 
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x0211, "Flags": 0b00000001}, cpu.incC)
 
 	resetAll()
-	cpu.Flags = 0b10000110
+	cpu.Flags.fromRegister(0b10000110)
 	cpu.BC = 0x02ff
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x0200, "Flags": 0b01010000}, cpu.incC)
 
 	resetAll()
-	cpu.Flags = 0b01000010
+	cpu.Flags.fromRegister(0b01000010)
 	cpu.BC = 0x027f
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x0280, "Flags": 0b10010100}, cpu.incC)
 }
 
 func TestDecC(t *testing.T) {
 	resetAll()
-	cpu.Flags = 0b11010101
+	cpu.Flags.fromRegister(0b11010101)
 	cpu.BC = 0x0201
 
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x0200, "Flags": 0b01000011}, cpu.decC)
 
 	resetAll()
-	cpu.Flags = 0b01000100
+	cpu.Flags.fromRegister(0b01000100)
 	cpu.BC = 0x0200
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x02ff, "Flags": 0b10010010}, cpu.decC)
 
 	resetAll()
-	cpu.Flags = 0b11000000
+	cpu.Flags.fromRegister(0b11000000)
 	cpu.BC = 0x0280
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x027f, "Flags": 0b00010110}, cpu.decC)
 }
@@ -289,12 +289,12 @@ func TestLdCX(t *testing.T) {
 func TestRrca(t *testing.T) {
 	resetAll()
 	cpu.AF = 0x8d05
-	cpu.Flags = 0b11010110
+	cpu.Flags.fromRegister(0b11010110)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0xc605, "Flags": 0b11000101}, cpu.rrca)
 
 	resetAll()
 	cpu.AF = 0x4c05
-	cpu.Flags = 0b11010111
+	cpu.Flags.fromRegister(0b11010111)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x2605, "Flags": 0b11000100}, cpu.rrca)
 }
 
@@ -358,36 +358,36 @@ func TestIncDe(t *testing.T) {
 
 func TestIncD(t *testing.T) {
 	resetAll()
-	cpu.Flags = 0b11010111
+	cpu.Flags.fromRegister(0b11010111)
 	cpu.DE = 0x1002
 
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x1102, "Flags": 0b00000001}, cpu.incD)
 
 	resetAll()
-	cpu.Flags = 0b10000110
+	cpu.Flags.fromRegister(0b10000110)
 	cpu.DE = 0xff02
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x0002, "Flags": 0b01010000}, cpu.incD)
 
 	resetAll()
-	cpu.Flags = 0b01000010
+	cpu.Flags.fromRegister(0b01000010)
 	cpu.DE = 0x7f02
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x8002, "Flags": 0b10010100}, cpu.incD)
 }
 
 func TestDecD(t *testing.T) {
 	resetAll()
-	cpu.Flags = 0b11010101
+	cpu.Flags.fromRegister(0b11010101)
 	cpu.DE = 0x0102
 
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x0002, "Flags": 0b01000011}, cpu.decD)
 
 	resetAll()
-	cpu.Flags = 0b01000100
+	cpu.Flags.fromRegister(0b01000100)
 	cpu.DE = 0x0002
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0xff02, "Flags": 0b10010010}, cpu.decD)
 
 	resetAll()
-	cpu.Flags = 0b11000000
+	cpu.Flags.fromRegister(0b11000000)
 	cpu.DE = 0x8002
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x7f02, "Flags": 0b00010110}, cpu.decD)
 }
@@ -402,12 +402,12 @@ func TestLdDX(t *testing.T) {
 func TestRla(t *testing.T) {
 	resetAll()
 	cpu.AF = 0x8c05
-	cpu.Flags = 0b11010110
+	cpu.Flags.fromRegister(0b11010110)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x1805, "Flags": 0b11000101}, cpu.rla)
 
 	resetAll()
 	cpu.AF = 0x4d05
-	cpu.Flags = 0b11010111
+	cpu.Flags.fromRegister(0b11010111)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x9b05, "Flags": 0b11000100}, cpu.rla)
 }
 
@@ -435,14 +435,14 @@ func TestAddHlDe(t *testing.T) {
 	resetAll()
 	cpu.DE = 0xa76c //  1010 0111 0110 1100
 	cpu.HL = 0x5933 //  0101 1001 0011 0011
-	cpu.Flags = 0b00000010
+	cpu.Flags.fromRegister(0b00000010)
 
 	checkCpu(t, 11, map[string]uint16{"PC": 1, "DE": 0xa76c, "HL": 0x009f, "Flags": 0b00010001}, cpu.addHlDe)
 
 	resetAll()
 	cpu.DE = 0x7fff
 	cpu.HL = 0x7fff
-	cpu.Flags = 0b00000010
+	cpu.Flags.fromRegister(0b00000010)
 
 	checkCpu(t, 11, map[string]uint16{"PC": 1, "DE": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlDe)
 }
@@ -465,36 +465,36 @@ func TestDecDe(t *testing.T) {
 
 func TestIncE(t *testing.T) {
 	resetAll()
-	cpu.Flags = 0b11010111
+	cpu.Flags.fromRegister(0b11010111)
 	cpu.DE = 0x0210
 
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x0211, "Flags": 0b00000001}, cpu.incE)
 
 	resetAll()
-	cpu.Flags = 0b10000110
+	cpu.Flags.fromRegister(0b10000110)
 	cpu.DE = 0x02ff
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x0200, "Flags": 0b01010000}, cpu.incE)
 
 	resetAll()
-	cpu.Flags = 0b01000010
+	cpu.Flags.fromRegister(0b01000010)
 	cpu.DE = 0x027f
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x0280, "Flags": 0b10010100}, cpu.incE)
 }
 
 func TestDecE(t *testing.T) {
 	resetAll()
-	cpu.Flags = 0b11010101
+	cpu.Flags.fromRegister(0b11010101)
 	cpu.DE = 0x0201
 
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x0200, "Flags": 0b01000011}, cpu.decE)
 
 	resetAll()
-	cpu.Flags = 0b01000100
+	cpu.Flags.fromRegister(0b01000100)
 	cpu.DE = 0x0200
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x02ff, "Flags": 0b10010010}, cpu.decE)
 
 	resetAll()
-	cpu.Flags = 0b11000000
+	cpu.Flags.fromRegister(0b11000000)
 	cpu.DE = 0x0280
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x027f, "Flags": 0b00010110}, cpu.decE)
 }
@@ -509,26 +509,26 @@ func TestLdEX(t *testing.T) {
 func TestRra(t *testing.T) {
 	resetAll()
 	cpu.AF = 0x8d05
-	cpu.Flags = 0b11010110
+	cpu.Flags.fromRegister(0b11010110)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x4605, "Flags": 0b11000101}, cpu.rra)
 
 	resetAll()
 	cpu.AF = 0x4c05
-	cpu.Flags = 0b11010111
+	cpu.Flags.fromRegister(0b11010111)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0xa605, "Flags": 0b11000100}, cpu.rra)
 }
 
 func TestJrNzX(t *testing.T) {
 	resetAll()
 	cpu.PC = 3
-	cpu.Flags = 0b10010111
+	cpu.Flags.fromRegister(0b10010111)
 	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0x32})
 
 	checkCpu(t, 12, map[string]uint16{"PC": 0x37, "Flags": 0b10010111}, cpu.jrNzX)
 
 	resetAll()
 	cpu.PC = 3
-	cpu.Flags = 0b11010111
+	cpu.Flags.fromRegister(0b11010111)
 	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0x32})
 
 	checkCpu(t, 7, map[string]uint16{"PC": 0x05, "Flags": 0b11010111}, cpu.jrNzX)
@@ -565,36 +565,36 @@ func TestIncHl(t *testing.T) {
 
 func TestIncH(t *testing.T) {
 	resetAll()
-	cpu.Flags = 0b11010111
+	cpu.Flags.fromRegister(0b11010111)
 	cpu.HL = 0x1002
 
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x1102, "Flags": 0b00000001}, cpu.incH)
 
 	resetAll()
-	cpu.Flags = 0b10000110
+	cpu.Flags.fromRegister(0b10000110)
 	cpu.HL = 0xff02
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x0002, "Flags": 0b01010000}, cpu.incH)
 
 	resetAll()
-	cpu.Flags = 0b01000010
+	cpu.Flags.fromRegister(0b01000010)
 	cpu.HL = 0x7f02
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x8002, "Flags": 0b10010100}, cpu.incH)
 }
 
 func TestDecH(t *testing.T) {
 	resetAll()
-	cpu.Flags = 0b11010101
+	cpu.Flags.fromRegister(0b11010101)
 	cpu.HL = 0x0102
 
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x0002, "Flags": 0b01000011}, cpu.decH)
 
 	resetAll()
-	cpu.Flags = 0b01000100
+	cpu.Flags.fromRegister(0b01000100)
 	cpu.HL = 0x0002
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0xff02, "Flags": 0b10010010}, cpu.decH)
 
 	resetAll()
-	cpu.Flags = 0b11000000
+	cpu.Flags.fromRegister(0b11000000)
 	cpu.HL = 0x8002
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x7f02, "Flags": 0b00010110}, cpu.decH)
 }
