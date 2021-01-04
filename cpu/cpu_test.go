@@ -650,3 +650,21 @@ func TestDecHl(t *testing.T) {
 
 	checkCpu(t, 6, map[string]uint16{"PC": 1, "HL": 0x0fff}, cpu.decHl)
 }
+
+func TestIncL(t *testing.T) {
+	resetAll()
+	cpu.Flags.fromRegister(0b11010111)
+	cpu.HL = 0x0210
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x0211, "Flags": 0b00000001}, cpu.incL)
+
+	resetAll()
+	cpu.Flags.fromRegister(0b10000110)
+	cpu.HL = 0x02ff
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x0200, "Flags": 0b01010000}, cpu.incL)
+
+	resetAll()
+	cpu.Flags.fromRegister(0b01000010)
+	cpu.HL = 0x027f
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x0280, "Flags": 0b10010100}, cpu.incL)
+}
