@@ -128,12 +128,12 @@ func TestLdBcXx(t *testing.T) {
 	checkCpu(t, 10, map[string]uint16{"PC": 3, "BC": 0x3264}, cpu.ldBcXx)
 }
 
-func TestLdBcA(t *testing.T) {
+func TestLd_Bc_A(t *testing.T) {
 	resetAll()
 	cpu.AF = 0x7A05
 	cpu.BC = 0x1015
 
-	checkCpu(t, 7, map[string]uint16{"PC": 1}, cpu.ldBcA)
+	checkCpu(t, 7, map[string]uint16{"PC": 1}, cpu.ld_Bc_A)
 
 	got := dmaX.GetMemory(0x1015)
 	want := uint8(0x7A)
@@ -227,13 +227,13 @@ func TestAddHlBc(t *testing.T) {
 	checkCpu(t, 11, map[string]uint16{"PC": 1, "BC": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlBc)
 }
 
-func TestLdABc(t *testing.T) {
+func TestLdA_Bc_(t *testing.T) {
 	resetAll()
 	dmaX.SetMemoryByte(0x1257, 0x64)
 	cpu.AF = 0xffff
 	cpu.BC = 0x1257
 
-	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0x64ff, "BC": 0x1257}, cpu.ldABc)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0x64ff, "BC": 0x1257}, cpu.ldA_Bc_)
 }
 
 func TestDecBc(t *testing.T) {
@@ -335,12 +335,12 @@ func TestLdDeXx(t *testing.T) {
 	checkCpu(t, 10, map[string]uint16{"PC": 3, "DE": 0x3264}, cpu.ldDeXx)
 }
 
-func TestLdDeA(t *testing.T) {
+func TestLd_De_A(t *testing.T) {
 	resetAll()
 	cpu.AF = 0x7A05
 	cpu.DE = 0x1015
 
-	checkCpu(t, 7, map[string]uint16{"PC": 1}, cpu.ldDeA)
+	checkCpu(t, 7, map[string]uint16{"PC": 1}, cpu.ld_De_A)
 
 	got := dmaX.GetMemory(0x1015)
 	want := uint8(0x7A)
@@ -447,13 +447,13 @@ func TestAddHlDe(t *testing.T) {
 	checkCpu(t, 11, map[string]uint16{"PC": 1, "DE": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlDe)
 }
 
-func TestLdADe(t *testing.T) {
+func TestLdA_De_(t *testing.T) {
 	resetAll()
 	dmaX.SetMemoryByte(0x1257, 0x64)
 	cpu.AF = 0xffff
 	cpu.DE = 0x1257
 
-	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0x64ff, "DE": 0x1257}, cpu.ldADe)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0x64ff, "DE": 0x1257}, cpu.ldA_De_)
 }
 
 func TestDecDe(t *testing.T) {
@@ -541,12 +541,12 @@ func TestLdHlXx(t *testing.T) {
 	checkCpu(t, 10, map[string]uint16{"PC": 3, "HL": 0x3264}, cpu.ldHlXx)
 }
 
-func TestLdXxHl(t *testing.T) {
+func TestLd_Xx_Hl(t *testing.T) {
 	resetAll()
 	cpu.HL = 0x483a
 	dmaX.SetMemoryBulk(0x0000, []uint8{0x22, 0x29, 0xb2})
 
-	checkCpu(t, 5, map[string]uint16{"PC": 3, "HL": 0x483a}, cpu.ldXxHl)
+	checkCpu(t, 5, map[string]uint16{"PC": 3, "HL": 0x483a}, cpu.ld_Xx_Hl)
 
 	gotH, gotL := dmaX.GetMemory(0xb229), dmaX.GetMemory(0xb22a)
 	wantH, wantL := uint8(0x3a), uint8(0x48)

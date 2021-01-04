@@ -160,6 +160,20 @@ func (c *CPU) decreaseRegister(name rune) uint8 {
 	return 4
 }
 
+// left stores the result
+func (c *CPU) addRegisters(left, right *uint16) uint8 {
+	sum := *left + *right
+
+	c.Flags.C = sum < *left || sum < *right
+	c.Flags.N = false
+	c.Flags.H = (*left^*right^sum)&0x1000 == 0x1000
+
+	*left = sum
+	c.PC++
+	return 11
+
+}
+
 func (c *CPU) nop() uint8 {
 	c.PC++
 
@@ -173,7 +187,7 @@ func (c *CPU) ldBcXx() uint8 {
 	return 10
 }
 
-func (c *CPU) ldBcA() uint8 {
+func (c *CPU) ld_Bc_A() uint8 {
 	c.dma.SetMemoryByte(c.BC, uint8(c.AF>>8))
 	c.PC++
 	return 7
@@ -224,25 +238,11 @@ func (c *CPU) exAfAf_() uint8 {
 	return 4
 }
 
-// left stores the result
-func (c *CPU) addRegisters(left, right *uint16) uint8 {
-	sum := *left + *right
-
-	c.Flags.C = sum < *left || sum < *right
-	c.Flags.N = false
-	c.Flags.H = (*left^*right^sum)&0x1000 == 0x1000
-
-	*left = sum
-	c.PC++
-	return 11
-
-}
-
 func (c *CPU) addHlBc() uint8 {
 	return c.addRegisters(&c.HL, &c.BC)
 }
 
-func (c *CPU) ldABc() uint8 {
+func (c *CPU) ldA_Bc_() uint8 {
 	value := c.dma.GetMemory(c.BC)
 	c.AF = (c.AF & 0x00ff) | uint16(value)<<8
 	c.PC++
@@ -307,7 +307,7 @@ func (c *CPU) ldDeXx() uint8 {
 	return 10
 }
 
-func (c *CPU) ldDeA() uint8 {
+func (c *CPU) ld_De_A() uint8 {
 	c.dma.SetMemoryByte(c.DE, uint8(c.AF>>8))
 	c.PC++
 	return 7
@@ -366,7 +366,7 @@ func (c *CPU) addHlDe() uint8 {
 	return c.addRegisters(&c.HL, &c.DE)
 }
 
-func (c *CPU) ldADe() uint8 {
+func (c *CPU) ldA_De_() uint8 {
 	value := c.dma.GetMemory(c.DE)
 	c.AF = (c.AF & 0x00ff) | uint16(value)<<8
 	c.PC++
@@ -434,7 +434,7 @@ func (c *CPU) ldHlXx() uint8 {
 	return 10
 }
 
-func (c *CPU) ldXxHl() uint8 {
+func (c *CPU) ld_Xx_Hl() uint8 {
 	c.writeWord(c.readWord(c.PC+1), c.HL)
 	c.PC += 3
 	return 5
