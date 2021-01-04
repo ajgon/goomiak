@@ -635,3 +635,11 @@ func TestAddHlHl(t *testing.T) {
 
 	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlHl)
 }
+
+func TestLdHl_Xx_(t *testing.T) {
+	resetAll()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0x2a, 0x29, 0xb2})
+	dmaX.SetMemoryBulk(0xb229, []uint8{0x37, 0xa1})
+
+	checkCpu(t, 16, map[string]uint16{"PC": 3, "HL": 0xa137}, cpu.ldHl_Xx_)
+}

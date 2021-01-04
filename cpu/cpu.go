@@ -530,6 +530,13 @@ func (c *CPU) addHlHl() uint8 {
 	return c.addRegisters(&c.HL, &c.HL)
 }
 
+func (c *CPU) ldHl_Xx_() uint8 {
+	c.HL = c.readWord(c.readWord(c.PC + 1))
+	c.PC += 3
+
+	return 16
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0
