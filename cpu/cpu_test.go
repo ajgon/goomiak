@@ -643,3 +643,10 @@ func TestLdHl_Xx_(t *testing.T) {
 
 	checkCpu(t, 16, map[string]uint16{"PC": 3, "HL": 0xa137}, cpu.ldHl_Xx_)
 }
+
+func TestDecHl(t *testing.T) {
+	resetAll()
+	cpu.HL = 0x1000
+
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "HL": 0x0fff}, cpu.decHl)
+}

@@ -537,6 +537,13 @@ func (c *CPU) ldHl_Xx_() uint8 {
 	return 16
 }
 
+func (c *CPU) decHl() uint8 {
+	c.HL--
+	c.PC++
+
+	return 6
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0
