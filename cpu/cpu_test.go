@@ -693,3 +693,11 @@ func TestLdLX(t *testing.T) {
 
 	checkCpu(t, 7, map[string]uint16{"PC": 2, "HL": 0x0064}, cpu.ldLX)
 }
+
+func TestCpl(t *testing.T) {
+	resetAll()
+	cpu.Flags.fromRegister(0b00000000)
+	cpu.AF = 0xe725
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x1825, "Flags": 0b00010010}, cpu.cpl)
+}

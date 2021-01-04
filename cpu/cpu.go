@@ -565,6 +565,15 @@ func (c *CPU) ldLX() uint8 {
 	return 7
 }
 
+func (c *CPU) cpl() uint8 {
+	c.AF = (((c.AF >> 8) ^ 0xff) << 8) | (0x00ff & c.AF)
+	c.PC++
+	c.Flags.H = true
+	c.Flags.N = true
+
+	return 4
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0
