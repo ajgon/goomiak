@@ -20,8 +20,20 @@ func (c *CPU) readByte(address uint16) uint8 {
 	return c.dma.GetMemory(address)
 }
 
+// reads word and maintains endianess
+// example:
+// 0040 34 21
+// readWord(0x0040) => 0x1234
 func (c *CPU) readWord(address uint16) uint16 {
 	return uint16(c.dma.GetMemory(address+1))<<8 | uint16(c.dma.GetMemory(address))
+}
+
+// writes word to given address and address+1 and maintains endianess
+// example:
+// writeWord(0x1234, 0x5678)
+// 1234  78 56
+func (c *CPU) writeWord(address uint16, value uint16) {
+	c.dma.SetMemoryBulk(address, []uint8{uint8(value), uint8(value >> 8)})
 }
 
 func (c *CPU) increaseRegister(name rune) uint8 {
@@ -438,6 +450,12 @@ func (c *CPU) ldHlXx() uint8 {
 	c.PC += 3
 
 	return 10
+}
+
+func (c *CPU) ldXxHl() uint8 {
+	c.writeWord(c.readWord(c.PC+1), c.HL)
+	c.PC += 3
+	return 5
 }
 
 func (c *CPU) Reset() {
