@@ -4,6 +4,26 @@ import (
 	"z80/dma"
 )
 
+var parityTable [256]bool = [256]bool{
+	/*	      0     1      2     3      4     5      6     7      8     9      A     B      C     D      E     F */
+	/* 0 */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+	/* 1 */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+	/* 2 */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+	/* 3 */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+	/* 4 */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+	/* 5 */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+	/* 6 */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+	/* 7 */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+	/* 8 */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+	/* 9 */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+	/* A */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+	/* B */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+	/* C */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+	/* D */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+	/* E */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
+	/* F */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
+}
+
 type CPUFlags struct {
 	S  bool
 	Z  bool
@@ -439,6 +459,61 @@ func (c *CPU) ldHX() uint8 {
 	c.PC += 2
 
 	return 7
+}
+
+func (c *CPU) daa() uint8 {
+	t := 0
+	a := uint8(c.AF >> 8)
+
+	if c.Flags.H || (a&0x0f) > 9 {
+		t++
+	}
+
+	if c.Flags.C || (a > 0x99) {
+		t += 2
+		c.Flags.C = true
+	}
+
+	if c.Flags.N && !c.Flags.H {
+		c.Flags.H = false
+	} else {
+		if c.Flags.N && c.Flags.H {
+			c.Flags.H = a&0x0f < 6
+		} else {
+			c.Flags.H = a&0x0f > 9
+		}
+	}
+
+	switch t {
+	case 1:
+		if c.Flags.N {
+			a += 0xfa
+		} else {
+			a += 0x06
+		}
+	case 2:
+		if c.Flags.N {
+			a += 0xa0
+		} else {
+			a += 0x60
+		}
+	case 3:
+		if c.Flags.N {
+			a += 0x9a
+		} else {
+			a += 0x66
+		}
+	}
+
+	c.Flags.S = a&0x80 == 0x80
+	c.Flags.Z = a == 0
+	c.Flags.PV = parityTable[a]
+
+	c.AF = (c.AF & 0x00ff) | (uint16(a) << 8)
+
+	c.PC++
+
+	return 4
 }
 
 func (c *CPU) Reset() {
