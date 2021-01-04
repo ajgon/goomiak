@@ -605,3 +605,19 @@ func TestLdHX(t *testing.T) {
 
 	checkCpu(t, 7, map[string]uint16{"PC": 2, "HL": 0x6400}, cpu.ldHX)
 }
+
+func TestJrZX(t *testing.T) {
+	resetAll()
+	cpu.PC = 3
+	cpu.Flags.fromRegister(0b11010111)
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0x32})
+
+	checkCpu(t, 12, map[string]uint16{"PC": 0x37, "Flags": 0b11010111}, cpu.jrZX)
+
+	resetAll()
+	cpu.PC = 3
+	cpu.Flags.fromRegister(0b10010111)
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0x32})
+
+	checkCpu(t, 7, map[string]uint16{"PC": 0x05, "Flags": 0b10010111}, cpu.jrZX)
+}
