@@ -580,3 +580,21 @@ func TestIncH(t *testing.T) {
 	cpu.HL = 0x7f02
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x8002, "Flags": 0b10010100}, cpu.incH)
 }
+
+func TestDecH(t *testing.T) {
+	resetAll()
+	cpu.Flags = 0b11010101
+	cpu.HL = 0x0102
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x0002, "Flags": 0b01000011}, cpu.decH)
+
+	resetAll()
+	cpu.Flags = 0b01000100
+	cpu.HL = 0x0002
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0xff02, "Flags": 0b10010010}, cpu.decH)
+
+	resetAll()
+	cpu.Flags = 0b11000000
+	cpu.HL = 0x8002
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x7f02, "Flags": 0b00010110}, cpu.decH)
+}
