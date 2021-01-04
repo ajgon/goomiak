@@ -526,6 +526,10 @@ func (c *CPU) jrZX() uint8 {
 	return 12
 }
 
+func (c *CPU) addHlHl() uint8 {
+	return c.addRegisters(&c.HL, &c.HL)
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0

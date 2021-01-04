@@ -621,3 +621,17 @@ func TestJrZX(t *testing.T) {
 
 	checkCpu(t, 7, map[string]uint16{"PC": 0x05, "Flags": 0b10010111}, cpu.jrZX)
 }
+
+func TestAddHlHl(t *testing.T) {
+	resetAll()
+	cpu.HL = 0xae6c
+	cpu.Flags.fromRegister(0b00000010)
+
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x5cd8, "Flags": 0b00010001}, cpu.addHlHl)
+
+	resetAll()
+	cpu.HL = 0x7fff
+	cpu.Flags.fromRegister(0b00000010)
+
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlHl)
+}
