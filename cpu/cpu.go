@@ -176,9 +176,8 @@ func (c *CPU) decB() uint8 {
 }
 
 func (c *CPU) ldBX() uint8 {
-	c.PC++
-	c.BC = (c.BC & 0x00ff) | (uint16(c.readByte(c.PC)) << 8)
-	c.PC++
+	c.BC = (c.BC & 0x00ff) | (uint16(c.readByte(c.PC+1)) << 8)
+	c.PC += 2
 
 	return 7
 }
@@ -269,9 +268,8 @@ func (c *CPU) decC() uint8 {
 }
 
 func (c *CPU) ldCX() uint8 {
-	c.PC++
-	c.BC = (c.BC & 0xff00) | uint16(c.readByte(c.PC))
-	c.PC++
+	c.BC = (c.BC & 0xff00) | uint16(c.readByte(c.PC+1))
+	c.PC += 2
 
 	return 7
 }
@@ -337,9 +335,8 @@ func (c *CPU) decD() uint8 {
 }
 
 func (c *CPU) ldDX() uint8 {
-	c.PC++
-	c.DE = (c.DE & 0x00ff) | (uint16(c.readByte(c.PC)) << 8)
-	c.PC++
+	c.DE = (c.DE & 0x00ff) | (uint16(c.readByte(c.PC+1)) << 8)
+	c.PC += 2
 
 	return 7
 }
@@ -406,9 +403,8 @@ func (c *CPU) decE() uint8 {
 }
 
 func (c *CPU) ldEX() uint8 {
-	c.PC++
-	c.DE = (c.DE & 0xff00) | uint16(c.readByte(c.PC))
-	c.PC++
+	c.DE = (c.DE & 0xff00) | uint16(c.readByte(c.PC+1))
+	c.PC += 2
 
 	return 7
 }
@@ -476,6 +472,13 @@ func (c *CPU) incH() uint8 {
 
 func (c *CPU) decH() uint8 {
 	return c.decreaseRegister('H')
+}
+
+func (c *CPU) ldHX() uint8 {
+	c.HL = (c.HL & 0x00ff) | (uint16(c.readByte(c.PC+1)) << 8)
+	c.PC += 2
+
+	return 7
 }
 
 func (c *CPU) Reset() {
