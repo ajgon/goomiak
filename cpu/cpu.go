@@ -558,6 +558,13 @@ func (c *CPU) decL() uint8 {
 	return c.decreaseRegister('L')
 }
 
+func (c *CPU) ldLX() uint8 {
+	c.HL = (c.HL & 0xff00) | uint16(c.readByte(c.PC+1))
+	c.PC += 2
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0

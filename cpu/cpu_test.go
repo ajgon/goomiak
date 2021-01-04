@@ -686,3 +686,10 @@ func TestDecL(t *testing.T) {
 	cpu.HL = 0x0280
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x027f, "Flags": 0b00010110}, cpu.decL)
 }
+
+func TestLdLX(t *testing.T) {
+	resetAll()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0x06, 0x64})
+
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "HL": 0x0064}, cpu.ldLX)
+}
