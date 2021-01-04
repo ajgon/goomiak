@@ -458,6 +458,12 @@ func (c *CPU) ldXxHl() uint8 {
 	return 5
 }
 
+func (c *CPU) incHl() uint8 {
+	c.HL++
+	c.PC++
+	return 6
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0

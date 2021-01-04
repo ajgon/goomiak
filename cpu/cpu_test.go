@@ -555,3 +555,10 @@ func TestLdXxHl(t *testing.T) {
 		t.Errorf("got 0x%x%x, want 0x%x%x", gotH, gotL, wantH, wantL)
 	}
 }
+
+func TestIncHl(t *testing.T) {
+	resetAll()
+	cpu.HL = 0x1020
+
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "HL": 0x1021}, cpu.incHl)
+}
