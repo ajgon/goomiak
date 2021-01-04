@@ -433,6 +433,13 @@ func (c *CPU) jrNzX() uint8 {
 	return 12
 }
 
+func (c *CPU) ldHlXx() uint8 {
+	c.HL = c.readWord(c.PC + 1)
+	c.PC += 3
+
+	return 10
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.AF = 0

@@ -483,3 +483,10 @@ func TestJrNzX(t *testing.T) {
 
 	checkCpu(t, 7, map[string]uint16{"PC": 0x05, "Flags": 0b11010111}, cpu.jrNzX)
 }
+
+func TestLdHlXx(t *testing.T) {
+	cpu.Reset()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0x01, 0x64, 0x32})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 3, "HL": 0x3264}, cpu.ldHlXx)
+}
