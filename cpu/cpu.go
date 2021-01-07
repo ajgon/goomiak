@@ -68,6 +68,7 @@ func (cf *CPUFlags) fromRegister(register uint8) {
 
 type CPU struct {
 	PC    uint16
+	SP    uint16
 	AF    uint16
 	AF_   uint16
 	BC    uint16
@@ -584,8 +585,16 @@ func (c *CPU) jrNcX() uint8 {
 	return 12
 }
 
+func (c *CPU) ldSpXx() uint8 {
+	c.SP = c.readWord(c.PC + 1)
+	c.PC += 3
+
+	return 10
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
+	c.SP = 0
 	c.AF = 0
 	c.AF_ = 0
 	c.BC = 0

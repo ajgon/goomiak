@@ -25,6 +25,12 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 		panic("Every mnemonic test should validate PC!")
 	}
 
+	if sp, ok := expected["SP"]; ok {
+		if cpu.SP != sp {
+			t.Errorf("SP: got %x, want %x", cpu.SP, sp)
+		}
+	}
+
 	if af, ok := expected["AF"]; ok {
 		if cpu.AF != af {
 			t.Errorf("AF: got %x, want %x", cpu.AF, af)
@@ -716,4 +722,11 @@ func TestJrNcX(t *testing.T) {
 	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0x32})
 
 	checkCpu(t, 7, map[string]uint16{"PC": 0x05, "Flags": 0b11010111}, cpu.jrNcX)
+}
+
+func TestLdSpXx(t *testing.T) {
+	resetAll()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0x01, 0x64, 0x32})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 3, "SP": 0x3264}, cpu.ldSpXx)
 }
