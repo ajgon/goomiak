@@ -638,6 +638,16 @@ func (c *CPU) ld_Hl_X() uint8 {
 	return 10
 }
 
+func (c *CPU) scf() uint8 {
+	c.PC++
+
+	c.Flags.C = true
+	c.Flags.N = false
+	c.Flags.H = false
+
+	return 4
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

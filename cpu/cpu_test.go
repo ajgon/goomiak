@@ -850,3 +850,11 @@ func TestLd_Hl_X(t *testing.T) {
 		t.Errorf("got %x, want %x", got, want)
 	}
 }
+
+func TestScf(t *testing.T) {
+	resetAll()
+	cpu.Flags.fromRegister(0b11010110)
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "Flags": 0b11000101}, cpu.scf)
+
+}
