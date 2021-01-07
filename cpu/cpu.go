@@ -685,7 +685,12 @@ func (c *CPU) decA() uint8 {
 	return c.decreaseRegister('A')
 }
 
-// -----
+func (c *CPU) ldAX() uint8 {
+	c.AF = (c.AF & 0x00ff) | (uint16(c.dma.GetMemory(c.PC+1)) << 8)
+	c.PC += 2
+
+	return 7
+}
 
 func (c *CPU) Reset() {
 	c.PC = 0
