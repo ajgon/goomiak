@@ -1275,3 +1275,93 @@ func TestLdR_Hl_(t *testing.T) {
 	dmaX.SetMemoryByte(0x5678, 0xab)
 	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0xab34, "HL": 0x5678}, cpu.ldR_Hl_('A'))
 }
+
+func TestLd_Hl_R(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x1234
+	cpu.HL = 0x5678
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "BC": 0x1234, "HL": 0x5678}, cpu.ld_Hl_R('B'))
+
+	got := dmaX.GetMemory(0x5678)
+	want := uint8(0x12)
+
+	if got != want {
+		t.Errorf("got 0x%02x, want %02x", got, want)
+	}
+
+	resetAll()
+	cpu.BC = 0x1234
+	cpu.HL = 0x5678
+	dmaX.SetMemoryByte(0x5678, 0xab)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "BC": 0x1234, "HL": 0x5678}, cpu.ld_Hl_R('C'))
+
+	got = dmaX.GetMemory(0x5678)
+	want = uint8(0x34)
+
+	if got != want {
+		t.Errorf("got 0x%02x, want %02x", got, want)
+	}
+
+	resetAll()
+	cpu.DE = 0x1234
+	cpu.HL = 0x5678
+	dmaX.SetMemoryByte(0x5678, 0xab)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "DE": 0x1234, "HL": 0x5678}, cpu.ld_Hl_R('D'))
+
+	got = dmaX.GetMemory(0x5678)
+	want = uint8(0x12)
+
+	if got != want {
+		t.Errorf("got 0x%02x, want %02x", got, want)
+	}
+
+	resetAll()
+	cpu.DE = 0x1234
+	cpu.HL = 0x5678
+	dmaX.SetMemoryByte(0x5678, 0xab)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "DE": 0x1234, "HL": 0x5678}, cpu.ld_Hl_R('E'))
+
+	got = dmaX.GetMemory(0x5678)
+	want = uint8(0x34)
+
+	if got != want {
+		t.Errorf("got 0x%02x, want %02x", got, want)
+	}
+
+	resetAll()
+	cpu.HL = 0x5678
+	dmaX.SetMemoryByte(0x5678, 0xab)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "HL": 0x5678}, cpu.ld_Hl_R('H'))
+
+	got = dmaX.GetMemory(0x5678)
+	want = uint8(0x56)
+
+	if got != want {
+		t.Errorf("got 0x%02x, want %02x", got, want)
+	}
+
+	resetAll()
+	cpu.HL = 0x5678
+	dmaX.SetMemoryByte(0x5678, 0xab)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "HL": 0x5678}, cpu.ld_Hl_R('L'))
+
+	got = dmaX.GetMemory(0x5678)
+	want = uint8(0x78)
+
+	if got != want {
+		t.Errorf("got 0x%02x, want %02x", got, want)
+	}
+
+	resetAll()
+	cpu.AF = 0x1234
+	cpu.HL = 0x5678
+	dmaX.SetMemoryByte(0x5678, 0xab)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0x1234, "HL": 0x5678}, cpu.ld_Hl_R('A'))
+
+	got = dmaX.GetMemory(0x5678)
+	want = uint8(0x12)
+
+	if got != want {
+		t.Errorf("got 0x%02x, want %02x", got, want)
+	}
+}

@@ -785,6 +785,40 @@ func (c *CPU) ldR_Hl_(r byte) func() uint8 {
 	}
 }
 
+func (c *CPU) ld_Hl_R(r byte) func() uint8 {
+	var rhigh bool
+	var rvalue *uint16
+
+	switch r {
+	case 'A':
+		rhigh, rvalue = true, &c.AF
+	case 'B', 'C':
+		rhigh, rvalue = r == 'B', &c.BC
+	case 'D', 'E':
+		rhigh, rvalue = r == 'D', &c.DE
+	case 'H', 'L':
+		rhigh, rvalue = r == 'H', &c.HL
+	default:
+		panic("Invalid `r` part of the mnemonic")
+	}
+
+	return func() uint8 {
+		var right uint8
+
+		if rhigh {
+			right = uint8(*rvalue >> 8)
+		} else {
+			right = uint8(*rvalue)
+		}
+
+		c.dma.SetMemoryByte(c.HL, right)
+
+		c.PC++
+
+		return 7
+	}
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
