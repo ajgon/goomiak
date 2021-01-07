@@ -745,3 +745,10 @@ func TestLd_Xx_A(t *testing.T) {
 		t.Errorf("got 0x%x, want 0x%x", got, want)
 	}
 }
+
+func TestIncSp(t *testing.T) {
+	resetAll()
+	cpu.SP = 0x1020
+
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "SP": 0x1021}, cpu.incSP)
+}

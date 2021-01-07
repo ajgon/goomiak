@@ -598,6 +598,12 @@ func (c *CPU) ld_Xx_A() uint8 {
 	return 13
 }
 
+func (c *CPU) incSP() uint8 {
+	c.SP++
+	c.PC++
+	return 6
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
