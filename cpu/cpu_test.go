@@ -944,3 +944,21 @@ func TestDecSp(t *testing.T) {
 
 	checkCpu(t, 6, map[string]uint16{"PC": 1, "SP": 0x0fff}, cpu.decSP)
 }
+
+func TestIncA(t *testing.T) {
+	resetAll()
+	cpu.Flags.fromRegister(0b11010111)
+	cpu.AF = 0x1002
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x1102, "Flags": 0b00000001}, cpu.incA)
+
+	resetAll()
+	cpu.Flags.fromRegister(0b10000110)
+	cpu.AF = 0xff02
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x0002, "Flags": 0b01010000}, cpu.incA)
+
+	resetAll()
+	cpu.Flags.fromRegister(0b01000010)
+	cpu.AF = 0x7f02
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x8002, "Flags": 0b10010100}, cpu.incA)
+}
