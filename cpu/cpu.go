@@ -657,6 +657,13 @@ func (c *CPU) addHlSp() uint8 {
 	return c.addRegisters(&c.HL, &c.SP)
 }
 
+func (c *CPU) ldA_Xx_() uint8 {
+	c.AF = (c.AF & 0x00ff) | uint16(c.dma.GetMemory(c.readWord(c.PC+1)))<<8
+	c.PC += 3
+
+	return 13
+}
+
 // -----
 
 func (c *CPU) Reset() {

@@ -928,3 +928,12 @@ func TestAddHlSp(t *testing.T) {
 
 	checkCpu(t, 11, map[string]uint16{"PC": 1, "SP": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlSp)
 }
+
+func TestLdA_Xx_(t *testing.T) {
+	resetAll()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0x3a, 0x57, 0x12})
+	dmaX.SetMemoryByte(0x1257, 0x64)
+	cpu.AF = 0xffff
+
+	checkCpu(t, 13, map[string]uint16{"PC": 3, "AF": 0x64ff}, cpu.ldA_Xx_)
+}
