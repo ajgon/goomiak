@@ -701,3 +701,19 @@ func TestCpl(t *testing.T) {
 
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "AF": 0x1825, "Flags": 0b00010010}, cpu.cpl)
 }
+
+func TestJrNcX(t *testing.T) {
+	resetAll()
+	cpu.PC = 3
+	cpu.Flags.fromRegister(0b11010110)
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0x32})
+
+	checkCpu(t, 12, map[string]uint16{"PC": 0x37, "Flags": 0b11010110}, cpu.jrNcX)
+
+	resetAll()
+	cpu.PC = 3
+	cpu.Flags.fromRegister(0b11010111)
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x10, 0x32})
+
+	checkCpu(t, 7, map[string]uint16{"PC": 0x05, "Flags": 0b11010111}, cpu.jrNcX)
+}
