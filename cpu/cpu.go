@@ -604,6 +604,20 @@ func (c *CPU) incSP() uint8 {
 	return 6
 }
 
+func (c *CPU) inc_Hl_() uint8 {
+	result := c.dma.GetMemory(c.HL) + 1
+	c.dma.SetMemoryByte(c.HL, result)
+	c.PC++
+
+	c.Flags.N = false
+	c.Flags.PV = result == 0x80
+	c.Flags.H = result&0x0f == 0
+	c.Flags.Z = result == 0
+	c.Flags.S = result > 127
+
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

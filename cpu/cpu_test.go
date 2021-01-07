@@ -752,3 +752,45 @@ func TestIncSp(t *testing.T) {
 
 	checkCpu(t, 6, map[string]uint16{"PC": 1, "SP": 0x1021}, cpu.incSP)
 }
+
+func TestInc_Hl_(t *testing.T) {
+	resetAll()
+	cpu.Flags.fromRegister(0b11010111)
+	cpu.HL = 0x3572
+	dmaX.SetMemoryByte(0x3572, 0x25)
+
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b00000001}, cpu.inc_Hl_)
+
+	got := dmaX.GetMemory(0x3572)
+	want := uint8(0x26)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+
+	resetAll()
+	cpu.Flags.fromRegister(0b10000110)
+	cpu.HL = 0x3572
+	dmaX.SetMemoryByte(0x3572, 0xff)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b01010000}, cpu.inc_Hl_)
+
+	got = dmaX.GetMemory(0x3572)
+	want = uint8(0x00)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+
+	resetAll()
+	cpu.Flags.fromRegister(0b01000010)
+	cpu.HL = 0x3572
+	dmaX.SetMemoryByte(0x3572, 0x7f)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b10010100}, cpu.inc_Hl_)
+
+	got = dmaX.GetMemory(0x3572)
+	want = uint8(0x80)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+}
