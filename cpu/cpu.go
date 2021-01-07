@@ -664,6 +664,13 @@ func (c *CPU) ldA_Xx_() uint8 {
 	return 13
 }
 
+func (c *CPU) decSP() uint8 {
+	c.SP--
+	c.PC++
+
+	return 6
+}
+
 // -----
 
 func (c *CPU) Reset() {

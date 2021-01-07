@@ -937,3 +937,10 @@ func TestLdA_Xx_(t *testing.T) {
 
 	checkCpu(t, 13, map[string]uint16{"PC": 3, "AF": 0x64ff}, cpu.ldA_Xx_)
 }
+
+func TestDecSp(t *testing.T) {
+	resetAll()
+	cpu.SP = 0x1000
+
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "SP": 0x0fff}, cpu.decSP)
+}
