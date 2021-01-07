@@ -618,6 +618,20 @@ func (c *CPU) inc_Hl_() uint8 {
 	return 11
 }
 
+func (c *CPU) dec_Hl_() uint8 {
+	result := c.dma.GetMemory(c.HL) - 1
+	c.dma.SetMemoryByte(c.HL, result)
+	c.PC++
+
+	c.Flags.N = true
+	c.Flags.PV = result == 0x7f
+	c.Flags.H = result&0x0f == 0x0f
+	c.Flags.Z = result == 0
+	c.Flags.S = result > 127
+
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

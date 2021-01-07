@@ -63,7 +63,7 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 
 	if flags, ok := expected["Flags"]; ok {
 		if cpu.Flags.toRegister() != uint8(flags) {
-			t.Errorf("Flags: got %b, want %b", cpu.Flags.toRegister(), flags)
+			t.Errorf("Flags: got %08b, want %08b", cpu.Flags.toRegister(), flags)
 		}
 	}
 
@@ -789,6 +789,48 @@ func TestInc_Hl_(t *testing.T) {
 
 	got = dmaX.GetMemory(0x3572)
 	want = uint8(0x80)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+}
+
+func TestDec_Hl_(t *testing.T) {
+	resetAll()
+	cpu.Flags.fromRegister(0b11010101)
+	cpu.HL = 0x3572
+	dmaX.SetMemoryByte(0x3572, 0x01)
+
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b01000011}, cpu.dec_Hl_)
+
+	got := dmaX.GetMemory(0x3572)
+	want := uint8(0x00)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+
+	resetAll()
+	cpu.Flags.fromRegister(0b01000100)
+	cpu.HL = 0x3572
+	dmaX.SetMemoryByte(0x3572, 0x00)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b10010010}, cpu.dec_Hl_)
+
+	got = dmaX.GetMemory(0x3572)
+	want = uint8(0xff)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+
+	resetAll()
+	cpu.Flags.fromRegister(0b11000000)
+	cpu.HL = 0x3572
+	dmaX.SetMemoryByte(0x3572, 0x80)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b00010110}, cpu.dec_Hl_)
+
+	got = dmaX.GetMemory(0x3572)
+	want = uint8(0x7f)
 
 	if got != want {
 		t.Errorf("got 0x%x, want 0x%x", got, want)
