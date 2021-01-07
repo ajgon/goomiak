@@ -33,6 +33,10 @@ type CPUFlags struct {
 	C  bool
 }
 
+type CPUStates struct {
+	Halt bool
+}
+
 func (cf *CPUFlags) toRegister() uint8 {
 	var register uint8 = 0x00
 	if cf.S {
@@ -67,14 +71,15 @@ func (cf *CPUFlags) fromRegister(register uint8) {
 }
 
 type CPU struct {
-	PC    uint16
-	SP    uint16
-	AF    uint16
-	AF_   uint16
-	BC    uint16
-	DE    uint16
-	HL    uint16
-	Flags CPUFlags
+	PC     uint16
+	SP     uint16
+	AF     uint16
+	AF_    uint16
+	BC     uint16
+	DE     uint16
+	HL     uint16
+	Flags  CPUFlags
+	States CPUStates
 
 	dma *dma.DMA
 }
@@ -819,6 +824,13 @@ func (c *CPU) ld_Hl_R(r byte) func() uint8 {
 	}
 }
 
+func (c *CPU) halt() uint8 {
+	c.PC++
+	c.States.Halt = true
+
+	return 4
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
@@ -828,6 +840,7 @@ func (c *CPU) Reset() {
 	c.DE = 0
 	c.HL = 0
 	c.Flags = CPUFlags{}
+	c.States = CPUStates{}
 }
 
 func CPUNew(dma *dma.DMA) *CPU {

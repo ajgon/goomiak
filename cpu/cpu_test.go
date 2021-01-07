@@ -1365,3 +1365,15 @@ func TestLd_Hl_R(t *testing.T) {
 		t.Errorf("got 0x%02x, want %02x", got, want)
 	}
 }
+
+func TestHalt(t *testing.T) {
+	resetAll()
+	checkCpu(t, 4, map[string]uint16{"PC": 1}, cpu.halt)
+
+	got := cpu.States.Halt
+	want := true
+
+	if got != want {
+		t.Errorf("got %t, want %t", got, want)
+	}
+}
