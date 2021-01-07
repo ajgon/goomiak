@@ -836,3 +836,17 @@ func TestDec_Hl_(t *testing.T) {
 		t.Errorf("got 0x%x, want 0x%x", got, want)
 	}
 }
+
+func TestLd_Hl_X(t *testing.T) {
+	resetAll()
+	cpu.HL = 0x1015
+	dmaX.SetMemoryBulk(0x0000, []uint8{0x36, 0x28})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 2, "HL": 0x1015}, cpu.ld_Hl_X)
+
+	got := dmaX.GetMemory(0x1015)
+	want := uint8(0x28)
+	if got != want {
+		t.Errorf("got %x, want %x", got, want)
+	}
+}

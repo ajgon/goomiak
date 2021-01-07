@@ -632,6 +632,12 @@ func (c *CPU) dec_Hl_() uint8 {
 	return 11
 }
 
+func (c *CPU) ld_Hl_X() uint8 {
+	c.dma.SetMemoryByte(c.HL, c.dma.GetMemory(c.PC+1))
+	c.PC += 2
+	return 10
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
