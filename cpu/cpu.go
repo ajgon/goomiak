@@ -79,10 +79,6 @@ type CPU struct {
 	dma *dma.DMA
 }
 
-func (c *CPU) readByte(address uint16) uint8 {
-	return c.dma.GetMemory(address)
-}
-
 // reads word and maintains endianess
 // example:
 // 0040 34 21
@@ -178,7 +174,6 @@ func (c *CPU) addRegisters(left, right *uint16) uint8 {
 	*left = sum
 	c.PC++
 	return 11
-
 }
 
 func (c *CPU) nop() uint8 {
@@ -215,7 +210,7 @@ func (c *CPU) decB() uint8 {
 }
 
 func (c *CPU) ldBX() uint8 {
-	c.BC = (c.BC & 0x00ff) | (uint16(c.readByte(c.PC+1)) << 8)
+	c.BC = (c.BC & 0x00ff) | (uint16(c.dma.GetMemory(c.PC+1)) << 8)
 	c.PC += 2
 
 	return 7
@@ -232,8 +227,8 @@ func (c *CPU) rlca() uint8 {
 		c.AF = c.AF | 0x0100
 	}
 	c.Flags.C = signed
-	c.Flags.H = false
 	c.Flags.N = false
+	c.Flags.H = false
 
 	return 4
 }
@@ -273,7 +268,7 @@ func (c *CPU) decC() uint8 {
 }
 
 func (c *CPU) ldCX() uint8 {
-	c.BC = (c.BC & 0xff00) | uint16(c.readByte(c.PC+1))
+	c.BC = (c.BC & 0xff00) | uint16(c.dma.GetMemory(c.PC+1))
 	c.PC += 2
 
 	return 7
@@ -290,8 +285,8 @@ func (c *CPU) rrca() uint8 {
 		c.AF = c.AF | 0x8000
 	}
 	c.Flags.C = signed
-	c.Flags.H = false
 	c.Flags.N = false
+	c.Flags.H = false
 
 	return 4
 }
@@ -303,7 +298,7 @@ func (c *CPU) djnzX() uint8 {
 		return 8
 	}
 
-	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.readByte(c.PC+1))))
+	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
 	return 13
 }
 
@@ -335,7 +330,7 @@ func (c *CPU) decD() uint8 {
 }
 
 func (c *CPU) ldDX() uint8 {
-	c.DE = (c.DE & 0x00ff) | (uint16(c.readByte(c.PC+1)) << 8)
+	c.DE = (c.DE & 0x00ff) | (uint16(c.dma.GetMemory(c.PC+1)) << 8)
 	c.PC += 2
 
 	return 7
@@ -357,14 +352,14 @@ func (c *CPU) rla() uint8 {
 
 	// C (carry) flag
 	c.Flags.C = signed
-	c.Flags.H = false
 	c.Flags.N = false
+	c.Flags.H = false
 
 	return 4
 }
 
 func (c *CPU) jrX() uint8 {
-	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.readByte(c.PC+1))))
+	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
 
 	return 12
 }
@@ -397,7 +392,7 @@ func (c *CPU) decE() uint8 {
 }
 
 func (c *CPU) ldEX() uint8 {
-	c.DE = (c.DE & 0xff00) | uint16(c.readByte(c.PC+1))
+	c.DE = (c.DE & 0xff00) | uint16(c.dma.GetMemory(c.PC+1))
 	c.PC += 2
 
 	return 7
@@ -418,8 +413,8 @@ func (c *CPU) rra() uint8 {
 	c.PC++
 
 	c.Flags.C = signed
-	c.Flags.H = false
 	c.Flags.N = false
+	c.Flags.H = false
 
 	return 4
 }
@@ -430,7 +425,7 @@ func (c *CPU) jrNzX() uint8 {
 		return 7
 	}
 
-	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.readByte(c.PC+1))))
+	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
 	return 12
 }
 
@@ -462,7 +457,7 @@ func (c *CPU) decH() uint8 {
 }
 
 func (c *CPU) ldHX() uint8 {
-	c.HL = (c.HL & 0x00ff) | (uint16(c.readByte(c.PC+1)) << 8)
+	c.HL = (c.HL & 0x00ff) | (uint16(c.dma.GetMemory(c.PC+1)) << 8)
 	c.PC += 2
 
 	return 7
@@ -529,7 +524,7 @@ func (c *CPU) jrZX() uint8 {
 		return 7
 	}
 
-	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.readByte(c.PC+1))))
+	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
 	return 12
 }
 
@@ -560,7 +555,7 @@ func (c *CPU) decL() uint8 {
 }
 
 func (c *CPU) ldLX() uint8 {
-	c.HL = (c.HL & 0xff00) | uint16(c.readByte(c.PC+1))
+	c.HL = (c.HL & 0xff00) | uint16(c.dma.GetMemory(c.PC+1))
 	c.PC += 2
 
 	return 7
@@ -581,7 +576,7 @@ func (c *CPU) jrNcX() uint8 {
 		return 7
 	}
 
-	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.readByte(c.PC+1))))
+	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
 	return 12
 }
 
@@ -647,6 +642,8 @@ func (c *CPU) scf() uint8 {
 
 	return 4
 }
+
+// -----
 
 func (c *CPU) Reset() {
 	c.PC = 0

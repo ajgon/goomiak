@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"math/rand"
 	"testing"
 	"z80/dma"
 	"z80/memory"
@@ -14,6 +15,57 @@ var cpu = CPUNew(dmaX)
 
 func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, instructionCall func() uint8) {
 	t.Helper()
+	var expectedSP, expectedAF, expectedAF_, expectedBC, expectedDE, expectedHL uint16
+	var expectedFlags uint8
+
+	if sp, ok := expected["SP"]; ok {
+		expectedSP = sp
+	} else {
+		cpu.SP = uint16(rand.Uint32())
+		expectedSP = cpu.SP
+	}
+
+	if af, ok := expected["AF"]; ok {
+		expectedAF = af
+	} else {
+		cpu.AF = uint16(rand.Uint32())
+		expectedAF = cpu.AF
+	}
+
+	if af_, ok := expected["AF_"]; ok {
+		expectedAF_ = af_
+	} else {
+		cpu.AF_ = uint16(rand.Uint32())
+		expectedAF_ = cpu.AF_
+	}
+
+	if bc, ok := expected["BC"]; ok {
+		expectedBC = bc
+	} else {
+		cpu.BC = uint16(rand.Uint32())
+		expectedBC = cpu.BC
+	}
+
+	if de, ok := expected["DE"]; ok {
+		expectedDE = de
+	} else {
+		cpu.DE = uint16(rand.Uint32())
+		expectedDE = cpu.DE
+	}
+
+	if hl, ok := expected["HL"]; ok {
+		expectedHL = hl
+	} else {
+		cpu.HL = uint16(rand.Uint32())
+		expectedHL = cpu.HL
+	}
+
+	if flags, ok := expected["Flags"]; ok {
+		expectedFlags = uint8(flags)
+	} else {
+		expectedFlags = uint8(rand.Uint32() & 0b11010111)
+		cpu.Flags.fromRegister(expectedFlags)
+	}
 
 	cycles := instructionCall()
 
@@ -25,46 +77,32 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 		panic("Every mnemonic test should validate PC!")
 	}
 
-	if sp, ok := expected["SP"]; ok {
-		if cpu.SP != sp {
-			t.Errorf("SP: got %x, want %x", cpu.SP, sp)
-		}
+	if cpu.SP != expectedSP {
+		t.Errorf("SP: got %x, want %x", cpu.SP, expectedSP)
 	}
 
-	if af, ok := expected["AF"]; ok {
-		if cpu.AF != af {
-			t.Errorf("AF: got %x, want %x", cpu.AF, af)
-		}
+	if cpu.AF != expectedAF {
+		t.Errorf("AF: got %x, want %x", cpu.AF, expectedAF)
 	}
 
-	if af_, ok := expected["AF_"]; ok {
-		if cpu.AF_ != af_ {
-			t.Errorf("AF': got %x, want %x", cpu.AF_, af_)
-		}
+	if cpu.AF_ != expectedAF_ {
+		t.Errorf("AF': got %x, want %x", cpu.AF_, expectedAF_)
 	}
 
-	if bc, ok := expected["BC"]; ok {
-		if cpu.BC != bc {
-			t.Errorf("BC: got %x, want %x", cpu.BC, bc)
-		}
+	if cpu.BC != expectedBC {
+		t.Errorf("BC: got %x, want %x", cpu.BC, expectedBC)
 	}
 
-	if de, ok := expected["DE"]; ok {
-		if cpu.DE != de {
-			t.Errorf("DE: got %x, want %x", cpu.DE, de)
-		}
+	if cpu.DE != expectedDE {
+		t.Errorf("DE: got %x, want %x", cpu.DE, expectedDE)
 	}
 
-	if hl, ok := expected["HL"]; ok {
-		if cpu.HL != hl {
-			t.Errorf("HL: got %x, want %x", cpu.HL, hl)
-		}
+	if cpu.HL != expectedHL {
+		t.Errorf("HL: got %x, want %x", cpu.HL, expectedHL)
 	}
 
-	if flags, ok := expected["Flags"]; ok {
-		if cpu.Flags.toRegister() != uint8(flags) {
-			t.Errorf("Flags: got %08b, want %08b", cpu.Flags.toRegister(), flags)
-		}
+	if cpu.Flags.toRegister() != expectedFlags {
+		t.Errorf("Flags: got %08b, want %08b", cpu.Flags.toRegister(), expectedFlags)
 	}
 
 	if cycles != expectedCycles {
@@ -139,7 +177,7 @@ func TestLd_Bc_A(t *testing.T) {
 	cpu.AF = 0x7A05
 	cpu.BC = 0x1015
 
-	checkCpu(t, 7, map[string]uint16{"PC": 1}, cpu.ld_Bc_A)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0x7a05, "BC": 0x1015}, cpu.ld_Bc_A)
 
 	got := dmaX.GetMemory(0x1015)
 	want := uint8(0x7A)
@@ -346,7 +384,7 @@ func TestLd_De_A(t *testing.T) {
 	cpu.AF = 0x7A05
 	cpu.DE = 0x1015
 
-	checkCpu(t, 7, map[string]uint16{"PC": 1}, cpu.ld_De_A)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "AF": 0x7a05, "DE": 0x1015}, cpu.ld_De_A)
 
 	got := dmaX.GetMemory(0x1015)
 	want := uint8(0x7A)
