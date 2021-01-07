@@ -592,6 +592,12 @@ func (c *CPU) ldSpXx() uint8 {
 	return 10
 }
 
+func (c *CPU) ld_Xx_A() uint8 {
+	c.dma.SetMemoryByte(c.readWord(c.PC+1), uint8(c.AF>>8))
+	c.PC += 3
+	return 13
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

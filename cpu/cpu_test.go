@@ -730,3 +730,18 @@ func TestLdSpXx(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 3, "SP": 0x3264}, cpu.ldSpXx)
 }
+
+func TestLd_Xx_A(t *testing.T) {
+	resetAll()
+	cpu.AF = 0xd73a
+	dmaX.SetMemoryBulk(0x0000, []uint8{0x32, 0x41, 0x31})
+
+	checkCpu(t, 13, map[string]uint16{"PC": 3, "AF": 0xd73a}, cpu.ld_Xx_A)
+
+	got := dmaX.GetMemory(0x3141)
+	want := uint8(0xd7)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+}
