@@ -643,6 +643,16 @@ func (c *CPU) scf() uint8 {
 	return 4
 }
 
+func (c *CPU) jrCX() uint8 {
+	if !c.Flags.C {
+		c.PC += 2
+		return 7
+	}
+
+	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	return 12
+}
+
 // -----
 
 func (c *CPU) Reset() {

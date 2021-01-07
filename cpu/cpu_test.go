@@ -896,3 +896,19 @@ func TestScf(t *testing.T) {
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "Flags": 0b11000101}, cpu.scf)
 
 }
+
+func TestJrCX(t *testing.T) {
+	resetAll()
+	cpu.PC = 3
+	cpu.Flags.fromRegister(0b11010111)
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x38, 0x32})
+
+	checkCpu(t, 12, map[string]uint16{"PC": 0x37, "Flags": 0b11010111}, cpu.jrCX)
+
+	resetAll()
+	cpu.PC = 3
+	cpu.Flags.fromRegister(0b11010110)
+	dmaX.SetMemoryBulk(0x0003, []uint8{0x38, 0x32})
+
+	checkCpu(t, 7, map[string]uint16{"PC": 0x05, "Flags": 0b11010110}, cpu.jrCX)
+}
