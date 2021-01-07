@@ -987,3 +987,15 @@ func TestLdAX(t *testing.T) {
 
 	checkCpu(t, 7, map[string]uint16{"PC": 2, "AF": 0x6400}, cpu.ldAX)
 }
+
+func TestCcf(t *testing.T) {
+	resetAll()
+	cpu.Flags.fromRegister(0b11010110)
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "Flags": 0b11000101}, cpu.ccf)
+
+	resetAll()
+	cpu.Flags.fromRegister(0b11000111)
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "Flags": 0b11010100}, cpu.ccf)
+}

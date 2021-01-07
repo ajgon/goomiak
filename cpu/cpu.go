@@ -692,6 +692,16 @@ func (c *CPU) ldAX() uint8 {
 	return 7
 }
 
+func (c *CPU) ccf() uint8 {
+	c.PC++
+
+	c.Flags.H = c.Flags.C
+	c.Flags.N = false
+	c.Flags.C = !c.Flags.C
+
+	return 4
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
