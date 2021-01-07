@@ -702,6 +702,57 @@ func (c *CPU) ccf() uint8 {
 	return 4
 }
 
+func (c *CPU) ldRR_(r, r_ byte) func() uint8 {
+	var lhigh, rhigh bool
+	var lvalue, rvalue *uint16
+
+	switch r {
+	case 'A':
+		lhigh, lvalue = true, &c.AF
+	case 'B', 'C':
+		lhigh, lvalue = r == 'B', &c.BC
+	case 'D', 'E':
+		lhigh, lvalue = r == 'D', &c.DE
+	case 'H', 'L':
+		lhigh, lvalue = r == 'H', &c.HL
+	default:
+		panic("Invalid `r` part of the mnemonic")
+	}
+
+	switch r_ {
+	case 'A':
+		rhigh, rvalue = true, &c.AF
+	case 'B', 'C':
+		rhigh, rvalue = r_ == 'B', &c.BC
+	case 'D', 'E':
+		rhigh, rvalue = r_ == 'D', &c.DE
+	case 'H', 'L':
+		rhigh, rvalue = r_ == 'H', &c.HL
+	default:
+		panic("Invalid `r'` part of the mnemonic")
+	}
+
+	return func() uint8 {
+		var right uint8
+
+		if rhigh {
+			right = uint8(*rvalue >> 8)
+		} else {
+			right = uint8(*rvalue)
+		}
+
+		if lhigh {
+			*lvalue = (*lvalue & 0x00ff) | (uint16(right) << 8)
+		} else {
+			*lvalue = (*lvalue & 0xff00) | uint16(right)
+		}
+
+		c.PC++
+
+		return 4
+	}
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
