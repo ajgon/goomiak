@@ -653,6 +653,10 @@ func (c *CPU) jrCX() uint8 {
 	return 12
 }
 
+func (c *CPU) addHlSp() uint8 {
+	return c.addRegisters(&c.HL, &c.SP)
+}
+
 // -----
 
 func (c *CPU) Reset() {
