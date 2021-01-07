@@ -136,6 +136,9 @@ func (c *CPU) decreaseRegister(name rune) uint8 {
 	var register uint8
 
 	switch name {
+	case 'A':
+		c.AF -= 256
+		register = uint8(c.AF >> 8)
 	case 'B':
 		c.BC -= 256
 		register = uint8(c.BC >> 8)
@@ -676,6 +679,10 @@ func (c *CPU) decSP() uint8 {
 
 func (c *CPU) incA() uint8 {
 	return c.increaseRegister('A')
+}
+
+func (c *CPU) decA() uint8 {
+	return c.decreaseRegister('A')
 }
 
 // -----
