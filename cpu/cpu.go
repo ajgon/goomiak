@@ -24,50 +24,8 @@ var parityTable [256]bool = [256]bool{
 	/* F */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
 }
 
-type CPUFlags struct {
-	S  bool
-	Z  bool
-	H  bool
-	PV bool
-	N  bool
-	C  bool
-}
-
 type CPUStates struct {
 	Halt bool
-}
-
-func (cf *CPUFlags) toRegister() uint8 {
-	var register uint8 = 0x00
-	if cf.S {
-		register = register | 0x80
-	}
-	if cf.Z {
-		register = register | 0x40
-	}
-	if cf.H {
-		register = register | 0x10
-	}
-	if cf.PV {
-		register = register | 0x04
-	}
-	if cf.N {
-		register = register | 0x02
-	}
-	if cf.C {
-		register = register | 0x01
-	}
-
-	return register
-}
-
-func (cf *CPUFlags) fromRegister(register uint8) {
-	cf.S = register&0x80 == 0x80
-	cf.Z = register&0x40 == 0x40
-	cf.H = register&0x10 == 0x10
-	cf.PV = register&0x04 == 0x04
-	cf.N = register&0x02 == 0x02
-	cf.C = register&0x01 == 0x01
 }
 
 type CPU struct {
@@ -78,10 +36,17 @@ type CPU struct {
 	BC     uint16
 	DE     uint16
 	HL     uint16
-	Flags  CPUFlags
 	States CPUStates
 
 	dma *dma.DMA
+}
+
+func (c *CPU) getAcc() uint8 {
+	return uint8(c.AF >> 8)
+}
+
+func (c *CPU) setAcc(value uint8) {
+	c.AF = (c.AF & 0x00ff) | (uint16(value) << 8)
 }
 
 func (c *CPU) getS() bool {
@@ -108,64 +73,66 @@ func (c *CPU) getC() bool {
 	return c.AF&0x0001 == 0x0001
 }
 
+func (c *CPU) getFlags() uint8 {
+	return uint8(c.AF)
+}
+
 func (c *CPU) setS(value bool) {
-	var uint8 flag
 
 	if value {
-		flag = 0x0080
+		c.AF = c.AF | 0x0080
+	} else {
+		c.AF = c.AF & 0xff7f
 	}
-
-	c.AF = c.AF | flag
 }
 
 func (c *CPU) setZ(value bool) {
-	var uint8 flag
 
 	if value {
-		flag = 0x0040
+		c.AF = c.AF | 0x0040
+	} else {
+		c.AF = c.AF & 0xffbf
 	}
-
-	c.AF = c.AF | flag
 }
 
 func (c *CPU) setH(value bool) {
-	var uint8 flag
 
 	if value {
-		flag = 0x0010
+		c.AF = c.AF | 0x0010
+	} else {
+		c.AF = c.AF & 0xffef
 	}
-
-	c.AF = c.AF | flag
 }
 
 func (c *CPU) setPV(value bool) {
-	var uint8 flag
 
 	if value {
-		flag = 0x0004
+		c.AF = c.AF | 0x0004
+	} else {
+		c.AF = c.AF & 0xfffb
 	}
-
-	c.AF = c.AF | flag
 }
 
 func (c *CPU) setN(value bool) {
-	var uint8 flag
 
 	if value {
-		flag = 0x0002
+		c.AF = c.AF | 0x0002
+	} else {
+		c.AF = c.AF & 0xfffd
 	}
-
-	c.AF = c.AF | flag
 }
 
 func (c *CPU) setC(value bool) {
-	var uint8 flag
 
 	if value {
-		flag = 0x0001
+		c.AF = c.AF | 0x0001
+	} else {
+		c.AF = c.AF & 0xfffe
 	}
+}
 
-	c.AF = c.AF | flag
+func (c *CPU) setFlags(value uint8) {
+	c.AF = (c.AF & 0xff00) | uint16(value)
 }
 
 // reads word and maintains endianess
@@ -190,7 +157,7 @@ func (c *CPU) increaseRegister(name rune) uint8 {
 	switch name {
 	case 'A':
 		c.AF += 256
-		register = uint8(c.AF >> 8)
+		register = c.getAcc()
 	case 'B':
 		c.BC += 256
 		register = uint8(c.BC >> 8)
@@ -211,11 +178,11 @@ func (c *CPU) increaseRegister(name rune) uint8 {
 		c.HL = (c.HL & 0xff00) | uint16(register)
 	}
 
-	c.Flags.N = false
-	c.Flags.PV = register == 0x80
-	c.Flags.H = register&0x0f == 0
-	c.Flags.Z = register == 0
-	c.Flags.S = register > 127
+	c.setN(false)
+	c.setPV(register == 0x80)
+	c.setH(register&0x0f == 0)
+	c.setZ(register == 0)
+	c.setS(register > 127)
 	c.PC++
 
 	return 4
@@ -227,7 +194,7 @@ func (c *CPU) decreaseRegister(name rune) uint8 {
 	switch name {
 	case 'A':
 		c.AF -= 256
-		register = uint8(c.AF >> 8)
+		register = c.getAcc()
 	case 'B':
 		c.BC -= 256
 		register = uint8(c.BC >> 8)
@@ -248,11 +215,11 @@ func (c *CPU) decreaseRegister(name rune) uint8 {
 		c.HL = (c.HL & 0xff00) | uint16(register)
 	}
 
-	c.Flags.N = true
-	c.Flags.PV = register == 0x7f
-	c.Flags.H = register&0x0f == 0x0f
-	c.Flags.Z = register == 0
-	c.Flags.S = register > 127
+	c.setN(true)
+	c.setPV(register == 0x7f)
+	c.setH(register&0x0f == 0x0f)
+	c.setZ(register == 0)
+	c.setS(register > 127)
 
 	c.PC++
 	return 4
@@ -262,9 +229,9 @@ func (c *CPU) decreaseRegister(name rune) uint8 {
 func (c *CPU) addRegisters(left, right *uint16) uint8 {
 	sum := *left + *right
 
-	c.Flags.C = sum < *left || sum < *right
-	c.Flags.N = false
-	c.Flags.H = (*left^*right^sum)&0x1000 == 0x1000
+	c.setC(sum < *left || sum < *right)
+	c.setN(false)
+	c.setH((*left^*right^sum)&0x1000 == 0x1000)
 
 	*left = sum
 	c.PC++
@@ -274,31 +241,31 @@ func (c *CPU) addRegisters(left, right *uint16) uint8 {
 func (c *CPU) adcValueToAcc(value uint8) {
 	var carryIn, carryOut uint8
 
-	if c.Flags.C {
+	if c.getC() {
 		carryIn = 1
 	}
 
-	a := uint8(c.AF >> 8)
+	a := c.getAcc()
 	result := a + value + carryIn
-	c.AF = (c.AF & 0x00ff) | (uint16(result) << 8)
+	c.setAcc(result)
 
-	if c.Flags.C {
-		c.Flags.C = a >= 0xff-value
+	if c.getC() {
+		c.setC(a >= 0xff-value)
 	} else {
-		c.Flags.C = a > 0xff-value
+		c.setC(a > 0xff-value)
 	}
 
-	c.Flags.N = false
+	c.setN(false)
 
-	if c.Flags.C {
+	if c.getC() {
 		carryOut = 1
 	}
 
-	c.Flags.PV = (((result ^ a ^ value) >> 7) ^ carryOut) == 1
+	c.setPV((((result ^ a ^ value) >> 7) ^ carryOut) == 1)
 
-	c.Flags.H = (a^value^result)&0x10 == 0x10
-	c.Flags.Z = result == 0
-	c.Flags.S = result > 127
+	c.setH((a^value^result)&0x10 == 0x10)
+	c.setZ(result == 0)
+	c.setS(result > 127)
 }
 
 func (c *CPU) nop() uint8 {
@@ -315,7 +282,7 @@ func (c *CPU) ldBcXx() uint8 {
 }
 
 func (c *CPU) ld_Bc_A() uint8 {
-	c.dma.SetMemoryByte(c.BC, uint8(c.AF>>8))
+	c.dma.SetMemoryByte(c.BC, c.getAcc())
 	c.PC++
 	return 7
 }
@@ -342,18 +309,18 @@ func (c *CPU) ldBX() uint8 {
 }
 
 func (c *CPU) rlca() uint8 {
-	a := uint8(c.AF >> 8)
+	a := c.getAcc()
 	signed := a&128 == 128
 	a = a << 1
-	c.AF = (c.AF & 0x00ff) | (uint16(a) << 8)
 	c.PC++
 
 	if signed {
-		c.AF = c.AF | 0x0100
+		a = a | 0x01
 	}
-	c.Flags.C = signed
-	c.Flags.N = false
-	c.Flags.H = false
+	c.setAcc(a)
+	c.setC(signed)
+	c.setN(false)
+	c.setH(false)
 
 	return 4
 }
@@ -371,7 +338,7 @@ func (c *CPU) addHlBc() uint8 {
 
 func (c *CPU) ldA_Bc_() uint8 {
 	value := c.dma.GetMemory(c.BC)
-	c.AF = (c.AF & 0x00ff) | uint16(value)<<8
+	c.setAcc(value)
 	c.PC++
 
 	return 7
@@ -400,18 +367,19 @@ func (c *CPU) ldCX() uint8 {
 }
 
 func (c *CPU) rrca() uint8 {
-	a := uint8(c.AF >> 8)
+	a := c.getAcc()
 	signed := a&1 == 1
 	a = a >> 1
-	c.AF = (c.AF & 0x00ff) | (uint16(a) << 8)
 	c.PC++
 
 	if signed {
+		a = a | 0x80
 		c.AF = c.AF | 0x8000
 	}
-	c.Flags.C = signed
-	c.Flags.N = false
-	c.Flags.H = false
+	c.setAcc(a)
+	c.setC(signed)
+	c.setN(false)
+	c.setH(false)
 
 	return 4
 }
@@ -435,7 +403,7 @@ func (c *CPU) ldDeXx() uint8 {
 }
 
 func (c *CPU) ld_De_A() uint8 {
-	c.dma.SetMemoryByte(c.DE, uint8(c.AF>>8))
+	c.dma.SetMemoryByte(c.DE, c.getAcc())
 	c.PC++
 	return 7
 }
@@ -462,23 +430,23 @@ func (c *CPU) ldDX() uint8 {
 }
 
 func (c *CPU) rla() uint8 {
-	a := uint8(c.AF >> 8)
+	a := c.getAcc()
 	signed := a&128 == 128
 	a = a << 1
 
-	if c.Flags.C {
+	if c.getC() {
 		a = a | 0b00000001
 	} else {
 		a = a & 0b11111110
 	}
 
-	c.AF = (c.AF & 0x00ff) | (uint16(a) << 8)
+	c.setAcc(a)
 	c.PC++
 
 	// C (carry) flag
-	c.Flags.C = signed
-	c.Flags.N = false
-	c.Flags.H = false
+	c.setC(signed)
+	c.setN(false)
+	c.setH(false)
 
 	return 4
 }
@@ -495,7 +463,7 @@ func (c *CPU) addHlDe() uint8 {
 
 func (c *CPU) ldA_De_() uint8 {
 	value := c.dma.GetMemory(c.DE)
-	c.AF = (c.AF & 0x00ff) | uint16(value)<<8
+	c.setAcc(value)
 	c.PC++
 
 	return 7
@@ -524,28 +492,28 @@ func (c *CPU) ldEX() uint8 {
 }
 
 func (c *CPU) rra() uint8 {
-	a := uint8(c.AF >> 8)
+	a := c.getAcc()
 	signed := a&1 == 1
 	a = a >> 1
 
-	if c.Flags.C {
+	if c.getC() {
 		a = a | 0b10000000
 	} else {
 		a = a & 0b01111111
 	}
 
-	c.AF = (c.AF & 0x00ff) | (uint16(a) << 8)
+	c.setAcc(a)
 	c.PC++
 
-	c.Flags.C = signed
-	c.Flags.N = false
-	c.Flags.H = false
+	c.setC(signed)
+	c.setN(false)
+	c.setH(false)
 
 	return 4
 }
 
 func (c *CPU) jrNzX() uint8 {
-	if c.Flags.Z {
+	if c.getZ() {
 		c.PC += 2
 		return 7
 	}
@@ -590,53 +558,53 @@ func (c *CPU) ldHX() uint8 {
 
 func (c *CPU) daa() uint8 {
 	t := 0
-	a := uint8(c.AF >> 8)
+	a := c.getAcc()
 
-	if c.Flags.H || (a&0x0f) > 9 {
+	if c.getH() || (a&0x0f) > 9 {
 		t++
 	}
 
-	if c.Flags.C || (a > 0x99) {
+	if c.getC() || (a > 0x99) {
 		t += 2
-		c.Flags.C = true
+		c.setC(true)
 	}
 
-	if c.Flags.N && !c.Flags.H {
-		c.Flags.H = false
+	if c.getN() && !c.getH() {
+		c.setH(false)
 	} else {
-		if c.Flags.N && c.Flags.H {
-			c.Flags.H = a&0x0f < 6
+		if c.getN() && c.getH() {
+			c.setH(a&0x0f < 6)
 		} else {
-			c.Flags.H = a&0x0f > 9
+			c.setH(a&0x0f > 9)
 		}
 	}
 
 	switch t {
 	case 1:
-		if c.Flags.N {
+		if c.getN() {
 			a += 0xfa
 		} else {
 			a += 0x06
 		}
 	case 2:
-		if c.Flags.N {
+		if c.getN() {
 			a += 0xa0
 		} else {
 			a += 0x60
 		}
 	case 3:
-		if c.Flags.N {
+		if c.getN() {
 			a += 0x9a
 		} else {
 			a += 0x66
 		}
 	}
 
-	c.Flags.S = a > 127
-	c.Flags.Z = a == 0
-	c.Flags.PV = parityTable[a]
+	c.setS(a > 127)
+	c.setZ(a == 0)
+	c.setPV(parityTable[a])
 
-	c.AF = (c.AF & 0x00ff) | (uint16(a) << 8)
+	c.setAcc(a)
 
 	c.PC++
 
@@ -644,7 +612,7 @@ func (c *CPU) daa() uint8 {
 }
 
 func (c *CPU) jrZX() uint8 {
-	if !c.Flags.Z {
+	if !c.getZ() {
 		c.PC += 2
 		return 7
 	}
@@ -687,16 +655,16 @@ func (c *CPU) ldLX() uint8 {
 }
 
 func (c *CPU) cpl() uint8 {
-	c.AF = (((c.AF >> 8) ^ 0xff) << 8) | (0x00ff & c.AF)
+	c.setAcc(c.getAcc() ^ 0xff)
 	c.PC++
-	c.Flags.H = true
-	c.Flags.N = true
+	c.setH(true)
+	c.setN(true)
 
 	return 4
 }
 
 func (c *CPU) jrNcX() uint8 {
-	if c.Flags.C {
+	if c.getC() {
 		c.PC += 2
 		return 7
 	}
@@ -713,7 +681,7 @@ func (c *CPU) ldSpXx() uint8 {
 }
 
 func (c *CPU) ld_Xx_A() uint8 {
-	c.dma.SetMemoryByte(c.readWord(c.PC+1), uint8(c.AF>>8))
+	c.dma.SetMemoryByte(c.readWord(c.PC+1), c.getAcc())
 	c.PC += 3
 	return 13
 }
@@ -729,11 +697,11 @@ func (c *CPU) inc_Hl_() uint8 {
 	c.dma.SetMemoryByte(c.HL, result)
 	c.PC++
 
-	c.Flags.N = false
-	c.Flags.PV = result == 0x80
-	c.Flags.H = result&0x0f == 0
-	c.Flags.Z = result == 0
-	c.Flags.S = result > 127
+	c.setN(false)
+	c.setPV(result == 0x80)
+	c.setH(result&0x0f == 0)
+	c.setZ(result == 0)
+	c.setS(result > 127)
 
 	return 11
 }
@@ -743,11 +711,11 @@ func (c *CPU) dec_Hl_() uint8 {
 	c.dma.SetMemoryByte(c.HL, result)
 	c.PC++
 
-	c.Flags.N = true
-	c.Flags.PV = result == 0x7f
-	c.Flags.H = result&0x0f == 0x0f
-	c.Flags.Z = result == 0
-	c.Flags.S = result > 127
+	c.setN(true)
+	c.setPV(result == 0x7f)
+	c.setH(result&0x0f == 0x0f)
+	c.setZ(result == 0)
+	c.setS(result > 127)
 
 	return 11
 }
@@ -761,15 +729,15 @@ func (c *CPU) ld_Hl_X() uint8 {
 func (c *CPU) scf() uint8 {
 	c.PC++
 
-	c.Flags.C = true
-	c.Flags.N = false
-	c.Flags.H = false
+	c.setC(true)
+	c.setN(false)
+	c.setH(false)
 
 	return 4
 }
 
 func (c *CPU) jrCX() uint8 {
-	if !c.Flags.C {
+	if !c.getC() {
 		c.PC += 2
 		return 7
 	}
@@ -783,7 +751,7 @@ func (c *CPU) addHlSp() uint8 {
 }
 
 func (c *CPU) ldA_Xx_() uint8 {
-	c.AF = (c.AF & 0x00ff) | uint16(c.dma.GetMemory(c.readWord(c.PC+1)))<<8
+	c.setAcc(c.dma.GetMemory(c.readWord(c.PC + 1)))
 	c.PC += 3
 
 	return 13
@@ -805,7 +773,7 @@ func (c *CPU) decA() uint8 {
 }
 
 func (c *CPU) ldAX() uint8 {
-	c.AF = (c.AF & 0x00ff) | (uint16(c.dma.GetMemory(c.PC+1)) << 8)
+	c.setAcc(c.dma.GetMemory(c.PC + 1))
 	c.PC += 2
 
 	return 7
@@ -814,9 +782,9 @@ func (c *CPU) ldAX() uint8 {
 func (c *CPU) ccf() uint8 {
 	c.PC++
 
-	c.Flags.H = c.Flags.C
-	c.Flags.N = false
-	c.Flags.C = !c.Flags.C
+	c.setH(c.getC())
+	c.setN(false)
+	c.setC(!c.getC())
 
 	return 4
 }
@@ -963,7 +931,7 @@ func (c *CPU) addAR(r byte) func() uint8 {
 	}
 
 	return func() uint8 {
-		c.Flags.C = false
+		c.setC(false)
 		if rhigh {
 			c.adcValueToAcc(uint8(rvalue >> 8))
 		} else {
@@ -977,7 +945,7 @@ func (c *CPU) addAR(r byte) func() uint8 {
 }
 
 func (c *CPU) addA_Hl_() uint8 {
-	c.Flags.C = false
+	c.setC(false)
 	c.adcValueToAcc(c.dma.GetMemory(c.HL))
 
 	c.PC++
@@ -1041,7 +1009,7 @@ func (c *CPU) subR(r byte) func() uint8 {
 	}
 
 	return func() uint8 {
-		c.Flags.C = true
+		c.setC(true)
 		if rhigh {
 			c.adcValueToAcc(uint8(rvalue>>8) ^ 0xff)
 		} else {
@@ -1049,22 +1017,22 @@ func (c *CPU) subR(r byte) func() uint8 {
 		}
 
 		c.PC++
-		c.Flags.N = true
-		c.Flags.C = !c.Flags.C
-		c.Flags.H = !c.Flags.H
+		c.setN(true)
+		c.setC(!c.getC())
+		c.setH(!c.getH())
 
 		return 4
 	}
 }
 
 func (c *CPU) sub_Hl_() uint8 {
-	c.Flags.C = true
+	c.setC(true)
 	c.adcValueToAcc(c.dma.GetMemory(c.HL) ^ 0xff)
 
 	c.PC++
-	c.Flags.N = true
-	c.Flags.C = !c.Flags.C
-	c.Flags.H = !c.Flags.H
+	c.setN(true)
+	c.setC(!c.getC())
+	c.setH(!c.getH())
 
 	return 7
 }
@@ -1087,7 +1055,7 @@ func (c *CPU) sbcR(r byte) func() uint8 {
 	}
 
 	return func() uint8 {
-		c.Flags.C = !c.Flags.C
+		c.setC(!c.getC())
 		if rhigh {
 			c.adcValueToAcc(uint8(rvalue>>8) ^ 0xff)
 		} else {
@@ -1095,22 +1063,22 @@ func (c *CPU) sbcR(r byte) func() uint8 {
 		}
 
 		c.PC++
-		c.Flags.N = true
-		c.Flags.C = !c.Flags.C
-		c.Flags.H = !c.Flags.H
+		c.setN(true)
+		c.setC(!c.getC())
+		c.setH(!c.getH())
 
 		return 4
 	}
 }
 
 func (c *CPU) sbc_Hl_() uint8 {
-	c.Flags.C = !c.Flags.C
+	c.setC(!c.getC())
 	c.adcValueToAcc(c.dma.GetMemory(c.HL) ^ 0xff)
 
 	c.PC++
-	c.Flags.N = true
-	c.Flags.C = !c.Flags.C
-	c.Flags.H = !c.Flags.H
+	c.setN(true)
+	c.setC(!c.getC())
+	c.setH(!c.getH())
 
 	return 7
 }
@@ -1123,7 +1091,6 @@ func (c *CPU) Reset() {
 	c.BC = 0
 	c.DE = 0
 	c.HL = 0
-	c.Flags = CPUFlags{}
 	c.States = CPUStates{}
 }
 

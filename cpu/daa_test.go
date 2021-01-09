@@ -7,6 +7,7 @@ import (
 )
 
 var daaTruthTable [2048][2][4]uint8 = [2048][2][4]uint8{
+	// N before, C before, H before, A before, N after, C after, H after, A after
 	[2][4]uint8{[4]uint8{0, 0, 0, 0x00}, [4]uint8{0, 0, 0, 0x00}},
 	[2][4]uint8{[4]uint8{0, 0, 0, 0x01}, [4]uint8{0, 0, 0, 0x01}},
 	[2][4]uint8{[4]uint8{0, 0, 0, 0x02}, [4]uint8{0, 0, 0, 0x02}},
@@ -2067,14 +2068,14 @@ func TestDaa(t *testing.T) {
 		after := row[1]
 
 		cpu.PC = 0
-		cpu.Flags.N = before[0] == 1
-		cpu.Flags.C = before[1] == 1
-		cpu.Flags.H = before[2] == 1
-		cpu.AF = (uint16(before[3]) << 8) | 0x42
+		cpu.setN(before[0] == 1)
+		cpu.setC(before[1] == 1)
+		cpu.setH(before[2] == 1)
+		cpu.setAcc(before[3])
 		tstates := cpu.daa()
 
-		if cpu.Flags.N != (after[0] == 1) || cpu.Flags.C != (after[1] == 1) || cpu.Flags.H != (after[2] == 1) || cpu.AF != (uint16(after[3])<<8)|0x42 {
-			t.Errorf("\ngot:  N=%t, C=%t, H=%t, AF=0x%x\nwant: N=%t, C=%t, H=%t, AF=0x%x", cpu.Flags.N, cpu.Flags.C, cpu.Flags.H, cpu.AF, after[0] == 1, after[1] == 1, after[2] == 1, (uint16(after[3])<<8)|0x42)
+		if cpu.getN() != (after[0] == 1) || cpu.getC() != (after[1] == 1) || cpu.getH() != (after[2] == 1) || cpu.getAcc() != after[3] {
+			t.Errorf("\ngot:  N=%t, C=%t, H=%t, A=0x%x\nwant: N=%t, C=%t, H=%t, A=0x%x", cpu.getN(), cpu.getC(), cpu.getH(), cpu.getAcc(), after[0] == 1, after[1] == 1, after[2] == 1, after[3])
 		}
 
 		if cpu.PC != 1 || tstates != 4 {

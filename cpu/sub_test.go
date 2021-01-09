@@ -60,16 +60,16 @@ func TestSubRegister(t *testing.T) {
 			}
 
 			cpu.PC = 0
-			cpu.AF = uint16(row[0]) << 8
+			cpu.setAcc(row[0])
 			cpu.BC = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.DE = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.HL = (uint16(row[1]) << 8) | uint16(row[1])
 			tstates := cpu.subR(register)()
 
-			if uint8(cpu.AF>>8) != row[2] || cpu.Flags.C != (row[3] == 1) || cpu.Flags.N != (row[4] == 1) || cpu.Flags.PV != (row[5] == 1) || cpu.Flags.H != (row[6] == 1) || cpu.Flags.Z != (row[7] == 1) || cpu.Flags.S != (row[8] == 1) {
+			if cpu.getAcc() != row[2] || cpu.getC() != (row[3] == 1) || cpu.getN() != (row[4] == 1) || cpu.getPV() != (row[5] == 1) || cpu.getH() != (row[6] == 1) || cpu.getZ() != (row[7] == 1) || cpu.getS() != (row[8] == 1) {
 				t.Errorf(
 					"\ngot:  A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t\nwant: A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t for (%d - %d)",
-					uint8(cpu.AF>>8), cpu.Flags.C, cpu.Flags.N, cpu.Flags.PV, cpu.Flags.H, cpu.Flags.Z, cpu.Flags.S,
+					cpu.getAcc(), cpu.getC(), cpu.getN(), cpu.getPV(), cpu.getH(), cpu.getZ(), cpu.getS(),
 					row[2], row[3] == 1, row[4] == 1, row[5] == 1, row[6] == 1, row[7] == 1, row[8] == 1, row[0], row[1],
 				)
 			}
@@ -89,14 +89,14 @@ func TestSub_Hl_(t *testing.T) {
 
 	for _, row := range subTruthTable {
 		cpu.PC = 0
-		cpu.AF = uint16(row[0]) << 8
+		cpu.setAcc(row[0])
 		dmaX.SetMemoryByte(cpu.HL, row[1])
 		tstates := cpu.sub_Hl_()
 
-		if uint8(cpu.AF>>8) != row[2] || cpu.Flags.C != (row[3] == 1) || cpu.Flags.N != (row[4] == 1) || cpu.Flags.PV != (row[5] == 1) || cpu.Flags.H != (row[6] == 1) || cpu.Flags.Z != (row[7] == 1) || cpu.Flags.S != (row[8] == 1) {
+		if cpu.getAcc() != row[2] || cpu.getC() != (row[3] == 1) || cpu.getN() != (row[4] == 1) || cpu.getPV() != (row[5] == 1) || cpu.getH() != (row[6] == 1) || cpu.getZ() != (row[7] == 1) || cpu.getS() != (row[8] == 1) {
 			t.Errorf(
 				"\ngot:  A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t\nwant: A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t for (%d + %d)",
-				uint8(cpu.AF>>8), cpu.Flags.C, cpu.Flags.N, cpu.Flags.PV, cpu.Flags.H, cpu.Flags.Z, cpu.Flags.S,
+				cpu.getAcc(), cpu.getC(), cpu.getN(), cpu.getPV(), cpu.getH(), cpu.getZ(), cpu.getS(),
 				row[2], row[3] == 1, row[4] == 1, row[5] == 1, row[6] == 1, row[7] == 1, row[8] == 1, row[0], row[1],
 			)
 		}
