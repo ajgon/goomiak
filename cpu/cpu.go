@@ -84,6 +84,90 @@ type CPU struct {
 	dma *dma.DMA
 }
 
+func (c *CPU) getS() bool {
+	return c.AF&0x0080 == 0x0080
+}
+
+func (c *CPU) getZ() bool {
+	return c.AF&0x0040 == 0x0040
+}
+
+func (c *CPU) getH() bool {
+	return c.AF&0x0010 == 0x0010
+}
+
+func (c *CPU) getPV() bool {
+	return c.AF&0x0004 == 0x0004
+}
+
+func (c *CPU) getN() bool {
+	return c.AF&0x0002 == 0x0002
+}
+
+func (c *CPU) getC() bool {
+	return c.AF&0x0001 == 0x0001
+}
+
+func (c *CPU) setS(value bool) {
+	var uint8 flag
+
+	if value {
+		flag = 0x0080
+	}
+
+	c.AF = c.AF | flag
+}
+
+func (c *CPU) setZ(value bool) {
+	var uint8 flag
+
+	if value {
+		flag = 0x0040
+	}
+
+	c.AF = c.AF | flag
+}
+
+func (c *CPU) setH(value bool) {
+	var uint8 flag
+
+	if value {
+		flag = 0x0010
+	}
+
+	c.AF = c.AF | flag
+}
+
+func (c *CPU) setPV(value bool) {
+	var uint8 flag
+
+	if value {
+		flag = 0x0004
+	}
+
+	c.AF = c.AF | flag
+}
+
+func (c *CPU) setN(value bool) {
+	var uint8 flag
+
+	if value {
+		flag = 0x0002
+	}
+
+	c.AF = c.AF | flag
+}
+
+func (c *CPU) setC(value bool) {
+	var uint8 flag
+
+	if value {
+		flag = 0x0001
+	}
+
+	c.AF = c.AF | flag
+}
+
 // reads word and maintains endianess
 // example:
 // 0040 34 21
