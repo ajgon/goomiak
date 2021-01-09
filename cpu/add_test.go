@@ -72,7 +72,6 @@ func TestAddRegister(t *testing.T) {
 					uint8(cpu.AF>>8), cpu.Flags.C, cpu.Flags.N, cpu.Flags.PV, cpu.Flags.H, cpu.Flags.Z, cpu.Flags.S,
 					row[2], row[3] == 1, row[4] == 1, row[5] == 1, row[6] == 1, row[7] == 1, row[8] == 1, row[0], row[1],
 				)
-				return
 			}
 
 			if cpu.PC != 1 || tstates != 4 {
@@ -100,7 +99,6 @@ func TestAdd_Hl_(t *testing.T) {
 				uint8(cpu.AF>>8), cpu.Flags.C, cpu.Flags.N, cpu.Flags.PV, cpu.Flags.H, cpu.Flags.Z, cpu.Flags.S,
 				row[2], row[3] == 1, row[4] == 1, row[5] == 1, row[6] == 1, row[7] == 1, row[8] == 1, row[0], row[1],
 			)
-			return
 		}
 
 		if cpu.PC != 1 || tstates != 7 {

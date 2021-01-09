@@ -947,6 +947,14 @@ func (c *CPU) adcAR(r byte) func() uint8 {
 	}
 }
 
+func (c *CPU) adcA_Hl_() uint8 {
+	c.adcValueToAcc(c.dma.GetMemory(c.HL))
+
+	c.PC++
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
