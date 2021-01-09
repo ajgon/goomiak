@@ -187,15 +187,7 @@ func (c *CPU) addRegisters(left, right *uint16) uint8 {
 	return 11
 }
 
-func (c *CPU) addRegisterToAcc(register *uint16, high bool) {
-	var value uint8
-
-	if high {
-		value = uint8(*register >> 8)
-	} else {
-		value = uint8(*register)
-	}
-
+func (c *CPU) addValueToAcc(value uint8) {
 	a := uint8(c.AF >> 8)
 	result := a + value
 	c.AF = (c.AF & 0x00ff) | (uint16(result) << 8)
@@ -860,28 +852,40 @@ func (c *CPU) halt() uint8 {
 
 func (c *CPU) addAR(r byte) func() uint8 {
 	var rhigh bool
-	var rvalue *uint16
+	var rvalue uint16
 
 	switch r {
 	case 'A':
-		rhigh, rvalue = true, &c.AF
+		rhigh, rvalue = true, c.AF
 	case 'B', 'C':
-		rhigh, rvalue = r == 'B', &c.BC
+		rhigh, rvalue = r == 'B', c.BC
 	case 'D', 'E':
-		rhigh, rvalue = r == 'D', &c.DE
+		rhigh, rvalue = r == 'D', c.DE
 	case 'H', 'L':
-		rhigh, rvalue = r == 'H', &c.HL
+		rhigh, rvalue = r == 'H', c.HL
 	default:
 		panic("Invalid `r` part of the mnemonic")
 	}
 
 	return func() uint8 {
-		c.addRegisterToAcc(rvalue, rhigh)
+		if rhigh {
+			c.addValueToAcc(uint8(rvalue >> 8))
+		} else {
+			c.addValueToAcc(uint8(rvalue))
+		}
 
 		c.PC++
 
 		return 4
 	}
+}
+
+func (c *CPU) addA_Hl_() uint8 {
+	c.addValueToAcc(c.dma.GetMemory(c.HL))
+
+	c.PC++
+
+	return 7
 }
 
 func (c *CPU) Reset() {
