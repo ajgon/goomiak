@@ -187,6 +187,33 @@ func (c *CPU) addRegisters(left, right *uint16) uint8 {
 	return 11
 }
 
+func (c *CPU) addRegisterToAcc(register *uint16, high bool) {
+	var value uint8
+
+	if high {
+		value = uint8(*register >> 8)
+	} else {
+		value = uint8(*register)
+	}
+
+	a := uint8(c.AF >> 8)
+	result := a + value
+	c.AF = (c.AF & 0x00ff) | (uint16(result) << 8)
+
+	c.Flags.C = result < a || result < value
+	c.Flags.N = false
+
+	if (a^value)&128 == 128 {
+		c.Flags.PV = false
+	} else {
+		c.Flags.PV = (result^value)&128 == 128
+	}
+
+	c.Flags.H = (a^value^result)&0x10 == 0x10
+	c.Flags.Z = result == 0
+	c.Flags.S = result > 127
+}
+
 func (c *CPU) nop() uint8 {
 	c.PC++
 
@@ -518,7 +545,7 @@ func (c *CPU) daa() uint8 {
 		}
 	}
 
-	c.Flags.S = a&0x80 == 0x80
+	c.Flags.S = a > 127
 	c.Flags.Z = a == 0
 	c.Flags.PV = parityTable[a]
 
@@ -829,6 +856,32 @@ func (c *CPU) halt() uint8 {
 	c.States.Halt = true
 
 	return 4
+}
+
+func (c *CPU) addAR(r byte) func() uint8 {
+	var rhigh bool
+	var rvalue *uint16
+
+	switch r {
+	case 'A':
+		rhigh, rvalue = true, &c.AF
+	case 'B', 'C':
+		rhigh, rvalue = r == 'B', &c.BC
+	case 'D', 'E':
+		rhigh, rvalue = r == 'D', &c.DE
+	case 'H', 'L':
+		rhigh, rvalue = r == 'H', &c.HL
+	default:
+		panic("Invalid `r` part of the mnemonic")
+	}
+
+	return func() uint8 {
+		c.addRegisterToAcc(rvalue, rhigh)
+
+		c.PC++
+
+		return 4
+	}
 }
 
 func (c *CPU) Reset() {
