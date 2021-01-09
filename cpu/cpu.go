@@ -985,6 +985,40 @@ func (c *CPU) sub_Hl_() uint8 {
 	return 7
 }
 
+func (c *CPU) sbcR(r byte) func() uint8 {
+	var rhigh bool
+	var rvalue uint16
+
+	switch r {
+	case 'A':
+		rhigh, rvalue = true, c.AF
+	case 'B', 'C':
+		rhigh, rvalue = r == 'B', c.BC
+	case 'D', 'E':
+		rhigh, rvalue = r == 'D', c.DE
+	case 'H', 'L':
+		rhigh, rvalue = r == 'H', c.HL
+	default:
+		panic("Invalid `r` part of the mnemonic")
+	}
+
+	return func() uint8 {
+		c.Flags.C = !c.Flags.C
+		if rhigh {
+			c.adcValueToAcc(uint8(rvalue>>8) ^ 0xff)
+		} else {
+			c.adcValueToAcc(uint8(rvalue) ^ 0xff)
+		}
+
+		c.PC++
+		c.Flags.N = true
+		c.Flags.C = !c.Flags.C
+		c.Flags.H = !c.Flags.H
+
+		return 4
+	}
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
