@@ -195,11 +195,40 @@ func (c *CPU) addValueToAcc(value uint8) {
 	c.Flags.C = result < a || result < value
 	c.Flags.N = false
 
-	if (a^value)&128 == 128 {
-		c.Flags.PV = false
-	} else {
+	c.Flags.PV = (a^value^0x80)&128 == 128
+	if c.Flags.PV {
 		c.Flags.PV = (result^value)&128 == 128
 	}
+
+	c.Flags.H = (a^value^result)&0x10 == 0x10
+	c.Flags.Z = result == 0
+	c.Flags.S = result > 127
+}
+
+func (c *CPU) adcValueToAcc(value uint8) {
+	var carryIn, carryOut uint8
+
+	if c.Flags.C {
+		carryIn = 1
+	}
+
+	a := uint8(c.AF >> 8)
+	result := a + value + carryIn
+	c.AF = (c.AF & 0x00ff) | (uint16(result) << 8)
+
+	if c.Flags.C {
+		c.Flags.C = a >= 0xff-value
+	} else {
+		c.Flags.C = a > 0xff-value
+	}
+
+	c.Flags.N = false
+
+	if c.Flags.C {
+		carryOut = 1
+	}
+
+	c.Flags.PV = (((result ^ a ^ value) >> 7) ^ carryOut) == 1
 
 	c.Flags.H = (a^value^result)&0x10 == 0x10
 	c.Flags.Z = result == 0
@@ -886,6 +915,36 @@ func (c *CPU) addA_Hl_() uint8 {
 	c.PC++
 
 	return 7
+}
+
+func (c *CPU) adcAR(r byte) func() uint8 {
+	var rhigh bool
+	var rvalue uint16
+
+	switch r {
+	case 'A':
+		rhigh, rvalue = true, c.AF
+	case 'B', 'C':
+		rhigh, rvalue = r == 'B', c.BC
+	case 'D', 'E':
+		rhigh, rvalue = r == 'D', c.DE
+	case 'H', 'L':
+		rhigh, rvalue = r == 'H', c.HL
+	default:
+		panic("Invalid `r` part of the mnemonic")
+	}
+
+	return func() uint8 {
+		if rhigh {
+			c.adcValueToAcc(uint8(rvalue >> 8))
+		} else {
+			c.adcValueToAcc(uint8(rvalue))
+		}
+
+		c.PC++
+
+		return 4
+	}
 }
 
 func (c *CPU) Reset() {
