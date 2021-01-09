@@ -119,3 +119,30 @@ func TestSbcRegister(t *testing.T) {
 		}
 	}
 }
+
+func TestSbc_Hl_(t *testing.T) {
+	var mem = memory.MemoryNew()
+	var dmaX = dma.DMANew(mem)
+	var cpu = CPUNew(dmaX)
+	cpu.HL = 0x1234
+
+	for _, row := range sbcTruthTable {
+		cpu.PC = 0
+		cpu.Flags.C = row[2] == 1
+		cpu.AF = uint16(row[0]) << 8
+		dmaX.SetMemoryByte(cpu.HL, row[1])
+		tstates := cpu.sbc_Hl_()
+
+		if uint8(cpu.AF>>8) != row[3] || cpu.Flags.C != (row[4] == 1) || cpu.Flags.N != (row[5] == 1) || cpu.Flags.PV != (row[6] == 1) || cpu.Flags.H != (row[7] == 1) || cpu.Flags.Z != (row[8] == 1) || cpu.Flags.S != (row[9] == 1) {
+			t.Errorf(
+				"\ngot:  A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t\nwant: A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t for (%d - %d - %d)",
+				uint8(cpu.AF>>8), cpu.Flags.C, cpu.Flags.N, cpu.Flags.PV, cpu.Flags.H, cpu.Flags.Z, cpu.Flags.S,
+				row[3], row[4] == 1, row[5] == 1, row[6] == 1, row[7] == 1, row[8] == 1, row[9] == 1, row[0], row[1], row[2],
+			)
+		}
+
+		if cpu.PC != 1 || tstates != 7 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 1, 7)
+		}
+	}
+}

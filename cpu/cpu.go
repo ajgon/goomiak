@@ -1019,6 +1019,18 @@ func (c *CPU) sbcR(r byte) func() uint8 {
 	}
 }
 
+func (c *CPU) sbc_Hl_() uint8 {
+	c.Flags.C = !c.Flags.C
+	c.adcValueToAcc(c.dma.GetMemory(c.HL) ^ 0xff)
+
+	c.PC++
+	c.Flags.N = true
+	c.Flags.C = !c.Flags.C
+	c.Flags.H = !c.Flags.H
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
