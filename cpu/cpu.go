@@ -1097,6 +1097,30 @@ func (c *CPU) xor_Hl_() uint8 {
 	return 7
 }
 
+func (c *CPU) orR(r byte) func() uint8 {
+	rhigh, rvalue := c.extractRegister(r)
+
+	return func() uint8 {
+		var result uint8
+		if rhigh {
+			result = c.getAcc() | uint8(rvalue>>8)
+		} else {
+			result = c.getAcc() | uint8(rvalue)
+		}
+
+		c.PC++
+		c.setAcc(result)
+		c.setS(result > 127)
+		c.setZ(result == 0)
+		c.setH(false)
+		c.setPV(parityTable[result])
+		c.setN(false)
+		c.setC(false)
+
+		return 4
+	}
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
