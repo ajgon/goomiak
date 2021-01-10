@@ -1,0 +1,82 @@
+package cpu
+
+import (
+	"testing"
+	"z80/dma"
+	"z80/memory"
+)
+
+var cpTruthTable [36][9]uint8 = [36][9]uint8{
+	// a, r, cp, C, N, PV, H, Z, S
+	[9]uint8{0, 0, 0, 0, 1, 0, 0, 1, 0},
+	[9]uint8{0, 1, 0, 1, 1, 0, 1, 0, 1},
+	[9]uint8{0, 127, 0, 1, 1, 0, 1, 0, 1},
+	[9]uint8{0, 128, 0, 1, 1, 1, 0, 0, 1},
+	[9]uint8{0, 129, 0, 1, 1, 0, 1, 0, 0},
+	[9]uint8{0, 255, 0, 1, 1, 0, 1, 0, 0},
+	[9]uint8{1, 0, 1, 0, 1, 0, 0, 0, 0},
+	[9]uint8{1, 1, 1, 0, 1, 0, 0, 1, 0},
+	[9]uint8{1, 127, 1, 1, 1, 0, 1, 0, 1},
+	[9]uint8{1, 128, 1, 1, 1, 1, 0, 0, 1},
+	[9]uint8{1, 129, 1, 1, 1, 1, 0, 0, 1},
+	[9]uint8{1, 255, 1, 1, 1, 0, 1, 0, 0},
+	[9]uint8{127, 0, 127, 0, 1, 0, 0, 0, 0},
+	[9]uint8{127, 1, 127, 0, 1, 0, 0, 0, 0},
+	[9]uint8{127, 127, 127, 0, 1, 0, 0, 1, 0},
+	[9]uint8{127, 128, 127, 1, 1, 1, 0, 0, 1},
+	[9]uint8{127, 129, 127, 1, 1, 1, 0, 0, 1},
+	[9]uint8{127, 255, 127, 1, 1, 1, 0, 0, 1},
+	[9]uint8{128, 0, 128, 0, 1, 0, 0, 0, 1},
+	[9]uint8{128, 1, 128, 0, 1, 1, 1, 0, 0},
+	[9]uint8{128, 127, 128, 0, 1, 1, 1, 0, 0},
+	[9]uint8{128, 128, 128, 0, 1, 0, 0, 1, 0},
+	[9]uint8{128, 129, 128, 1, 1, 0, 1, 0, 1},
+	[9]uint8{128, 255, 128, 1, 1, 0, 1, 0, 1},
+	[9]uint8{129, 0, 129, 0, 1, 0, 0, 0, 1},
+	[9]uint8{129, 1, 129, 0, 1, 0, 0, 0, 1},
+	[9]uint8{129, 127, 129, 0, 1, 1, 1, 0, 0},
+	[9]uint8{129, 128, 129, 0, 1, 0, 0, 0, 0},
+	[9]uint8{129, 129, 129, 0, 1, 0, 0, 1, 0},
+	[9]uint8{129, 255, 129, 1, 1, 0, 1, 0, 1},
+	[9]uint8{255, 0, 255, 0, 1, 0, 0, 0, 1},
+	[9]uint8{255, 1, 255, 0, 1, 0, 0, 0, 1},
+	[9]uint8{255, 127, 255, 0, 1, 0, 0, 0, 1},
+	[9]uint8{255, 128, 255, 0, 1, 0, 0, 0, 0},
+	[9]uint8{255, 129, 255, 0, 1, 0, 0, 0, 0},
+	[9]uint8{255, 255, 255, 0, 1, 0, 0, 1, 0},
+}
+
+func TestCpRegister(t *testing.T) {
+	var mem = memory.MemoryNew()
+	var dmaX = dma.DMANew(mem)
+	var cpu = CPUNew(dmaX)
+
+	for _, row := range cpTruthTable {
+		for _, register := range [7]byte{'B', 'C', 'D', 'E', 'H', 'L', 'A'} {
+			if register == 'A' {
+				if row[0] != row[1] {
+					continue
+				}
+			}
+
+			cpu.PC = 0
+			cpu.setAcc(row[0])
+			cpu.BC = (uint16(row[1]) << 8) | uint16(row[1])
+			cpu.DE = (uint16(row[1]) << 8) | uint16(row[1])
+			cpu.HL = (uint16(row[1]) << 8) | uint16(row[1])
+			tstates := cpu.cpR(register)()
+
+			if cpu.getAcc() != row[2] || cpu.getC() != (row[3] == 1) || cpu.getN() != (row[4] == 1) || cpu.getPV() != (row[5] == 1) || cpu.getH() != (row[6] == 1) || cpu.getZ() != (row[7] == 1) || cpu.getS() != (row[8] == 1) {
+				t.Errorf(
+					"\ngot:  A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t\nwant: A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t for (%d - %d)",
+					cpu.getAcc(), cpu.getC(), cpu.getN(), cpu.getPV(), cpu.getH(), cpu.getZ(), cpu.getS(),
+					row[2], row[3] == 1, row[4] == 1, row[5] == 1, row[6] == 1, row[7] == 1, row[8] == 1, row[0], row[1],
+				)
+			}
+
+			if cpu.PC != 1 || tstates != 4 {
+				t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 1, 4)
+			}
+		}
+	}
+}

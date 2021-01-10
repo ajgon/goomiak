@@ -1136,6 +1136,28 @@ func (c *CPU) or_Hl_() uint8 {
 	return 7
 }
 
+func (c *CPU) cpR(r byte) func() uint8 {
+	rhigh, rvalue := c.extractRegister(r)
+
+	return func() uint8 {
+		acc := c.getAcc()
+		c.setC(true)
+		if rhigh {
+			c.adcValueToAcc(uint8(rvalue>>8) ^ 0xff)
+		} else {
+			c.adcValueToAcc(uint8(rvalue) ^ 0xff)
+		}
+
+		c.PC++
+		c.setAcc(acc)
+		c.setN(true)
+		c.setC(!c.getC())
+		c.setH(!c.getH())
+
+		return 4
+	}
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
