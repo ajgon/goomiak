@@ -1407,3 +1407,19 @@ func TestAndR(t *testing.T) {
 		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "Flags": 0b10010000}, cpu.andR(register))
 	}
 }
+
+func TestAnd_Hl_(t *testing.T) {
+	resetAll()
+	cpu.setAcc(0x56)
+	cpu.HL = 0x1234
+	dmaX.SetMemoryByte(0x1234, 0xa9)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x00, "HL": 0x1234, "Flags": 0b01010100}, cpu.and_Hl_)
+
+	resetAll()
+	cpu.setAcc(0xdf)
+	cpu.HL = 0x1234
+	dmaX.SetMemoryByte(0x1234, 0xb7)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x97, "HL": 0x1234, "Flags": 0b10010000}, cpu.and_Hl_)
+}
