@@ -1207,6 +1207,11 @@ func (c *CPU) jpNzXx() uint8 {
 	return 10
 }
 
+func (c *CPU) jpXx() uint8 {
+	c.PC = c.readWord(c.PC + 1)
+	return 10
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

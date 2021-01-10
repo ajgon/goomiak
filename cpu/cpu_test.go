@@ -1552,3 +1552,11 @@ func TestJpNzXx(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 0x06, "Flags": 0b11010111}, cpu.jpNzXx)
 }
+
+func TestJpXx(t *testing.T) {
+	resetAll()
+	cpu.PC = 3
+	dmaX.SetMemoryBulk(0x0004, []uint8{0x78, 0x56})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 0x5678}, cpu.jpXx)
+}
