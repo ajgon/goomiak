@@ -1089,7 +1089,7 @@ func (c *CPU) xor_Hl_() uint8 {
 	c.setAcc(result)
 	c.setS(result > 127)
 	c.setZ(result == 0)
-	c.setH(true)
+	c.setH(false)
 	c.setPV(parityTable[result])
 	c.setN(false)
 	c.setC(false)
@@ -1119,6 +1119,21 @@ func (c *CPU) orR(r byte) func() uint8 {
 
 		return 4
 	}
+}
+
+func (c *CPU) or_Hl_() uint8 {
+	result := c.getAcc() | c.dma.GetMemory(c.HL)
+
+	c.PC++
+	c.setAcc(result)
+	c.setS(result > 127)
+	c.setZ(result == 0)
+	c.setH(false)
+	c.setPV(parityTable[result])
+	c.setN(false)
+	c.setC(false)
+
+	return 7
 }
 
 func (c *CPU) Reset() {

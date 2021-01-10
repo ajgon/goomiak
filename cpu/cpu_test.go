@@ -1459,14 +1459,14 @@ func TestXor_Hl_(t *testing.T) {
 	cpu.HL = 0x1234
 	dmaX.SetMemoryByte(0x1234, 0x56)
 
-	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x00, "HL": 0x1234, "Flags": 0b01010100}, cpu.xor_Hl_)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x00, "HL": 0x1234, "Flags": 0b01000100}, cpu.xor_Hl_)
 
 	resetAll()
 	cpu.setAcc(0x20)
 	cpu.HL = 0x1234
 	dmaX.SetMemoryByte(0x1234, 0xb7)
 
-	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x97, "HL": 0x1234, "Flags": 0b10010000}, cpu.xor_Hl_)
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x97, "HL": 0x1234, "Flags": 0b10000000}, cpu.xor_Hl_)
 }
 
 func TestOrR(t *testing.T) {
@@ -1492,4 +1492,20 @@ func TestOrR(t *testing.T) {
 
 		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "Flags": 0b10000000}, cpu.orR(register))
 	}
+}
+
+func TestOr_Hl_(t *testing.T) {
+	resetAll()
+	cpu.setAcc(0x00)
+	cpu.HL = 0x1234
+	dmaX.SetMemoryByte(0x1234, 0x00)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x00, "HL": 0x1234, "Flags": 0b01000100}, cpu.or_Hl_)
+
+	resetAll()
+	cpu.setAcc(0x84)
+	cpu.HL = 0x1234
+	dmaX.SetMemoryByte(0x1234, 0x13)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x97, "HL": 0x1234, "Flags": 0b10000000}, cpu.or_Hl_)
 }
