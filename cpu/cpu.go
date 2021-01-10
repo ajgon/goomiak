@@ -1228,6 +1228,13 @@ func (c *CPU) callNzXx() uint8 {
 	return 17
 }
 
+func (c *CPU) pushBc() uint8 {
+	c.pushStack(c.BC)
+	c.PC++
+
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
