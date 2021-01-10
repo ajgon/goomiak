@@ -1320,6 +1320,13 @@ func (c *CPU) retNc() uint8 {
 	return 11
 }
 
+func (c *CPU) popDe() uint8 {
+	c.DE = c.popStack()
+	c.PC++
+
+	return 10
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
