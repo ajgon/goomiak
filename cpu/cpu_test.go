@@ -1650,3 +1650,19 @@ func TestRet(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 0x5678, "SP": 0xfffe}, cpu.ret)
 }
+
+func TestJpZXx(t *testing.T) {
+	resetAll()
+	cpu.PC = 3
+	cpu.setFlags(0b11010111)
+	dmaX.SetMemoryBulk(0x0004, []uint8{0x78, 0x56})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 0x5678, "Flags": 0b11010111}, cpu.jpZXx)
+
+	resetAll()
+	cpu.PC = 3
+	cpu.setFlags(0b10010111)
+	dmaX.SetMemoryBulk(0x0004, []uint8{0x78, 0x56})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 0x06, "Flags": 0b10010111}, cpu.jpZXx)
+}
