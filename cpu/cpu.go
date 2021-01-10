@@ -1244,6 +1244,19 @@ func (c *CPU) addAX() uint8 {
 	return 7
 }
 
+func (c *CPU) rst(p uint8) func() uint8 {
+	if p != 0x00 && p != 0x08 && p != 0x10 && p != 0x18 && p != 0x20 && p != 0x28 && p != 0x30 && p != 0x38 {
+		panic("Invalid `p` value for RST")
+	}
+
+	return func() uint8 {
+		c.pushStack(c.PC)
+		c.PC = uint16(p)
+
+		return 11
+	}
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

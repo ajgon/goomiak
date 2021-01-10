@@ -1605,5 +1605,21 @@ func TestPushBc(t *testing.T) {
 	if gotL != wantL || gotH != wantH {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
 	}
+}
 
+func TestRst(t *testing.T) {
+	for _, addr := range []uint8{0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38} {
+		resetAll()
+		cpu.PC = 0x1234
+		cpu.SP = 0x0000
+
+		checkCpu(t, 11, map[string]uint16{"PC": uint16(addr), "SP": 0xfffe}, cpu.rst(addr))
+
+		gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
+		wantL, wantH := uint8(0x34), uint8(0x12)
+
+		if gotL != wantL || gotH != wantH {
+			t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
+		}
+	}
 }
