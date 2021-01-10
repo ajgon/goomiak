@@ -135,6 +135,13 @@ func (c *CPU) setFlags(value uint8) {
 	c.AF = (c.AF & 0xff00) | uint16(value)
 }
 
+func (c *CPU) popStack() (value uint16) {
+	value = c.readWord(c.SP)
+	c.SP += 2
+
+	return
+}
+
 // reads word and maintains endianess
 // example:
 // 0040 34 21
@@ -1178,10 +1185,16 @@ func (c *CPU) retNz() uint8 {
 		return 5
 	}
 
-	c.PC = c.readWord(c.SP)
-	c.SP += 2
+	c.PC = c.popStack()
 
 	return 11
+}
+
+func (c *CPU) popBc() uint8 {
+	c.BC = c.popStack()
+	c.PC++
+
+	return 10
 }
 
 func (c *CPU) Reset() {
