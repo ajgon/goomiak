@@ -1257,6 +1257,17 @@ func (c *CPU) rst(p uint8) func() uint8 {
 	}
 }
 
+func (c *CPU) retZ() uint8 {
+	if !c.getZ() {
+		c.PC++
+		return 5
+	}
+
+	c.PC = c.popStack()
+
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
