@@ -1666,3 +1666,35 @@ func TestJpZXx(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 0x06, "Flags": 0b10010111}, cpu.jpZXx)
 }
+
+func TestCallZXx(t *testing.T) {
+	resetAll()
+	cpu.PC = 0x1234
+	cpu.SP = 0x0000
+	cpu.setFlags(0b11010111)
+	dmaX.SetMemoryBulk(0x1235, []uint8{0x78, 0x56})
+
+	checkCpu(t, 17, map[string]uint16{"PC": 0x5678, "SP": 0xfffe, "Flags": 0b11010111}, cpu.callZXx)
+
+	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
+	wantL, wantH := uint8(0x34), uint8(0x12)
+
+	if gotL != wantL || gotH != wantH {
+		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
+	}
+
+	resetAll()
+	cpu.PC = 0x1234
+	cpu.SP = 0x0000
+	cpu.setFlags(0b10010111)
+	dmaX.SetMemoryBulk(0x1235, []uint8{0x78, 0x56})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 0x1237, "SP": 0x0000, "Flags": 0b10010111}, cpu.callZXx)
+
+	gotL, gotH = dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
+	wantL, wantH = uint8(0x00), uint8(0x00)
+
+	if gotL != wantL || gotH != wantH {
+		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
+	}
+}
