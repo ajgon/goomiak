@@ -1235,6 +1235,15 @@ func (c *CPU) pushBc() uint8 {
 	return 11
 }
 
+func (c *CPU) addAX() uint8 {
+	c.setC(false)
+	c.adcValueToAcc(c.dma.GetMemory(c.PC + 1))
+
+	c.PC += 2
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
