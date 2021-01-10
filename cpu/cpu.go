@@ -1158,6 +1158,20 @@ func (c *CPU) cpR(r byte) func() uint8 {
 	}
 }
 
+func (c *CPU) cp_Hl_() uint8 {
+	acc := c.getAcc()
+	c.setC(true)
+	c.adcValueToAcc(c.dma.GetMemory(c.HL) ^ 0xff)
+
+	c.PC++
+	c.setAcc(acc)
+	c.setN(true)
+	c.setC(!c.getC())
+	c.setH(!c.getH())
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
