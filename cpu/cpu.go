@@ -151,6 +151,23 @@ func (c *CPU) writeWord(address uint16, value uint16) {
 	c.dma.SetMemoryBulk(address, []uint8{uint8(value), uint8(value >> 8)})
 }
 
+func (c *CPU) extractRegister(r byte) (rhigh bool, rvalue uint16) {
+	switch r {
+	case 'A':
+		rhigh, rvalue = true, c.AF
+	case 'B', 'C':
+		rhigh, rvalue = r == 'B', c.BC
+	case 'D', 'E':
+		rhigh, rvalue = r == 'D', c.DE
+	case 'H', 'L':
+		rhigh, rvalue = r == 'H', c.HL
+	default:
+		panic("Invalid `r` part of the mnemonic")
+	}
+
+	return
+}
+
 func (c *CPU) increaseRegister(name rune) uint8 {
 	var register uint8
 
@@ -790,8 +807,8 @@ func (c *CPU) ccf() uint8 {
 }
 
 func (c *CPU) ldRR_(r, r_ byte) func() uint8 {
-	var lhigh, rhigh bool
-	var lvalue, rvalue *uint16
+	var lhigh bool
+	var lvalue *uint16
 
 	switch r {
 	case 'A':
@@ -806,26 +823,15 @@ func (c *CPU) ldRR_(r, r_ byte) func() uint8 {
 		panic("Invalid `r` part of the mnemonic")
 	}
 
-	switch r_ {
-	case 'A':
-		rhigh, rvalue = true, &c.AF
-	case 'B', 'C':
-		rhigh, rvalue = r_ == 'B', &c.BC
-	case 'D', 'E':
-		rhigh, rvalue = r_ == 'D', &c.DE
-	case 'H', 'L':
-		rhigh, rvalue = r_ == 'H', &c.HL
-	default:
-		panic("Invalid `r'` part of the mnemonic")
-	}
+	rhigh, rvalue := c.extractRegister(r_)
 
 	return func() uint8 {
 		var right uint8
 
 		if rhigh {
-			right = uint8(*rvalue >> 8)
+			right = uint8(rvalue >> 8)
 		} else {
-			right = uint8(*rvalue)
+			right = uint8(rvalue)
 		}
 
 		if lhigh {
@@ -873,29 +879,15 @@ func (c *CPU) ldR_Hl_(r byte) func() uint8 {
 }
 
 func (c *CPU) ld_Hl_R(r byte) func() uint8 {
-	var rhigh bool
-	var rvalue *uint16
-
-	switch r {
-	case 'A':
-		rhigh, rvalue = true, &c.AF
-	case 'B', 'C':
-		rhigh, rvalue = r == 'B', &c.BC
-	case 'D', 'E':
-		rhigh, rvalue = r == 'D', &c.DE
-	case 'H', 'L':
-		rhigh, rvalue = r == 'H', &c.HL
-	default:
-		panic("Invalid `r` part of the mnemonic")
-	}
+	rhigh, rvalue := c.extractRegister(r)
 
 	return func() uint8 {
 		var right uint8
 
 		if rhigh {
-			right = uint8(*rvalue >> 8)
+			right = uint8(rvalue >> 8)
 		} else {
-			right = uint8(*rvalue)
+			right = uint8(rvalue)
 		}
 
 		c.dma.SetMemoryByte(c.HL, right)
@@ -914,21 +906,7 @@ func (c *CPU) halt() uint8 {
 }
 
 func (c *CPU) addAR(r byte) func() uint8 {
-	var rhigh bool
-	var rvalue uint16
-
-	switch r {
-	case 'A':
-		rhigh, rvalue = true, c.AF
-	case 'B', 'C':
-		rhigh, rvalue = r == 'B', c.BC
-	case 'D', 'E':
-		rhigh, rvalue = r == 'D', c.DE
-	case 'H', 'L':
-		rhigh, rvalue = r == 'H', c.HL
-	default:
-		panic("Invalid `r` part of the mnemonic")
-	}
+	rhigh, rvalue := c.extractRegister(r)
 
 	return func() uint8 {
 		c.setC(false)
@@ -954,21 +932,7 @@ func (c *CPU) addA_Hl_() uint8 {
 }
 
 func (c *CPU) adcAR(r byte) func() uint8 {
-	var rhigh bool
-	var rvalue uint16
-
-	switch r {
-	case 'A':
-		rhigh, rvalue = true, c.AF
-	case 'B', 'C':
-		rhigh, rvalue = r == 'B', c.BC
-	case 'D', 'E':
-		rhigh, rvalue = r == 'D', c.DE
-	case 'H', 'L':
-		rhigh, rvalue = r == 'H', c.HL
-	default:
-		panic("Invalid `r` part of the mnemonic")
-	}
+	rhigh, rvalue := c.extractRegister(r)
 
 	return func() uint8 {
 		if rhigh {
@@ -992,21 +956,7 @@ func (c *CPU) adcA_Hl_() uint8 {
 }
 
 func (c *CPU) subR(r byte) func() uint8 {
-	var rhigh bool
-	var rvalue uint16
-
-	switch r {
-	case 'A':
-		rhigh, rvalue = true, c.AF
-	case 'B', 'C':
-		rhigh, rvalue = r == 'B', c.BC
-	case 'D', 'E':
-		rhigh, rvalue = r == 'D', c.DE
-	case 'H', 'L':
-		rhigh, rvalue = r == 'H', c.HL
-	default:
-		panic("Invalid `r` part of the mnemonic")
-	}
+	rhigh, rvalue := c.extractRegister(r)
 
 	return func() uint8 {
 		c.setC(true)
@@ -1038,21 +988,7 @@ func (c *CPU) sub_Hl_() uint8 {
 }
 
 func (c *CPU) sbcR(r byte) func() uint8 {
-	var rhigh bool
-	var rvalue uint16
-
-	switch r {
-	case 'A':
-		rhigh, rvalue = true, c.AF
-	case 'B', 'C':
-		rhigh, rvalue = r == 'B', c.BC
-	case 'D', 'E':
-		rhigh, rvalue = r == 'D', c.DE
-	case 'H', 'L':
-		rhigh, rvalue = r == 'H', c.HL
-	default:
-		panic("Invalid `r` part of the mnemonic")
-	}
+	rhigh, rvalue := c.extractRegister(r)
 
 	return func() uint8 {
 		c.setC(!c.getC())
@@ -1081,6 +1017,30 @@ func (c *CPU) sbc_Hl_() uint8 {
 	c.setH(!c.getH())
 
 	return 7
+}
+
+func (c *CPU) andR(r byte) func() uint8 {
+	rhigh, rvalue := c.extractRegister(r)
+
+	return func() uint8 {
+		var result uint8
+		if rhigh {
+			result = c.getAcc() & uint8(rvalue>>8)
+		} else {
+			result = c.getAcc() & uint8(rvalue)
+		}
+
+		c.PC++
+		c.setAcc(result)
+		c.setS(result > 127)
+		c.setZ(result == 0)
+		c.setPV(parityTable[result])
+		c.setH(true)
+		c.setN(false)
+		c.setC(false)
+
+		return 4
+	}
 }
 
 func (c *CPU) Reset() {

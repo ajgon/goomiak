@@ -82,7 +82,7 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 	}
 
 	if cpu.getAcc() != expectedA {
-		t.Errorf("AF: got %x, want %x", cpu.getAcc(), expectedA)
+		t.Errorf("A: got %x, want %x", cpu.getAcc(), expectedA)
 	}
 
 	if cpu.AF_ != expectedAF_ {
@@ -1376,5 +1376,34 @@ func TestHalt(t *testing.T) {
 
 	if got != want {
 		t.Errorf("got %t, want %t", got, want)
+	}
+}
+
+func TestAndR(t *testing.T) {
+	for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A'} {
+		resetAll()
+		if register == 'A' {
+			cpu.setAcc(0x00)
+		} else {
+			cpu.setAcc(0x56)
+
+		}
+		cpu.BC = 0xa9a9
+		cpu.DE = 0xa9a9
+		cpu.HL = 0xa9a9
+
+		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x00, "Flags": 0b01010100}, cpu.andR(register))
+
+		resetAll()
+		if register == 'A' {
+			cpu.setAcc(0x97)
+		} else {
+			cpu.setAcc(0xdf)
+		}
+		cpu.BC = 0xb7b7
+		cpu.DE = 0xb7b7
+		cpu.HL = 0xb7b7
+
+		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "Flags": 0b10010000}, cpu.andR(register))
 	}
 }
