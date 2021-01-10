@@ -1452,3 +1452,19 @@ func TestXorR(t *testing.T) {
 		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "Flags": 0b10000000}, cpu.xorR(register))
 	}
 }
+
+func TestXor_Hl_(t *testing.T) {
+	resetAll()
+	cpu.setAcc(0x56)
+	cpu.HL = 0x1234
+	dmaX.SetMemoryByte(0x1234, 0x56)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x00, "HL": 0x1234, "Flags": 0b01010100}, cpu.xor_Hl_)
+
+	resetAll()
+	cpu.setAcc(0x20)
+	cpu.HL = 0x1234
+	dmaX.SetMemoryByte(0x1234, 0xb7)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x97, "HL": 0x1234, "Flags": 0b10010000}, cpu.xor_Hl_)
+}
