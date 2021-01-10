@@ -145,3 +145,29 @@ func TestAdc_Hl_(t *testing.T) {
 		}
 	}
 }
+
+func TestAdcX(t *testing.T) {
+	var mem = memory.MemoryNew()
+	var dmaX = dma.DMANew(mem)
+	var cpu = CPUNew(dmaX)
+
+	for _, row := range adcTruthTable {
+		cpu.PC = 0
+		cpu.setAcc(row[0])
+		cpu.setC(row[2] == 1)
+		dmaX.SetMemoryByte(0x0001, row[1])
+		tstates := cpu.adcAX()
+
+		if cpu.getAcc() != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
+			t.Errorf(
+				"\ngot:  A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t\nwant: A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t for (%d + %d + %d)",
+				cpu.getAcc(), cpu.getC(), cpu.getN(), cpu.getPV(), cpu.getH(), cpu.getZ(), cpu.getS(),
+				row[3], row[4] == 1, row[5] == 1, row[6] == 1, row[7] == 1, row[8] == 1, row[9] == 1, row[0], row[1], row[2],
+			)
+		}
+
+		if cpu.PC != 2 || tstates != 7 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 2, 7)
+		}
+	}
+}
