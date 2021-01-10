@@ -142,6 +142,11 @@ func (c *CPU) popStack() (value uint16) {
 	return
 }
 
+func (c *CPU) pushStack(value uint16) {
+	c.SP -= 2
+	c.writeWord(c.SP, value)
+}
+
 // reads word and maintains endianess
 // example:
 // 0040 34 21
@@ -1210,6 +1215,17 @@ func (c *CPU) jpNzXx() uint8 {
 func (c *CPU) jpXx() uint8 {
 	c.PC = c.readWord(c.PC + 1)
 	return 10
+}
+
+func (c *CPU) callNzXx() uint8 {
+	if c.getZ() {
+		c.PC += 3
+		return 10
+	}
+	c.pushStack(c.PC)
+	c.PC = c.readWord(c.PC + 1)
+
+	return 17
 }
 
 func (c *CPU) Reset() {
