@@ -1714,3 +1714,21 @@ func TestCallXx(t *testing.T) {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
 	}
 }
+
+func TestRetNc(t *testing.T) {
+	resetAll()
+	cpu.PC = 0x1234
+	cpu.SP = 0xfffc
+	cpu.setFlags(0b11010110)
+	dmaX.SetMemoryBulk(0xfffc, []uint8{0x78, 0x56})
+
+	checkCpu(t, 11, map[string]uint16{"PC": 0x5678, "SP": 0xfffe, "Flags": 0b11010110}, cpu.retNc)
+
+	resetAll()
+	cpu.PC = 0x1234
+	cpu.SP = 0xfffc
+	cpu.setFlags(0b11010111)
+	dmaX.SetMemoryBulk(0xfffc, []uint8{0x78, 0x56})
+
+	checkCpu(t, 5, map[string]uint16{"PC": 0x1235, "SP": 0xfffc, "Flags": 0b11010111}, cpu.retNc)
+}

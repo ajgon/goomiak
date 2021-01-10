@@ -1309,6 +1309,17 @@ func (c *CPU) adcAX() uint8 {
 	return 7
 }
 
+func (c *CPU) retNc() uint8 {
+	if c.getC() {
+		c.PC++
+		return 5
+	}
+
+	c.PC = c.popStack()
+
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
