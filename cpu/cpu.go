@@ -1172,6 +1172,18 @@ func (c *CPU) cp_Hl_() uint8 {
 	return 7
 }
 
+func (c *CPU) retNz() uint8 {
+	if c.getZ() {
+		c.PC++
+		return 5
+	}
+
+	c.PC = c.readWord(c.SP)
+	c.SP += 2
+
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
