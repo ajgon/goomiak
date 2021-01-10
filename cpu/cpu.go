@@ -1268,6 +1268,12 @@ func (c *CPU) retZ() uint8 {
 	return 11
 }
 
+func (c *CPU) ret() uint8 {
+	c.PC = c.popStack()
+
+	return 10
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

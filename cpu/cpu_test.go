@@ -1641,3 +1641,12 @@ func TestRetZ(t *testing.T) {
 
 	checkCpu(t, 5, map[string]uint16{"PC": 0x1235, "SP": 0xfffc, "Flags": 0b10010111}, cpu.retZ)
 }
+
+func TestRet(t *testing.T) {
+	resetAll()
+	cpu.PC = 0x1234
+	cpu.SP = 0xfffc
+	dmaX.SetMemoryBulk(0xfffc, []uint8{0x78, 0x56})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 0x5678, "SP": 0xfffe}, cpu.ret)
+}
