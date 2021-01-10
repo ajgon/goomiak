@@ -1423,3 +1423,32 @@ func TestAnd_Hl_(t *testing.T) {
 
 	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x97, "HL": 0x1234, "Flags": 0b10010000}, cpu.and_Hl_)
 }
+
+func TestXorR(t *testing.T) {
+	for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A'} {
+		resetAll()
+		if register == 'A' {
+			cpu.setAcc(0x00)
+		} else {
+			cpu.setAcc(0x56)
+
+		}
+		cpu.BC = 0x5656
+		cpu.DE = 0x5656
+		cpu.HL = 0x5656
+
+		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x00, "Flags": 0b01000100}, cpu.xorR(register))
+
+		if register == 'A' {
+			continue
+		}
+
+		resetAll()
+		cpu.setAcc(0x20)
+		cpu.BC = 0xb7b7
+		cpu.DE = 0xb7b7
+		cpu.HL = 0xb7b7
+
+		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "Flags": 0b10000000}, cpu.xorR(register))
+	}
+}

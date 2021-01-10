@@ -1034,8 +1034,8 @@ func (c *CPU) andR(r byte) func() uint8 {
 		c.setAcc(result)
 		c.setS(result > 127)
 		c.setZ(result == 0)
-		c.setPV(parityTable[result])
 		c.setH(true)
+		c.setPV(parityTable[result])
 		c.setN(false)
 		c.setC(false)
 
@@ -1050,12 +1050,36 @@ func (c *CPU) and_Hl_() uint8 {
 	c.setAcc(result)
 	c.setS(result > 127)
 	c.setZ(result == 0)
-	c.setPV(parityTable[result])
 	c.setH(true)
+	c.setPV(parityTable[result])
 	c.setN(false)
 	c.setC(false)
 
 	return 7
+}
+
+func (c *CPU) xorR(r byte) func() uint8 {
+	rhigh, rvalue := c.extractRegister(r)
+
+	return func() uint8 {
+		var result uint8
+		if rhigh {
+			result = c.getAcc() ^ uint8(rvalue>>8)
+		} else {
+			result = c.getAcc() ^ uint8(rvalue)
+		}
+
+		c.PC++
+		c.setAcc(result)
+		c.setS(result > 127)
+		c.setZ(result == 0)
+		c.setH(false)
+		c.setPV(parityTable[result])
+		c.setN(false)
+		c.setC(false)
+
+		return 4
+	}
 }
 
 func (c *CPU) Reset() {
