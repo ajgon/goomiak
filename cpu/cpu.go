@@ -1197,6 +1197,16 @@ func (c *CPU) popBc() uint8 {
 	return 10
 }
 
+func (c *CPU) jpNzXx() uint8 {
+	if c.getZ() {
+		c.PC += 3
+		return 10
+	}
+
+	c.PC = c.readWord(c.PC + 1)
+	return 10
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

@@ -1536,3 +1536,19 @@ func TestPopBc(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 1, "SP": 0x0000, "BC": 0x5678}, cpu.popBc)
 }
+
+func TestJpNzXx(t *testing.T) {
+	resetAll()
+	cpu.PC = 3
+	cpu.setFlags(0b10010111)
+	dmaX.SetMemoryBulk(0x0004, []uint8{0x78, 0x56})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 0x5678, "Flags": 0b10010111}, cpu.jpNzXx)
+
+	resetAll()
+	cpu.PC = 3
+	cpu.setFlags(0b11010111)
+	dmaX.SetMemoryBulk(0x0004, []uint8{0x78, 0x56})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 0x06, "Flags": 0b11010111}, cpu.jpNzXx)
+}
