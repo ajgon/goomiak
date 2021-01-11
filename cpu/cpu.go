@@ -1705,6 +1705,20 @@ func (c *CPU) callMXx() uint8 {
 	return 17
 }
 
+func (c *CPU) cpX() uint8 {
+	acc := c.getAcc()
+	c.setC(true)
+	c.adcValueToAcc(c.dma.GetMemory(c.PC+1) ^ 0xff)
+
+	c.PC += 2
+	c.setAcc(acc)
+	c.setN(true)
+	c.setC(!c.getC())
+	c.setH(!c.getH())
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
