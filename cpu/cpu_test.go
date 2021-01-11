@@ -2259,3 +2259,17 @@ func TestPushAf(t *testing.T) {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
 	}
 }
+
+func TestOrX(t *testing.T) {
+	resetAll()
+	cpu.setAcc(0x00)
+	dmaX.SetMemoryByte(0x0001, 0x00)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "A": 0x00, "Flags": 0b01000100}, cpu.orX)
+
+	resetAll()
+	cpu.setAcc(0x84)
+	dmaX.SetMemoryByte(0x0001, 0x13)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "A": 0x97, "Flags": 0b10000000}, cpu.orX)
+}
