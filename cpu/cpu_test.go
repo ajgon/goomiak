@@ -2183,3 +2183,19 @@ func TestPopAf(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 1, "SP": 0x0000, "A": 0xab, "Flags": 0xd7}, cpu.popAf)
 }
+
+func TestJpPXx(t *testing.T) {
+	resetAll()
+	cpu.PC = 3
+	cpu.setFlags(0b01010111)
+	dmaX.SetMemoryBulk(0x0004, []uint8{0x78, 0x56})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 0x5678, "Flags": 0b01010111}, cpu.jpPXx)
+
+	resetAll()
+	cpu.PC = 3
+	cpu.setFlags(0b11010111)
+	dmaX.SetMemoryBulk(0x0004, []uint8{0x78, 0x56})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 0x06, "Flags": 0b11010111}, cpu.jpPXx)
+}

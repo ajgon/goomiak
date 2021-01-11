@@ -1593,6 +1593,16 @@ func (c *CPU) popAf() uint8 {
 	return 10
 }
 
+func (c *CPU) jpPXx() uint8 {
+	if c.getS() {
+		c.PC += 3
+		return 10
+	}
+
+	c.PC = c.readWord(c.PC + 1)
+	return 10
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
