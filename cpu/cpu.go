@@ -1694,6 +1694,17 @@ func (c *CPU) ei() uint8 {
 	return 4
 }
 
+func (c *CPU) callMXx() uint8 {
+	if !c.getS() {
+		c.PC += 3
+		return 10
+	}
+	c.pushStack(c.PC)
+	c.PC = c.readWord(c.PC + 1)
+
+	return 17
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
