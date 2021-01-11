@@ -1659,6 +1659,17 @@ func (c *CPU) orX() uint8 {
 	return 7
 }
 
+func (c *CPU) retM() uint8 {
+	if !c.getS() {
+		c.PC++
+		return 5
+	}
+
+	c.PC = c.popStack()
+
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
