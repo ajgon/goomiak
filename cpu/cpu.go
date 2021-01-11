@@ -1371,6 +1371,18 @@ func (c *CPU) pushDe() uint8 {
 	return 11
 }
 
+func (c *CPU) subX() uint8 {
+	c.setC(true)
+	c.adcValueToAcc(c.dma.GetMemory(c.PC+1) ^ 0xff)
+
+	c.PC += 2
+	c.setN(true)
+	c.setC(!c.getC())
+	c.setH(!c.getH())
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
