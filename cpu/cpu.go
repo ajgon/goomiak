@@ -1494,6 +1494,13 @@ func (c *CPU) callPoXx() uint8 {
 	return 17
 }
 
+func (c *CPU) pushHl() uint8 {
+	c.pushStack(c.HL)
+	c.PC++
+
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

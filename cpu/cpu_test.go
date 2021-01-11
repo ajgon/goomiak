@@ -2030,3 +2030,17 @@ func TestCallPoXx(t *testing.T) {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
 	}
 }
+
+func TestPushHl(t *testing.T) {
+	resetAll()
+	cpu.HL = 0x1234
+	cpu.SP = 0x0000
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "SP": 0xfffe, "HL": 0x1234}, cpu.pushHl)
+
+	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
+	wantL, wantH := uint8(0x34), uint8(0x12)
+
+	if gotL != wantL || gotH != wantH {
+		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
+	}
+}
