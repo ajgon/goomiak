@@ -2245,3 +2245,17 @@ func TestCallPXx(t *testing.T) {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
 	}
 }
+
+func TestPushAf(t *testing.T) {
+	resetAll()
+	cpu.AF = 0x12d7
+	cpu.SP = 0x0000
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "SP": 0xfffe, "A": 0x12, "Flags": 0xd7}, cpu.pushAf)
+
+	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
+	wantL, wantH := uint8(0xd7), uint8(0x12)
+
+	if gotL != wantL || gotH != wantH {
+		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
+	}
+}

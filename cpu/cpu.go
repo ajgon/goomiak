@@ -1637,6 +1637,13 @@ func (c *CPU) callPXx() uint8 {
 	return 17
 }
 
+func (c *CPU) pushAf() uint8 {
+	c.pushStack(c.AF)
+	c.PC++
+
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
