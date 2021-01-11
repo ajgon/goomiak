@@ -1677,6 +1677,16 @@ func (c *CPU) ldSpHl() uint8 {
 	return 6
 }
 
+func (c *CPU) jpMXx() uint8 {
+	if !c.getS() {
+		c.PC += 3
+		return 10
+	}
+
+	c.PC = c.readWord(c.PC + 1)
+	return 10
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
