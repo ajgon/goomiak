@@ -1483,6 +1483,17 @@ func (c *CPU) ex_Sp_Hl() uint8 {
 	return 19
 }
 
+func (c *CPU) callPoXx() uint8 {
+	if c.getPV() {
+		c.PC += 3
+		return 10
+	}
+	c.pushStack(c.PC)
+	c.PC = c.readWord(c.PC + 1)
+
+	return 17
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
