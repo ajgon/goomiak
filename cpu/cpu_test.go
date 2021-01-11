@@ -1898,3 +1898,11 @@ func TestJpCXx(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 0x06, "Flags": 0b11010110}, cpu.jpCXx)
 }
+
+func TestInA_X_(t *testing.T) {
+	resetAll()
+	cpu.setPort(0x45, 0xaf)
+	dmaX.SetMemoryByte(0x0001, 0x45)
+
+	checkCpu(t, 11, map[string]uint16{"PC": 2, "A": 0xaf}, cpu.inA_X_)
+}

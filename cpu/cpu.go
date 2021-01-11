@@ -1416,6 +1416,13 @@ func (c *CPU) jpCXx() uint8 {
 	return 10
 }
 
+func (c *CPU) inA_X_() uint8 {
+	c.setAcc(c.getPort(c.dma.GetMemory(c.PC + 1)))
+
+	c.PC += 2
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
