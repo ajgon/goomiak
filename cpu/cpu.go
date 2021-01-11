@@ -167,8 +167,8 @@ func (c *CPU) disableInterrupts() {
 }
 
 func (c *CPU) enableInterrupts() {
-	c.States.IFF1 = false
-	c.States.IFF2 = false
+	c.States.IFF1 = true
+	c.States.IFF2 = true
 }
 
 func (c *CPU) checkInterrupts() (bool, bool) {
@@ -1685,6 +1685,13 @@ func (c *CPU) jpMXx() uint8 {
 
 	c.PC = c.readWord(c.PC + 1)
 	return 10
+}
+
+func (c *CPU) ei() uint8 {
+	c.enableInterrupts()
+
+	c.PC++
+	return 4
 }
 
 func (c *CPU) Reset() {

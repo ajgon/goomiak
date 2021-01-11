@@ -2315,3 +2315,17 @@ func TestJpMXx(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 0x06, "Flags": 0b01010111}, cpu.jpMXx)
 }
+
+func TestEi(t *testing.T) {
+	resetAll()
+	cpu.disableInterrupts()
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1}, cpu.ei)
+
+	gotIFF1, gotIFF2 := cpu.checkInterrupts()
+	wantIFF1, wantIFF2 := true, true
+
+	if gotIFF1 != wantIFF1 || gotIFF2 != wantIFF2 {
+		t.Errorf("got IFF1=%t, IFF2=%t, want IFF1=%t, IFF2=%t", gotIFF1, gotIFF2, wantIFF1, wantIFF2)
+	}
+}
