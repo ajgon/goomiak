@@ -1353,6 +1353,17 @@ func (c *CPU) out_X_A() uint8 {
 	return 11
 }
 
+func (c *CPU) callNcXx() uint8 {
+	if c.getC() {
+		c.PC += 3
+		return 10
+	}
+	c.pushStack(c.PC)
+	c.PC = c.readWord(c.PC + 1)
+
+	return 17
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
