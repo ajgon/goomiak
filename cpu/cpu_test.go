@@ -1981,3 +1981,20 @@ func TestJpPoXx(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 0x06, "Flags": 0b11010111}, cpu.jpPoXx)
 }
+
+func TestEx_Sp_Hl(t *testing.T) {
+	resetAll()
+	cpu.HL = 0x7012
+	cpu.SP = 0x8856
+	dmaX.SetMemoryBulk(0x8856, []uint8{0x11, 0x22})
+
+	checkCpu(t, 19, map[string]uint16{"PC": 1, "HL": 0x2211, "SP": 0x8856}, cpu.ex_Sp_Hl)
+
+	gotL, gotH := dmaX.GetMemory(0x8856), dmaX.GetMemory(0x8857)
+	wantL, wantH := uint8(0x12), uint8(0x70)
+
+	if gotL != wantL || gotH != wantH {
+		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
+	}
+
+}

@@ -1474,6 +1474,15 @@ func (c *CPU) jpPoXx() uint8 {
 	return 10
 }
 
+func (c *CPU) ex_Sp_Hl() uint8 {
+	value := c.readWord(c.SP)
+	c.writeWord(c.SP, c.HL)
+	c.HL = value
+
+	c.PC++
+	return 19
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
