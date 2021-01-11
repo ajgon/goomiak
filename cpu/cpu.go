@@ -27,6 +27,8 @@ var parityTable [256]bool = [256]bool{
 type CPUStates struct {
 	Halt  bool
 	Ports [256]uint8
+	IFF1  bool
+	IFF2  bool
 }
 
 type CPU struct {
@@ -157,6 +159,20 @@ func (c *CPU) getPort(addr uint8) uint8 {
 
 func (c *CPU) setPort(addr uint8, value uint8) {
 	c.States.Ports[addr] = value
+}
+
+func (c *CPU) disableInterrupts() {
+	c.States.IFF1 = false
+	c.States.IFF2 = false
+}
+
+func (c *CPU) enableInterrupts() {
+	c.States.IFF1 = false
+	c.States.IFF2 = false
+}
+
+func (c *CPU) checkInterrupts() (bool, bool) {
+	return c.States.IFF1, c.States.IFF2
 }
 
 // reads word and maintains endianess
@@ -1603,6 +1619,13 @@ func (c *CPU) jpPXx() uint8 {
 	return 10
 }
 
+func (c *CPU) di() uint8 {
+	c.disableInterrupts()
+
+	c.PC++
+	return 4
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
@@ -1614,11 +1637,12 @@ func (c *CPU) Reset() {
 	c.DE_ = 0
 	c.HL = 0
 	c.HL_ = 0
-	c.States = CPUStates{}
+	c.States = CPUStates{IFF1: true, IFF2: true}
 }
 
 func CPUNew(dma *dma.DMA) *CPU {
 	cpu := new(CPU)
 	cpu.dma = dma
+	cpu.Reset()
 	return cpu
 }
