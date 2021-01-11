@@ -15,7 +15,8 @@ var cpu = CPUNew(dmaX)
 
 func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, instructionCall func() uint8) {
 	t.Helper()
-	var expectedSP, expectedAF_, expectedBC, expectedDE, expectedHL uint16
+	var expectedSP, expectedBC, expectedDE, expectedHL uint16
+	var expectedAF_, expectedBC_, expectedDE_, expectedHL_ uint16
 	var expectedA, expectedFlags uint8
 
 	if sp, ok := expected["SP"]; ok {
@@ -46,6 +47,13 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 		expectedBC = cpu.BC
 	}
 
+	if bc_, ok := expected["BC_"]; ok {
+		expectedBC_ = bc_
+	} else {
+		cpu.BC_ = uint16(rand.Uint32())
+		expectedBC_ = cpu.BC_
+	}
+
 	if de, ok := expected["DE"]; ok {
 		expectedDE = de
 	} else {
@@ -53,11 +61,25 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 		expectedDE = cpu.DE
 	}
 
+	if de_, ok := expected["DE_"]; ok {
+		expectedDE_ = de_
+	} else {
+		cpu.DE_ = uint16(rand.Uint32())
+		expectedDE_ = cpu.DE_
+	}
+
 	if hl, ok := expected["HL"]; ok {
 		expectedHL = hl
 	} else {
 		cpu.HL = uint16(rand.Uint32())
 		expectedHL = cpu.HL
+	}
+
+	if hl_, ok := expected["HL_"]; ok {
+		expectedHL_ = hl_
+	} else {
+		cpu.HL_ = uint16(rand.Uint32())
+		expectedHL_ = cpu.HL_
 	}
 
 	if flags, ok := expected["Flags"]; ok {
@@ -93,12 +115,24 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 		t.Errorf("BC: got %x, want %x", cpu.BC, expectedBC)
 	}
 
+	if cpu.BC_ != expectedBC_ {
+		t.Errorf("BC_: got %x, want %x", cpu.BC_, expectedBC_)
+	}
+
 	if cpu.DE != expectedDE {
 		t.Errorf("DE: got %x, want %x", cpu.DE, expectedDE)
 	}
 
+	if cpu.DE_ != expectedDE_ {
+		t.Errorf("DE_: got %x, want %x", cpu.DE_, expectedDE_)
+	}
+
 	if cpu.HL != expectedHL {
 		t.Errorf("HL: got %x, want %x", cpu.HL, expectedHL)
+	}
+
+	if cpu.HL_ != expectedHL_ {
+		t.Errorf("HL_: got %x, want %x", cpu.HL_, expectedHL_)
 	}
 
 	if cpu.getFlags() != expectedFlags {
@@ -1835,4 +1869,16 @@ func TestRetC(t *testing.T) {
 	dmaX.SetMemoryBulk(0xfffc, []uint8{0x78, 0x56})
 
 	checkCpu(t, 5, map[string]uint16{"PC": 0x1235, "SP": 0xfffc, "Flags": 0b11010110}, cpu.retC)
+}
+
+func TestExx(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x1234
+	cpu.BC_ = 0x4321
+	cpu.DE = 0x5678
+	cpu.DE_ = 0x8765
+	cpu.HL = 0x9abc
+	cpu.HL_ = 0xcba9
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x4321, "BC_": 0x1234, "DE": 0x8765, "DE_": 0x5678, "HL": 0xcba9, "HL_": 0x9abc}, cpu.exx)
 }

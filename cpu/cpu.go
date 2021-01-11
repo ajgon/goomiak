@@ -35,8 +35,11 @@ type CPU struct {
 	AF     uint16
 	AF_    uint16
 	BC     uint16
+	BC_    uint16
 	DE     uint16
+	DE_    uint16
 	HL     uint16
+	HL_    uint16
 	States CPUStates
 
 	dma *dma.DMA
@@ -1394,14 +1397,26 @@ func (c *CPU) retC() uint8 {
 	return 11
 }
 
+func (c *CPU) exx() uint8 {
+	c.BC, c.BC_ = c.BC_, c.BC
+	c.DE, c.DE_ = c.DE_, c.DE
+	c.HL, c.HL_ = c.HL_, c.HL
+
+	c.PC++
+	return 4
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
 	c.AF = 0
 	c.AF_ = 0
 	c.BC = 0
+	c.BC_ = 0
 	c.DE = 0
+	c.DE_ = 0
 	c.HL = 0
+	c.HL_ = 0
 	c.States = CPUStates{}
 }
 
