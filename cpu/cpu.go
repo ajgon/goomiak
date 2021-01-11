@@ -1364,6 +1364,13 @@ func (c *CPU) callNcXx() uint8 {
 	return 17
 }
 
+func (c *CPU) pushDe() uint8 {
+	c.pushStack(c.DE)
+	c.PC++
+
+	return 11
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
