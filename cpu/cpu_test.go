@@ -2141,3 +2141,18 @@ func TestCallPeXx(t *testing.T) {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
 	}
 }
+
+func TestXorX(t *testing.T) {
+	resetAll()
+	cpu.setAcc(0x56)
+	dmaX.SetMemoryByte(0x0001, 0x56)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "A": 0x00, "Flags": 0b01000100}, cpu.xorX)
+
+	resetAll()
+	cpu.setAcc(0x20)
+	cpu.HL = 0x1234
+	dmaX.SetMemoryByte(0x0001, 0xb7)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "A": 0x97, "Flags": 0b10000000}, cpu.xorX)
+}
