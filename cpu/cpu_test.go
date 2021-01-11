@@ -2076,3 +2076,12 @@ func TestRetPe(t *testing.T) {
 
 	checkCpu(t, 5, map[string]uint16{"PC": 0x1235, "SP": 0xfffc, "Flags": 0b11010011}, cpu.retPe)
 }
+
+func TestJp_Hl_(t *testing.T) {
+	resetAll()
+	cpu.PC = 3
+	cpu.HL = 0x1234
+	dmaX.SetMemoryBulk(0x1234, []uint8{0x78, 0x56})
+
+	checkCpu(t, 4, map[string]uint16{"PC": 0x5678, "HL": 0x1234}, cpu.jp_Hl_)
+}

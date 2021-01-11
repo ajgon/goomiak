@@ -1527,6 +1527,11 @@ func (c *CPU) retPe() uint8 {
 	return 11
 }
 
+func (c *CPU) jp_Hl_() uint8 {
+	c.PC = c.readWord(c.HL)
+	return 4
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
