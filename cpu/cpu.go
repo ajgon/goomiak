@@ -1501,6 +1501,21 @@ func (c *CPU) pushHl() uint8 {
 	return 11
 }
 
+func (c *CPU) andX() uint8 {
+	result := c.getAcc() & c.dma.GetMemory(c.PC+1)
+
+	c.PC++
+	c.setAcc(result)
+	c.setS(result > 127)
+	c.setZ(result == 0)
+	c.setH(true)
+	c.setPV(parityTable[result])
+	c.setN(false)
+	c.setC(false)
+
+	return 7
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

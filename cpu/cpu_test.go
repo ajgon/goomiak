@@ -2044,3 +2044,17 @@ func TestPushHl(t *testing.T) {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
 	}
 }
+
+func TestAndX(t *testing.T) {
+	resetAll()
+	cpu.setAcc(0x56)
+	dmaX.SetMemoryByte(0x0001, 0xa9)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x00, "Flags": 0b01010100}, cpu.andX)
+
+	resetAll()
+	cpu.setAcc(0xdf)
+	dmaX.SetMemoryByte(0x0001, 0xb7)
+
+	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x97, "Flags": 0b10010000}, cpu.andX)
+}
