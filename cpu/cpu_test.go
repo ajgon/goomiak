@@ -2058,3 +2058,21 @@ func TestAndX(t *testing.T) {
 
 	checkCpu(t, 7, map[string]uint16{"PC": 1, "A": 0x97, "Flags": 0b10010000}, cpu.andX)
 }
+
+func TestRetPe(t *testing.T) {
+	resetAll()
+	cpu.PC = 0x1234
+	cpu.SP = 0xfffc
+	cpu.setFlags(0b11010111)
+	dmaX.SetMemoryBulk(0xfffc, []uint8{0x78, 0x56})
+
+	checkCpu(t, 11, map[string]uint16{"PC": 0x5678, "SP": 0xfffe, "Flags": 0b11010111}, cpu.retPe)
+
+	resetAll()
+	cpu.PC = 0x1234
+	cpu.SP = 0xfffc
+	cpu.setFlags(0b11010011)
+	dmaX.SetMemoryBulk(0xfffc, []uint8{0x78, 0x56})
+
+	checkCpu(t, 5, map[string]uint16{"PC": 0x1235, "SP": 0xfffc, "Flags": 0b11010011}, cpu.retPe)
+}
