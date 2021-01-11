@@ -2291,3 +2291,11 @@ func TestRetM(t *testing.T) {
 
 	checkCpu(t, 5, map[string]uint16{"PC": 0x1235, "SP": 0xfffc, "Flags": 0b01010111}, cpu.retM)
 }
+
+func TestLdSpHl(t *testing.T) {
+	resetAll()
+	cpu.SP = 0xfffc
+	cpu.HL = 0x442e
+
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "SP": 0x442e, "HL": 0x442e}, cpu.ldSpHl)
+}

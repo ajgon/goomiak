@@ -1670,6 +1670,13 @@ func (c *CPU) retM() uint8 {
 	return 11
 }
 
+func (c *CPU) ldSpHl() uint8 {
+	c.SP = c.HL
+
+	c.PC++
+	return 6
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
