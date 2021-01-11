@@ -1457,6 +1457,13 @@ func (c *CPU) retPo() uint8 {
 	return 11
 }
 
+func (c *CPU) popHl() uint8 {
+	c.HL = c.popStack()
+	c.PC++
+
+	return 10
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
