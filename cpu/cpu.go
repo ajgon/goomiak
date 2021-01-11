@@ -25,7 +25,8 @@ var parityTable [256]bool = [256]bool{
 }
 
 type CPUStates struct {
-	Halt bool
+	Halt  bool
+	Ports [256]uint8
 }
 
 type CPU struct {
@@ -145,6 +146,14 @@ func (c *CPU) popStack() (value uint16) {
 func (c *CPU) pushStack(value uint16) {
 	c.SP -= 2
 	c.writeWord(c.SP, value)
+}
+
+func (c *CPU) getPort(addr uint8) uint8 {
+	return c.States.Ports[addr]
+}
+
+func (c *CPU) setPort(addr uint8, value uint8) {
+	c.States.Ports[addr] = value
 }
 
 // reads word and maintains endianess
@@ -1335,6 +1344,13 @@ func (c *CPU) jpNcXx() uint8 {
 
 	c.PC = c.readWord(c.PC + 1)
 	return 10
+}
+
+func (c *CPU) out_X_A() uint8 {
+	c.setPort(c.dma.GetMemory(c.PC+1), c.getAcc())
+
+	c.PC += 2
+	return 11
 }
 
 func (c *CPU) Reset() {

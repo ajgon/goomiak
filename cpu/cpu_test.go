@@ -1757,3 +1757,18 @@ func TestJpNcXx(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 0x06, "Flags": 0b11010111}, cpu.jpNcXx)
 }
+
+func TestOut_X_A(t *testing.T) {
+	resetAll()
+	cpu.setAcc(0xaf)
+	dmaX.SetMemoryByte(0x0001, 0x45)
+
+	checkCpu(t, 11, map[string]uint16{"PC": 2, "A": 0xaf}, cpu.out_X_A)
+
+	got := cpu.getPort(0x45)
+	want := uint8(0xaf)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+}
