@@ -1542,6 +1542,13 @@ func (c *CPU) jpPeXx() uint8 {
 	return 10
 }
 
+func (c *CPU) exDeHl() uint8 {
+	c.DE, c.HL = c.HL, c.DE
+
+	c.PC++
+	return 4
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

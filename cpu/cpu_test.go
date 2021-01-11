@@ -2101,3 +2101,11 @@ func TestJpPeXx(t *testing.T) {
 
 	checkCpu(t, 10, map[string]uint16{"PC": 0x06, "Flags": 0b11010011}, cpu.jpPeXx)
 }
+
+func TestExDeHl(t *testing.T) {
+	resetAll()
+	cpu.DE = 0x2822
+	cpu.HL = 0x499a
+
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x499a, "HL": 0x2822}, cpu.exDeHl)
+}
