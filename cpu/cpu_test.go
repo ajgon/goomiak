@@ -2085,3 +2085,19 @@ func TestJp_Hl_(t *testing.T) {
 
 	checkCpu(t, 4, map[string]uint16{"PC": 0x5678, "HL": 0x1234}, cpu.jp_Hl_)
 }
+
+func TestJpPeXx(t *testing.T) {
+	resetAll()
+	cpu.PC = 3
+	cpu.setFlags(0b11010111)
+	dmaX.SetMemoryBulk(0x0004, []uint8{0x78, 0x56})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 0x5678, "Flags": 0b11010111}, cpu.jpPeXx)
+
+	resetAll()
+	cpu.PC = 3
+	cpu.setFlags(0b11010011)
+	dmaX.SetMemoryBulk(0x0004, []uint8{0x78, 0x56})
+
+	checkCpu(t, 10, map[string]uint16{"PC": 0x06, "Flags": 0b11010011}, cpu.jpPeXx)
+}
