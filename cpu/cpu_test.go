@@ -2361,3 +2361,56 @@ func TestCallMXx(t *testing.T) {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
 	}
 }
+
+func TestInR_C_(t *testing.T) {
+	expectedRegisterMap := map[byte]string{
+		'B': "BC", 'C': "BC", 'D': "DE", 'E': "DE", 'H': "HL", 'L': "HL", 'A': "A",
+	}
+	for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', ' '} {
+		expectedValueMap := map[byte]uint16{
+			'B': 0x8b34, 'C': 0x008b, 'D': 0x8b00, 'E': 0x008b, 'H': 0x8b00, 'L': 0x008b,
+		}
+
+		resetAll()
+		cpu.setAcc(0x00)
+		cpu.BC = 0x0034
+		cpu.DE = 0x0000
+		cpu.HL = 0x0000
+		cpu.setFlags(0b00000001)
+		cpu.setPort(0x34, 0x8b)
+
+		switch register {
+		case ' ':
+			checkCpu(t, 12, map[string]uint16{"PC": 2, "BC": 0x0034, "Flags": 0b10000101}, cpu.inR_C_(register))
+		case 'A':
+			checkCpu(t, 12, map[string]uint16{"PC": 2, "BC": 0x0034, "A": 0x8b, "Flags": 0b10000101}, cpu.inR_C_(register))
+		case 'B', 'C':
+			checkCpu(t, 12, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b10000101}, cpu.inR_C_(register))
+		default:
+			checkCpu(t, 12, map[string]uint16{"PC": 2, "BC": 0x0034, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b10000101}, cpu.inR_C_(register))
+		}
+
+		expectedValueMap = map[byte]uint16{
+			'B': 0x0034, 'C': 0xff00, 'D': 0x00ff, 'E': 0xff00, 'H': 0x00ff, 'L': 0xff00,
+		}
+
+		resetAll()
+		cpu.setAcc(0x00)
+		cpu.BC = 0xff34
+		cpu.DE = 0xffff
+		cpu.HL = 0xffff
+		cpu.setFlags(0b00000000)
+		cpu.setPort(0x34, 0x00)
+
+		switch register {
+		case ' ':
+			checkCpu(t, 12, map[string]uint16{"PC": 2, "BC": 0xff34, "Flags": 0b01000100}, cpu.inR_C_(register))
+		case 'A':
+			checkCpu(t, 12, map[string]uint16{"PC": 2, "BC": 0xff34, "A": 0x00, "Flags": 0b01000100}, cpu.inR_C_(register))
+		case 'B', 'C':
+			checkCpu(t, 12, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b01000100}, cpu.inR_C_(register))
+		default:
+			checkCpu(t, 12, map[string]uint16{"PC": 2, "BC": 0xff34, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b01000100}, cpu.inR_C_(register))
+		}
+	}
+}

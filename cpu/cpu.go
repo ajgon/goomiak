@@ -1719,6 +1719,48 @@ func (c *CPU) cpX() uint8 {
 	return 7
 }
 
+func (c *CPU) inR_C_(r byte) func() uint8 {
+	var lhigh bool
+	var lvalue *uint16
+
+	switch r {
+	case 'A':
+		lhigh, lvalue = true, &c.AF
+	case 'B', 'C':
+		lhigh, lvalue = r == 'B', &c.BC
+	case 'D', 'E':
+		lhigh, lvalue = r == 'D', &c.DE
+	case 'H', 'L':
+		lhigh, lvalue = r == 'H', &c.HL
+	case ' ':
+	default:
+		panic("Invalid `r` part of the mnemonic")
+	}
+
+	return func() uint8 {
+		result := c.getPort(uint8(c.BC))
+
+		if r != ' ' {
+			if lhigh {
+				*lvalue = (*lvalue & 0x00ff) | (uint16(result) << 8)
+			} else {
+				*lvalue = (*lvalue & 0xff00) | uint16(result)
+			}
+		}
+
+		c.setS(result > 127)
+		c.setZ(result == 0)
+		c.setH(false)
+		c.setPV(parityTable[result])
+		c.setN(false)
+
+		c.PC += 2
+
+		return 12
+	}
+
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
