@@ -1923,6 +1923,32 @@ func (c *CPU) ldAI() uint8 {
 	return 9
 }
 
+func (c *CPU) ldRr_Xx_(rr string) func() uint8 {
+	var lvalue *uint16
+
+	switch rr {
+	case "AF":
+		lvalue = &c.AF
+	case "BC":
+		lvalue = &c.BC
+	case "DE":
+		lvalue = &c.DE
+	case "HL":
+		lvalue = &c.HL
+	case "SP":
+		lvalue = &c.SP
+	default:
+		panic("Invalid `rr` part of the mnemonic")
+	}
+
+	return func() uint8 {
+		*lvalue = c.readWord(c.readWord(c.PC + 2))
+
+		c.PC += 4
+		return 20
+	}
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

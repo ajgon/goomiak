@@ -2554,3 +2554,17 @@ func TestLdAI(t *testing.T) {
 
 	checkCpu(t, 9, map[string]uint16{"PC": 2, "A": 0x00, "I": 0x00, "Flags": 0b01000101}, cpu.ldAI)
 }
+
+func TestLdRr_Xx_(t *testing.T) {
+	for _, registerPair := range [4]string{"BC", "DE", "HL", "SP"} {
+		resetAll()
+		cpu.BC = 0x0123
+		cpu.DE = 0x4567
+		cpu.HL = 0x89ab
+		cpu.SP = 0xcdef
+		dmaX.SetMemoryBulk(0x0002, []uint8{0x20, 0x10})
+		dmaX.SetMemoryBulk(0x1020, []uint8{0x85, 0x24})
+
+		checkCpu(t, 20, map[string]uint16{"PC": 4, registerPair: 0x2485}, cpu.ldRr_Xx_(registerPair))
+	}
+}
