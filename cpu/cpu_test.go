@@ -2624,3 +2624,22 @@ func TestRrd(t *testing.T) {
 	}
 
 }
+
+func TestRld(t *testing.T) {
+	resetAll()
+
+	cpu.setAcc(0x7a)
+	cpu.HL = 0x5000
+	cpu.setFlags(0b11010111)
+	dmaX.SetMemoryByte(0x5000, 0x31)
+
+	checkCpu(t, 18, map[string]uint16{"PC": 2, "A": 0x73, "HL": 0x5000, "Flags": 0b00000001}, cpu.rld)
+
+	got := dmaX.GetMemory(0x5000)
+	want := uint8(0x1a)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+
+}
