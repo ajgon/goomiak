@@ -1885,6 +1885,13 @@ func (c *CPU) neg() uint8 {
 	return 8
 }
 
+func (c *CPU) retn() uint8 {
+	c.PC = c.popStack()
+	c.States.IFF1 = c.States.IFF2
+
+	return 14
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
