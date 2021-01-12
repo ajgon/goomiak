@@ -1859,6 +1859,17 @@ func (c *CPU) adcHlRr(rr string) func() uint8 {
 	}
 }
 
+func (c *CPU) ld_Xx_Rr(rr string) func() uint8 {
+	rvalue := c.extractRegisterPair(rr)
+
+	return func() uint8 {
+		c.writeWord(c.readWord(c.PC+2), rvalue)
+
+		c.PC += 4
+		return 20
+	}
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

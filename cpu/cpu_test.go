@@ -2443,3 +2443,23 @@ func TestOut_C_R(t *testing.T) {
 		}
 	}
 }
+
+func TestLd_Xx_Rr(t *testing.T) {
+	for _, registerPair := range [4]string{"BC", "DE", "HL", "SP"} {
+		resetAll()
+		cpu.BC = 0x4644
+		cpu.DE = 0x4644
+		cpu.HL = 0x4644
+		cpu.SP = 0x4644
+		dmaX.SetMemoryBulk(0x0002, []uint8{0x20, 0x10})
+
+		checkCpu(t, 20, map[string]uint16{"PC": 4, "BC": 0x4644, "DE": 0x4644, "HL": 0x4644}, cpu.ld_Xx_Rr(registerPair))
+
+		gotL, gotH := dmaX.GetMemory(0x1020), dmaX.GetMemory(0x1021)
+		wantL, wantH := uint8(0x44), uint8(0x46)
+
+		if gotL != wantL || gotH != wantH {
+			t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
+		}
+	}
+}
