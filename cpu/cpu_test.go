@@ -17,7 +17,7 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 	t.Helper()
 	var expectedSP, expectedBC, expectedDE, expectedHL uint16
 	var expectedAF_, expectedBC_, expectedDE_, expectedHL_ uint16
-	var expectedA, expectedFlags, expectedI uint8
+	var expectedA, expectedFlags, expectedI, expectedR uint8
 
 	if sp, ok := expected["SP"]; ok {
 		expectedSP = sp
@@ -96,6 +96,13 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 		expectedI = cpu.I
 	}
 
+	if r, ok := expected["R"]; ok {
+		expectedR = uint8(r)
+	} else {
+		cpu.R = uint8(rand.Uint32())
+		expectedR = cpu.R
+	}
+
 	cycles := instructionCall()
 
 	if pc, ok := expected["PC"]; ok {
@@ -148,6 +155,10 @@ func checkCpu(t *testing.T, expectedCycles uint8, expected map[string]uint16, in
 
 	if cpu.I != expectedI {
 		t.Errorf("I: got %x, want %x", cpu.I, expectedI)
+	}
+
+	if cpu.R != expectedR {
+		t.Errorf("R: got %x, want %x", cpu.R, expectedR)
 	}
 
 	if cycles != expectedCycles {
@@ -2567,4 +2578,11 @@ func TestLdRr_Xx_(t *testing.T) {
 
 		checkCpu(t, 20, map[string]uint16{"PC": 4, registerPair: 0x2485}, cpu.ldRr_Xx_(registerPair))
 	}
+}
+
+func TestLdRA(t *testing.T) {
+	resetAll()
+
+	cpu.setAcc(0x45)
+	checkCpu(t, 9, map[string]uint16{"PC": 2, "A": 0x45, "R": 0x45}, cpu.ldRA)
 }

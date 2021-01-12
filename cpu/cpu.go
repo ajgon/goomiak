@@ -44,6 +44,7 @@ type CPU struct {
 	HL     uint16
 	HL_    uint16
 	I      uint8
+	R      uint8
 	States CPUStates
 
 	dma *dma.DMA
@@ -1949,6 +1950,13 @@ func (c *CPU) ldRr_Xx_(rr string) func() uint8 {
 	}
 }
 
+func (c *CPU) ldRA() uint8 {
+	c.R = c.getAcc()
+
+	c.PC += 2
+	return 9
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
@@ -1961,6 +1969,7 @@ func (c *CPU) Reset() {
 	c.HL = 0
 	c.HL_ = 0
 	c.I = 0
+	c.R = 0
 	c.States = CPUStates{IFF1: true, IFF2: true}
 }
 
