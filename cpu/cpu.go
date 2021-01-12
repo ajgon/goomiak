@@ -29,6 +29,7 @@ type CPUStates struct {
 	Ports [256]uint8
 	IFF1  bool
 	IFF2  bool
+	IM    uint8
 }
 
 type CPU struct {
@@ -1890,6 +1891,15 @@ func (c *CPU) retn() uint8 {
 	c.States.IFF1 = c.States.IFF2
 
 	return 14
+}
+
+func (c *CPU) im(mode uint8) func() uint8 {
+	return func() uint8 {
+		c.States.IM = mode
+		c.PC += 2
+
+		return 8
+	}
 }
 
 func (c *CPU) Reset() {

@@ -2501,3 +2501,19 @@ func TestRetn(t *testing.T) {
 		t.Errorf("got IFF1=%t, IFF2=%t, want IFF1=%t, IFF2=%t", gotIFF1, gotIFF2, wantIFF1, wantIFF2)
 	}
 }
+
+func TestIm(t *testing.T) {
+	for im := 0; im <= 2; im++ {
+		resetAll()
+		cpu.States.IM = uint8(im + 1)
+
+		checkCpu(t, 8, map[string]uint16{"PC": 2}, cpu.im(uint8(im)))
+
+		got := cpu.States.IM
+		want := uint8(im)
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
+	}
+}
