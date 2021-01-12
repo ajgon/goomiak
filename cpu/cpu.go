@@ -1910,6 +1910,19 @@ func (c *CPU) ldIA() uint8 {
 	return 9
 }
 
+func (c *CPU) ldAI() uint8 {
+	c.setAcc(c.I)
+
+	c.setS(c.I > 127)
+	c.setZ(c.I == 0)
+	c.setH(false)
+	c.setPV(c.States.IFF2)
+	c.setN(false)
+
+	c.PC += 2
+	return 9
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

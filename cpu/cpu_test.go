@@ -2535,3 +2535,22 @@ func TestLdIA(t *testing.T) {
 	cpu.setAcc(0x45)
 	checkCpu(t, 9, map[string]uint16{"PC": 2, "A": 0x45, "I": 0x45}, cpu.ldIA)
 }
+
+func TestLdAI(t *testing.T) {
+	resetAll()
+
+	cpu.I = 0x99
+	cpu.States.IFF2 = false
+	cpu.setFlags(0b01010110)
+
+	checkCpu(t, 9, map[string]uint16{"PC": 2, "A": 0x99, "I": 0x99, "Flags": 0b10000000}, cpu.ldAI)
+
+	resetAll()
+
+	cpu.setAcc(0x32)
+	cpu.I = 0x00
+	cpu.States.IFF2 = true
+	cpu.setFlags(0b10010011)
+
+	checkCpu(t, 9, map[string]uint16{"PC": 2, "A": 0x00, "I": 0x00, "Flags": 0b01000101}, cpu.ldAI)
+}
