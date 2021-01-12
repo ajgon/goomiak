@@ -1761,6 +1761,28 @@ func (c *CPU) inR_C_(r byte) func() uint8 {
 
 }
 
+func (c *CPU) out_C_R(r byte) func() uint8 {
+	var rhigh bool
+	var rvalue uint16
+
+	if r == ' ' {
+		rvalue = 0
+	} else {
+		rhigh, rvalue = c.extractRegister(r)
+	}
+
+	return func() uint8 {
+		if rhigh {
+			c.setPort(uint8(c.BC), uint8(rvalue>>8))
+		} else {
+			c.setPort(uint8(c.BC), uint8(rvalue))
+		}
+
+		c.PC += 2
+		return 12
+	}
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

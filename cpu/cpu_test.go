@@ -2414,3 +2414,32 @@ func TestInR_C_(t *testing.T) {
 		}
 	}
 }
+
+func TestOut_C_R(t *testing.T) {
+	for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', ' '} {
+		var want uint8
+
+		resetAll()
+		cpu.setAcc(0x8b)
+		cpu.BC = 0x8b34
+		cpu.DE = 0x8b8b
+		cpu.HL = 0x8b8b
+
+		checkCpu(t, 12, map[string]uint16{"PC": 2, "A": 0x8b, "BC": 0x8b34, "DE": 0x8b8b, "HL": 0x8b8b}, cpu.out_C_R(register))
+
+		got := cpu.getPort(0x34)
+
+		switch register {
+		case ' ':
+			want = 0
+		case 'C':
+			want = 0x34
+		default:
+			want = 0x8b
+		}
+
+		if got != want {
+			t.Errorf("%c got %02x, want %02x", register, got, want)
+		}
+	}
+}
