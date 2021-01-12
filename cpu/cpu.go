@@ -1848,6 +1848,17 @@ func (c *CPU) sbcHlRr(rr string) func() uint8 {
 	}
 }
 
+func (c *CPU) adcHlRr(rr string) func() uint8 {
+	rvalue := c.extractRegisterPair(rr)
+
+	return func() uint8 {
+		c.HL = c.adc16bit(c.HL, rvalue)
+
+		c.PC += 2
+		return 15
+	}
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
