@@ -2605,3 +2605,22 @@ func TestLdAR(t *testing.T) {
 
 	checkCpu(t, 9, map[string]uint16{"PC": 2, "A": 0x00, "R": 0x00, "Flags": 0b01000101}, cpu.ldAR)
 }
+
+func TestRrd(t *testing.T) {
+	resetAll()
+
+	cpu.setAcc(0x84)
+	cpu.HL = 0x5000
+	cpu.setFlags(0b01010111)
+	dmaX.SetMemoryByte(0x5000, 0x20)
+
+	checkCpu(t, 18, map[string]uint16{"PC": 2, "A": 0x80, "HL": 0x5000, "Flags": 0b10000001}, cpu.rrd)
+
+	got := dmaX.GetMemory(0x5000)
+	want := uint8(0x42)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+
+}

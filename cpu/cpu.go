@@ -1970,6 +1970,27 @@ func (c *CPU) ldAR() uint8 {
 	return 9
 }
 
+func (c *CPU) rrd() uint8 {
+	value := c.dma.GetMemory(c.HL)
+	a := c.getAcc()
+
+	c.setAcc((a & 0xf0) | (value & 0x0f))
+	value = value >> 4
+	value = (a << 4) | value
+
+	c.dma.SetMemoryByte(c.HL, value)
+	a = c.getAcc()
+
+	c.setS(a > 127)
+	c.setZ(a == 0)
+	c.setH(false)
+	c.setPV(parityTable[a])
+	c.setN(false)
+
+	c.PC += 2
+	return 18
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
