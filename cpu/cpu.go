@@ -1957,6 +1957,19 @@ func (c *CPU) ldRA() uint8 {
 	return 9
 }
 
+func (c *CPU) ldAR() uint8 {
+	c.setAcc(c.R)
+
+	c.setS(c.R > 127)
+	c.setZ(c.R == 0)
+	c.setH(false)
+	c.setPV(c.States.IFF2)
+	c.setN(false)
+
+	c.PC += 2
+	return 9
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
