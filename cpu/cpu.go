@@ -43,6 +43,7 @@ type CPU struct {
 	DE_    uint16
 	HL     uint16
 	HL_    uint16
+	I      uint8
 	States CPUStates
 
 	dma *dma.DMA
@@ -1902,6 +1903,13 @@ func (c *CPU) im(mode uint8) func() uint8 {
 	}
 }
 
+func (c *CPU) ldIA() uint8 {
+	c.I = c.getAcc()
+
+	c.PC += 2
+	return 9
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0
@@ -1913,6 +1921,7 @@ func (c *CPU) Reset() {
 	c.DE_ = 0
 	c.HL = 0
 	c.HL_ = 0
+	c.I = 0
 	c.States = CPUStates{IFF1: true, IFF2: true}
 }
 
