@@ -208,6 +208,25 @@ func (c *CPU) extractRegister(r byte) (rhigh bool, rvalue uint16) {
 	return
 }
 
+func (c *CPU) extractRegisterPair(rr string) (rvalue uint16) {
+	switch rr {
+	case "AF":
+		rvalue = c.AF
+	case "BC":
+		rvalue = c.BC
+	case "DE":
+		rvalue = c.DE
+	case "HL":
+		rvalue = c.HL
+	case "SP":
+		rvalue = c.SP
+	default:
+		panic("Invalid `rr` part of the mnemonic")
+	}
+
+	return
+}
+
 func (c *CPU) increaseRegister(name rune) uint8 {
 	var register uint8
 
@@ -323,6 +342,36 @@ func (c *CPU) adcValueToAcc(value uint8) {
 	c.setH((a^value^result)&0x10 == 0x10)
 	c.setZ(result == 0)
 	c.setS(result > 127)
+}
+
+func (c *CPU) adc16bit(addendLeft, addendRight uint16) (result uint16) {
+	var carryIn, carryOut uint16
+
+	if c.getC() {
+		carryIn = 1
+	}
+
+	result = addendLeft + addendRight + carryIn
+
+	if c.getC() {
+		c.setC(addendLeft >= 0xffff-addendRight)
+	} else {
+		c.setC(addendLeft > 0xffff-addendRight)
+	}
+
+	c.setN(false)
+
+	if c.getC() {
+		carryOut = 1
+	}
+
+	c.setPV((((result ^ addendLeft ^ addendRight) >> 15) ^ carryOut) == 1)
+
+	c.setH((addendLeft^addendRight^result)&0x1000 == 0x1000)
+	c.setZ(result == 0)
+	c.setS(result > 0x7fff)
+
+	return
 }
 
 func (c *CPU) nop() uint8 {
@@ -1780,6 +1829,22 @@ func (c *CPU) out_C_R(r byte) func() uint8 {
 
 		c.PC += 2
 		return 12
+	}
+}
+
+func (c *CPU) sbcHlRr(rr string) func() uint8 {
+	rvalue := c.extractRegisterPair(rr)
+
+	return func() uint8 {
+		c.setC(!c.getC())
+		c.HL = c.adc16bit(c.HL, rvalue^0xffff)
+
+		c.PC += 2
+		c.setN(true)
+		c.setC(!c.getC())
+		c.setH(!c.getH())
+
+		return 15
 	}
 }
 
