@@ -1870,6 +1870,21 @@ func (c *CPU) ld_Xx_Rr(rr string) func() uint8 {
 	}
 }
 
+func (c *CPU) neg() uint8 {
+	a := c.getAcc()
+	c.setAcc(0)
+
+	c.setC(false)
+	c.adcValueToAcc(a ^ 0xff)
+
+	c.PC += 2
+	c.setN(true)
+	c.setC(!c.getC())
+	c.setH(!c.getH())
+
+	return 8
+}
+
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0

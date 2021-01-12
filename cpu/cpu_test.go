@@ -2463,3 +2463,23 @@ func TestLd_Xx_Rr(t *testing.T) {
 		}
 	}
 }
+
+func TestNeg(t *testing.T) {
+	// A, ~A, C, N, PV, H, N, Z, S
+	var negTruthTable [6][8]uint8 = [6][8]uint8{
+		[8]uint8{0, 255, 1, 1, 0, 1, 0, 1},
+		[8]uint8{1, 254, 1, 1, 0, 1, 0, 1},
+		[8]uint8{127, 128, 1, 1, 0, 1, 0, 1},
+		[8]uint8{128, 127, 1, 1, 0, 1, 0, 0},
+		[8]uint8{129, 126, 1, 1, 0, 1, 0, 0},
+		[8]uint8{255, 0, 1, 1, 0, 1, 1, 0},
+	}
+
+	for _, row := range negTruthTable {
+		resetAll()
+		cpu.setAcc(row[0])
+		expectedFlags := 128*row[7] + 64*row[6] + 16*row[5] + 4*row[4] + 2*row[3] + row[2]
+
+		checkCpu(t, 8, map[string]uint16{"PC": 2, "A": uint16(row[1]), "Flags": uint16(expectedFlags)}, cpu.neg)
+	}
+}
