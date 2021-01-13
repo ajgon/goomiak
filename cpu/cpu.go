@@ -148,7 +148,7 @@ func (c *CPU) initializeMnemonics() {
 		c.addAR('B'), c.addAR('C'), c.addAR('D'), c.addAR('E'), c.addAR('H'), c.addAR('L'), c.addA_Ss_("HL"), c.addAR('A'),
 		c.adcAR('B'), c.adcAR('C'), c.adcAR('D'), c.adcAR('E'), c.adcAR('H'), c.adcAR('L'), c.adcA_Ss_("HL"), c.adcAR('A'),
 		c.subR('B'), c.subR('C'), c.subR('D'), c.subR('E'), c.subR('H'), c.subR('L'), c.sub_Ss_("HL"), c.subR('A'),
-		c.sbcAR('B'), c.sbcAR('C'), c.sbcAR('D'), c.sbcAR('E'), c.sbcAR('H'), c.sbcAR('L'), c.sbcA_Hl_, c.sbcAR('A'),
+		c.sbcAR('B'), c.sbcAR('C'), c.sbcAR('D'), c.sbcAR('E'), c.sbcAR('H'), c.sbcAR('L'), c.sbcA_Ss_("HL"), c.sbcAR('A'),
 		c.andR('B'), c.andR('C'), c.andR('D'), c.andR('E'), c.andR('H'), c.andR('L'), c.and_Hl_, c.andR('A'),
 		c.xorR('B'), c.xorR('C'), c.xorR('D'), c.xorR('E'), c.xorR('H'), c.xorR('L'), c.xor_Hl_, c.xorR('A'),
 		c.orR('B'), c.orR('C'), c.orR('D'), c.orR('E'), c.orR('H'), c.orR('L'), c.or_Hl_, c.orR('A'),
@@ -1445,16 +1445,34 @@ func (c *CPU) sbcAR(r byte) func() uint8 {
 	}
 }
 
-func (c *CPU) sbcA_Hl_() uint8 {
-	c.setC(!c.getC())
-	c.adcValueToAcc(c.dma.GetMemory(c.HL) ^ 0xff)
+func (c *CPU) sbcA_Ss_(ss string) func() uint8 {
+	if ss == "HL" {
+		return func() uint8 {
+			c.setC(!c.getC())
+			c.adcValueToAcc(c.dma.GetMemory(c.HL) ^ 0xff)
 
-	c.PC++
-	c.setN(true)
-	c.setC(!c.getC())
-	c.setH(!c.getH())
+			c.PC++
+			c.setN(true)
+			c.setC(!c.getC())
+			c.setH(!c.getH())
 
-	return 7
+			return 7
+		}
+	}
+
+	rvalue := c.extractRegisterPair(ss)
+
+	return func() uint8 {
+		c.setC(!c.getC())
+		c.adcValueToAcc(c.dma.GetMemory(rvalue+uint16(c.dma.GetMemory(c.PC+2))) ^ 0xff)
+
+		c.PC += 3
+		c.setN(true)
+		c.setC(!c.getC())
+		c.setH(!c.getH())
+
+		return 19
+	}
 }
 
 func (c *CPU) andR(r byte) func() uint8 {
