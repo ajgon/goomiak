@@ -2524,6 +2524,24 @@ func TestRetn(t *testing.T) {
 	}
 }
 
+func TestReti(t *testing.T) {
+	resetAll()
+	cpu.PC = 0x1234
+	cpu.SP = 0xfffc
+	dmaX.SetMemoryBulk(0xfffc, []uint8{0x78, 0x56})
+	cpu.States.IFF1 = true
+	cpu.States.IFF2 = false
+
+	checkCpu(t, 14, map[string]uint16{"PC": 0x5678, "SP": 0xfffe}, cpu.reti)
+
+	gotIFF1, gotIFF2 := cpu.checkInterrupts()
+	wantIFF1, wantIFF2 := false, false
+
+	if gotIFF1 != wantIFF1 || gotIFF2 != wantIFF2 {
+		t.Errorf("got IFF1=%t, IFF2=%t, want IFF1=%t, IFF2=%t", gotIFF1, gotIFF2, wantIFF1, wantIFF2)
+	}
+}
+
 func TestIm(t *testing.T) {
 	for im := 0; im <= 2; im++ {
 		resetAll()

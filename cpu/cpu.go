@@ -1895,6 +1895,13 @@ func (c *CPU) retn() uint8 {
 	return 14
 }
 
+func (c *CPU) reti() uint8 {
+	c.PC = c.popStack()
+	c.States.IFF1 = c.States.IFF2
+
+	return 14
+}
+
 func (c *CPU) im(mode uint8) func() uint8 {
 	return func() uint8 {
 		c.States.IM = mode
