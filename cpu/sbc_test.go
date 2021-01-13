@@ -102,7 +102,7 @@ func TestSbcRegister(t *testing.T) {
 			cpu.BC = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.DE = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.HL = (uint16(row[1]) << 8) | uint16(row[1])
-			tstates := cpu.sbcR(register)()
+			tstates := cpu.sbcAR(register)()
 
 			if cpu.getAcc() != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
 				t.Errorf(
@@ -130,7 +130,7 @@ func TestSbc_Hl_(t *testing.T) {
 		cpu.setC(row[2] == 1)
 		cpu.setAcc(row[0])
 		dmaX.SetMemoryByte(cpu.HL, row[1])
-		tstates := cpu.sbc_Hl_()
+		tstates := cpu.sbcA_Hl_()
 
 		if cpu.getAcc() != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
 			t.Errorf(

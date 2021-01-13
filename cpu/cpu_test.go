@@ -845,7 +845,7 @@ func TestIncSp(t *testing.T) {
 	resetAll()
 	cpu.SP = 0x1020
 
-	checkCpu(t, 6, map[string]uint16{"PC": 1, "SP": 0x1021}, cpu.incSP)
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "SP": 0x1021}, cpu.incSp)
 }
 
 func TestInc_Hl_(t *testing.T) {
@@ -999,7 +999,7 @@ func TestDecSp(t *testing.T) {
 	resetAll()
 	cpu.SP = 0x1000
 
-	checkCpu(t, 6, map[string]uint16{"PC": 1, "SP": 0x0fff}, cpu.decSP)
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "SP": 0x0fff}, cpu.decSp)
 }
 
 func TestIncA(t *testing.T) {
