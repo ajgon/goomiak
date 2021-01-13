@@ -157,7 +157,7 @@ func (c *CPU) initializeMnemonics() {
 		c.retZ, c.ret, c.jpZXx, c.die, c.callZXx, c.callXx, c.adcAX, c.rst(0x08),
 		c.retNc, c.popDe, c.jpNcXx, c.out_X_A, c.callNcXx, c.pushDe, c.subX, c.rst(0x10),
 		c.retC, c.exx, c.jpCXx, c.inA_X_, c.callCXx, c.die, c.sbcAX, c.rst(0x18),
-		c.retPo, c.popHl, c.jpPoXx, c.ex_Sp_Hl, c.callPoXx, c.pushHl, c.andX, c.rst(0x20),
+		c.retPo, c.popHl, c.jpPoXx, c.ex_Sp_Hl, c.callPoXx, c.pushSs("HL"), c.andX, c.rst(0x20),
 		c.retPe, c.jp_Hl_, c.jpPeXx, c.exDeHl, c.callPeXx, c.die, c.xorX, c.rst(0x28),
 		c.retP, c.popAf, c.jpPXx, c.di, c.callPXx, c.pushAf, c.orX, c.rst(0x30),
 		c.retM, c.ldSpSs("HL"), c.jpMXx, c.ei, c.callMXx, c.die, c.cpX, c.rst(0x38),
@@ -1817,11 +1817,25 @@ func (c *CPU) callPoXx() uint8 {
 	return 17
 }
 
-func (c *CPU) pushHl() uint8 {
-	c.pushStack(c.HL)
-	c.PC++
+func (c *CPU) pushSs(ss string) func() uint8 {
+	if ss == "HL" {
+		return func() uint8 {
+			c.pushStack(c.HL)
+			c.PC++
 
-	return 11
+			return 11
+		}
+	}
+
+	rvalue := c.extractRegisterPair(ss)
+
+	return func() uint8 {
+		c.pushStack(rvalue)
+		c.PC += 2
+
+		return 15
+	}
+
 }
 
 func (c *CPU) andX() uint8 {

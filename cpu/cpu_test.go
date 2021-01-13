@@ -2080,7 +2080,7 @@ func TestPushHl(t *testing.T) {
 	resetAll()
 	cpu.HL = 0x1234
 	cpu.SP = 0x0000
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "SP": 0xfffe, "HL": 0x1234}, cpu.pushHl)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "SP": 0xfffe, "HL": 0x1234}, cpu.pushSs("HL"))
 
 	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
 	wantL, wantH := uint8(0x34), uint8(0x12)
@@ -3088,4 +3088,32 @@ func TestLdSpIy(t *testing.T) {
 	cpu.IY = 0x442e
 
 	checkCpu(t, 10, map[string]uint16{"PC": 2, "SP": 0x442e, "IY": 0x442e}, cpu.ldSpSs("IY"))
+}
+
+func TestPushIx(t *testing.T) {
+	resetAll()
+	cpu.IX = 0x1234
+	cpu.SP = 0x0000
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "SP": 0xfffe, "IX": 0x1234}, cpu.pushSs("IX"))
+
+	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
+	wantL, wantH := uint8(0x34), uint8(0x12)
+
+	if gotL != wantL || gotH != wantH {
+		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
+	}
+}
+
+func TestPushIy(t *testing.T) {
+	resetAll()
+	cpu.IY = 0x1234
+	cpu.SP = 0x0000
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "SP": 0xfffe, "IY": 0x1234}, cpu.pushSs("IY"))
+
+	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
+	wantL, wantH := uint8(0x34), uint8(0x12)
+
+	if gotL != wantL || gotH != wantH {
+		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
+	}
 }
