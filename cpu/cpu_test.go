@@ -919,7 +919,7 @@ func TestDec_Hl_(t *testing.T) {
 	cpu.HL = 0x3572
 	dmaX.SetMemoryByte(0x3572, 0x01)
 
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b01000011}, cpu.dec_Hl_)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b01000011}, cpu.dec_Ss_("HL"))
 
 	got := dmaX.GetMemory(0x3572)
 	want := uint8(0x00)
@@ -932,7 +932,7 @@ func TestDec_Hl_(t *testing.T) {
 	cpu.setFlags(0b01000100)
 	cpu.HL = 0x3572
 	dmaX.SetMemoryByte(0x3572, 0x00)
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b10010010}, cpu.dec_Hl_)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b10010010}, cpu.dec_Ss_("HL"))
 
 	got = dmaX.GetMemory(0x3572)
 	want = uint8(0xff)
@@ -945,7 +945,7 @@ func TestDec_Hl_(t *testing.T) {
 	cpu.setFlags(0b11000000)
 	cpu.HL = 0x3572
 	dmaX.SetMemoryByte(0x3572, 0x80)
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b00010110}, cpu.dec_Hl_)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x3572, "Flags": 0b00010110}, cpu.dec_Ss_("HL"))
 
 	got = dmaX.GetMemory(0x3572)
 	want = uint8(0x7f)
@@ -3252,6 +3252,100 @@ func TestInc_Iy_(t *testing.T) {
 
 	got = dmaX.GetMemory(0x3572)
 	want = uint8(0x80)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+}
+
+func TestDec_Ix_(t *testing.T) {
+	resetAll()
+	cpu.setFlags(0b11010101)
+	cpu.IX = 0x353f
+	dmaX.SetMemoryByte(0x3572, 0x01)
+	dmaX.SetMemoryByte(0x0002, 0x33)
+
+	checkCpu(t, 23, map[string]uint16{"PC": 3, "IX": 0x353f, "Flags": 0b01000011}, cpu.dec_Ss_("IX"))
+
+	got := dmaX.GetMemory(0x3572)
+	want := uint8(0x00)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+
+	resetAll()
+	cpu.setFlags(0b01000100)
+	cpu.IX = 0x353f
+	dmaX.SetMemoryByte(0x3572, 0x00)
+	dmaX.SetMemoryByte(0x0002, 0x33)
+
+	checkCpu(t, 23, map[string]uint16{"PC": 3, "IX": 0x353f, "Flags": 0b10010010}, cpu.dec_Ss_("IX"))
+
+	got = dmaX.GetMemory(0x3572)
+	want = uint8(0xff)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+
+	resetAll()
+	cpu.setFlags(0b11000000)
+	cpu.IX = 0x353f
+	dmaX.SetMemoryByte(0x3572, 0x80)
+	dmaX.SetMemoryByte(0x0002, 0x33)
+
+	checkCpu(t, 23, map[string]uint16{"PC": 3, "IX": 0x353f, "Flags": 0b00010110}, cpu.dec_Ss_("IX"))
+
+	got = dmaX.GetMemory(0x3572)
+	want = uint8(0x7f)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+}
+
+func TestDec_Iy_(t *testing.T) {
+	resetAll()
+	cpu.setFlags(0b11010101)
+	cpu.IY = 0x353f
+	dmaX.SetMemoryByte(0x3572, 0x01)
+	dmaX.SetMemoryByte(0x0002, 0x33)
+
+	checkCpu(t, 23, map[string]uint16{"PC": 3, "IY": 0x353f, "Flags": 0b01000011}, cpu.dec_Ss_("IY"))
+
+	got := dmaX.GetMemory(0x3572)
+	want := uint8(0x00)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+
+	resetAll()
+	cpu.setFlags(0b01000100)
+	cpu.IY = 0x353f
+	dmaX.SetMemoryByte(0x3572, 0x00)
+	dmaX.SetMemoryByte(0x0002, 0x33)
+
+	checkCpu(t, 23, map[string]uint16{"PC": 3, "IY": 0x353f, "Flags": 0b10010010}, cpu.dec_Ss_("IY"))
+
+	got = dmaX.GetMemory(0x3572)
+	want = uint8(0xff)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+
+	resetAll()
+	cpu.setFlags(0b11000000)
+	cpu.IY = 0x353f
+	dmaX.SetMemoryByte(0x3572, 0x80)
+	dmaX.SetMemoryByte(0x0002, 0x33)
+
+	checkCpu(t, 23, map[string]uint16{"PC": 3, "IY": 0x353f, "Flags": 0b00010110}, cpu.dec_Ss_("IY"))
+
+	got = dmaX.GetMemory(0x3572)
+	want = uint8(0x7f)
 
 	if got != want {
 		t.Errorf("got 0x%x, want 0x%x", got, want)
