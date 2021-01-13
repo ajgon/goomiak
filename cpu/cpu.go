@@ -143,7 +143,7 @@ func (c *CPU) initializeMnemonics() {
 		c.ldRR_('E', 'B'), c.ldRR_('E', 'C'), c.ldRR_('E', 'D'), c.ldRR_('E', 'E'), c.ldRR_('E', 'H'), c.ldRR_('E', 'L'), c.ldR_Ss_('E', "HL"), c.ldRR_('E', 'A'),
 		c.ldRR_('H', 'B'), c.ldRR_('H', 'C'), c.ldRR_('H', 'D'), c.ldRR_('H', 'E'), c.ldRR_('H', 'H'), c.ldRR_('H', 'L'), c.ldR_Ss_('H', "HL"), c.ldRR_('H', 'A'),
 		c.ldRR_('L', 'B'), c.ldRR_('L', 'C'), c.ldRR_('L', 'D'), c.ldRR_('L', 'E'), c.ldRR_('L', 'H'), c.ldRR_('L', 'L'), c.ldR_Ss_('L', "HL"), c.ldRR_('L', 'A'),
-		c.ld_Hl_R('B'), c.ld_Hl_R('C'), c.ld_Hl_R('D'), c.ld_Hl_R('E'), c.ld_Hl_R('H'), c.ld_Hl_R('L'), c.halt, c.ld_Hl_R('A'),
+		c.ld_Ss_R("HL", 'B'), c.ld_Ss_R("HL", 'C'), c.ld_Ss_R("HL", 'D'), c.ld_Ss_R("HL", 'E'), c.ld_Ss_R("HL", 'H'), c.ld_Ss_R("HL", 'L'), c.halt, c.ld_Ss_R("HL", 'A'),
 		c.ldRR_('A', 'B'), c.ldRR_('A', 'C'), c.ldRR_('A', 'D'), c.ldRR_('A', 'E'), c.ldRR_('A', 'H'), c.ldRR_('A', 'L'), c.ldR_Ss_('A', "HL"), c.ldRR_('A', 'A'),
 		c.addAR('B'), c.addAR('C'), c.addAR('D'), c.addAR('E'), c.addAR('H'), c.addAR('L'), c.addA_Hl_, c.addAR('A'),
 		c.adcAR('B'), c.adcAR('C'), c.adcAR('D'), c.adcAR('E'), c.adcAR('H'), c.adcAR('L'), c.adcA_Hl_, c.adcAR('A'),
@@ -1141,8 +1141,28 @@ func (c *CPU) ldR_Ss_(r byte, ss string) func() uint8 {
 	}
 }
 
-func (c *CPU) ld_Hl_R(r byte) func() uint8 {
+func (c *CPU) ld_Ss_R(ss string, r byte) func() uint8 {
 	rhigh, rvalue := c.extractRegister(r)
+
+	if ss == "HL" {
+		return func() uint8 {
+			var right uint8
+
+			if rhigh {
+				right = uint8(rvalue >> 8)
+			} else {
+				right = uint8(rvalue)
+			}
+
+			c.dma.SetMemoryByte(c.HL, right)
+
+			c.PC++
+
+			return 7
+		}
+	}
+
+	addrBase := c.extractRegisterPair(ss)
 
 	return func() uint8 {
 		var right uint8
@@ -1153,11 +1173,11 @@ func (c *CPU) ld_Hl_R(r byte) func() uint8 {
 			right = uint8(rvalue)
 		}
 
-		c.dma.SetMemoryByte(c.HL, right)
+		c.dma.SetMemoryByte(addrBase+uint16(c.dma.GetMemory(c.PC+2)), right)
 
-		c.PC++
+		c.PC += 3
 
-		return 7
+		return 19
 	}
 }
 
