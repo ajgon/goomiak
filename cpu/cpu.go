@@ -149,7 +149,7 @@ func (c *CPU) initializeMnemonics() {
 		c.adcAR('B'), c.adcAR('C'), c.adcAR('D'), c.adcAR('E'), c.adcAR('H'), c.adcAR('L'), c.adcA_Ss_("HL"), c.adcAR('A'),
 		c.subR('B'), c.subR('C'), c.subR('D'), c.subR('E'), c.subR('H'), c.subR('L'), c.sub_Ss_("HL"), c.subR('A'),
 		c.sbcAR('B'), c.sbcAR('C'), c.sbcAR('D'), c.sbcAR('E'), c.sbcAR('H'), c.sbcAR('L'), c.sbcA_Ss_("HL"), c.sbcAR('A'),
-		c.andR('B'), c.andR('C'), c.andR('D'), c.andR('E'), c.andR('H'), c.andR('L'), c.and_Hl_, c.andR('A'),
+		c.andR('B'), c.andR('C'), c.andR('D'), c.andR('E'), c.andR('H'), c.andR('L'), c.and_Ss_("HL"), c.andR('A'),
 		c.xorR('B'), c.xorR('C'), c.xorR('D'), c.xorR('E'), c.xorR('H'), c.xorR('L'), c.xor_Hl_, c.xorR('A'),
 		c.orR('B'), c.orR('C'), c.orR('D'), c.orR('E'), c.orR('H'), c.orR('L'), c.or_Hl_, c.orR('A'),
 		c.cpR('B'), c.cpR('C'), c.cpR('D'), c.cpR('E'), c.cpR('H'), c.cpR('L'), c.cp_Hl_, c.cpR('A'),
@@ -1499,19 +1499,40 @@ func (c *CPU) andR(r byte) func() uint8 {
 	}
 }
 
-func (c *CPU) and_Hl_() uint8 {
-	result := c.getAcc() & c.dma.GetMemory(c.HL)
+func (c *CPU) and_Ss_(ss string) func() uint8 {
+	if ss == "HL" {
+		return func() uint8 {
+			result := c.getAcc() & c.dma.GetMemory(c.HL)
 
-	c.PC++
-	c.setAcc(result)
-	c.setS(result > 127)
-	c.setZ(result == 0)
-	c.setH(true)
-	c.setPV(parityTable[result])
-	c.setN(false)
-	c.setC(false)
+			c.PC++
+			c.setAcc(result)
+			c.setS(result > 127)
+			c.setZ(result == 0)
+			c.setH(true)
+			c.setPV(parityTable[result])
+			c.setN(false)
+			c.setC(false)
 
-	return 7
+			return 7
+		}
+	}
+
+	rvalue := c.extractRegisterPair(ss)
+
+	return func() uint8 {
+		result := c.getAcc() & c.dma.GetMemory(rvalue+uint16(c.dma.GetMemory(c.PC+2)))
+
+		c.PC += 3
+		c.setAcc(result)
+		c.setS(result > 127)
+		c.setZ(result == 0)
+		c.setH(true)
+		c.setPV(parityTable[result])
+		c.setN(false)
+		c.setC(false)
+
+		return 19
+	}
 }
 
 func (c *CPU) xorR(r byte) func() uint8 {
