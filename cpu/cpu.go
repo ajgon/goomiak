@@ -133,7 +133,7 @@ func (c *CPU) initializeMnemonics() {
 		c.exAfAf_, c.addHlBc, c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCX, c.rrca,
 		c.djnzX, c.ldDeXx, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDX, c.rla,
 		c.jrX, c.addHlDe, c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEX, c.rra,
-		c.jrNzX, c.ldSsXx("HL"), c.ld_Xx_Hl, c.incHl, c.incH, c.decH, c.ldHX, c.daa,
+		c.jrNzX, c.ldSsXx("HL"), c.ld_Xx_Ss("HL"), c.incHl, c.incH, c.decH, c.ldHX, c.daa,
 		c.jrZX, c.addHlHl, c.ldSs_Xx_("HL"), c.decHl, c.incL, c.decL, c.ldLX, c.cpl,
 		c.jrNcX, c.ldSpXx, c.ld_Xx_A, c.incSp, c.inc_Hl_, c.dec_Hl_, c.ld_Ss_X("HL"), c.scf,
 		c.jrCX, c.addHlSp, c.ldA_Xx_, c.decSp, c.incA, c.decA, c.ldAX, c.ccf,
@@ -812,10 +812,22 @@ func (c *CPU) ldSsXx(ss string) func() uint8 {
 	panic("Invalid `ss` type")
 }
 
-func (c *CPU) ld_Xx_Hl() uint8 {
-	c.writeWord(c.readWord(c.PC+1), c.HL)
-	c.PC += 3
-	return 5
+func (c *CPU) ld_Xx_Ss(ss string) func() uint8 {
+	if ss == "HL" {
+		return func() uint8 {
+			c.writeWord(c.readWord(c.PC+1), c.HL)
+			c.PC += 3
+			return 5
+		}
+	}
+
+	rvalue := c.extractRegisterPair(ss)
+
+	return func() uint8 {
+		c.writeWord(c.readWord(c.PC+2), rvalue)
+		c.PC += 4
+		return 20
+	}
 }
 
 func (c *CPU) incHl() uint8 {
