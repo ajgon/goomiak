@@ -960,7 +960,7 @@ func TestLd_Hl_X(t *testing.T) {
 	cpu.HL = 0x1015
 	dmaX.SetMemoryBulk(0x0000, []uint8{0x36, 0x28})
 
-	checkCpu(t, 10, map[string]uint16{"PC": 2, "HL": 0x1015}, cpu.ld_Hl_X)
+	checkCpu(t, 10, map[string]uint16{"PC": 2, "HL": 0x1015}, cpu.ld_Ss_X("HL"))
 
 	got := dmaX.GetMemory(0x1015)
 	want := uint8(0x28)
@@ -2983,5 +2983,33 @@ func TestLd_Iy_R(t *testing.T) {
 
 	if got != want {
 		t.Errorf("got 0x%02x, want %02x", got, want)
+	}
+}
+
+func TestLd_Ix_X(t *testing.T) {
+	resetAll()
+	cpu.IX = 0x1015
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0x36, 0x19, 0x28})
+
+	checkCpu(t, 19, map[string]uint16{"PC": 4, "IX": 0x1015}, cpu.ld_Ss_X("IX"))
+
+	got := dmaX.GetMemory(0x102e)
+	want := uint8(0x28)
+	if got != want {
+		t.Errorf("got %x, want %x", got, want)
+	}
+}
+
+func TestLd_Iy_X(t *testing.T) {
+	resetAll()
+	cpu.IY = 0x1015
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0x36, 0x19, 0x28})
+
+	checkCpu(t, 19, map[string]uint16{"PC": 4, "IY": 0x1015}, cpu.ld_Ss_X("IY"))
+
+	got := dmaX.GetMemory(0x102e)
+	want := uint8(0x28)
+	if got != want {
+		t.Errorf("got %x, want %x", got, want)
 	}
 }
