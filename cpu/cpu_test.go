@@ -2008,7 +2008,7 @@ func TestPopHl(t *testing.T) {
 	cpu.HL = 0x1234
 	dmaX.SetMemoryBulk(0xfffe, []uint8{0x78, 0x56})
 
-	checkCpu(t, 10, map[string]uint16{"PC": 1, "SP": 0x0000, "HL": 0x5678}, cpu.popHl)
+	checkCpu(t, 10, map[string]uint16{"PC": 1, "SP": 0x0000, "HL": 0x5678}, cpu.popSs("HL"))
 }
 
 func TestJpPoXx(t *testing.T) {
@@ -3116,4 +3116,22 @@ func TestPushIy(t *testing.T) {
 	if gotL != wantL || gotH != wantH {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
 	}
+}
+
+func TestPopIx(t *testing.T) {
+	resetAll()
+	cpu.SP = 0xfffe
+	cpu.IX = 0x1234
+	dmaX.SetMemoryBulk(0xfffe, []uint8{0x78, 0x56})
+
+	checkCpu(t, 14, map[string]uint16{"PC": 2, "SP": 0x0000, "IX": 0x5678}, cpu.popSs("IX"))
+}
+
+func TestPopIy(t *testing.T) {
+	resetAll()
+	cpu.SP = 0xfffe
+	cpu.IY = 0x1234
+	dmaX.SetMemoryBulk(0xfffe, []uint8{0x78, 0x56})
+
+	checkCpu(t, 14, map[string]uint16{"PC": 2, "SP": 0x0000, "IY": 0x5678}, cpu.popSs("IY"))
 }

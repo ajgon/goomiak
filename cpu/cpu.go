@@ -157,7 +157,7 @@ func (c *CPU) initializeMnemonics() {
 		c.retZ, c.ret, c.jpZXx, c.die, c.callZXx, c.callXx, c.adcAX, c.rst(0x08),
 		c.retNc, c.popDe, c.jpNcXx, c.out_X_A, c.callNcXx, c.pushDe, c.subX, c.rst(0x10),
 		c.retC, c.exx, c.jpCXx, c.inA_X_, c.callCXx, c.die, c.sbcAX, c.rst(0x18),
-		c.retPo, c.popHl, c.jpPoXx, c.ex_Sp_Hl, c.callPoXx, c.pushSs("HL"), c.andX, c.rst(0x20),
+		c.retPo, c.popSs("HL"), c.jpPoXx, c.ex_Sp_Hl, c.callPoXx, c.pushSs("HL"), c.andX, c.rst(0x20),
 		c.retPe, c.jp_Hl_, c.jpPeXx, c.exDeHl, c.callPeXx, c.die, c.xorX, c.rst(0x28),
 		c.retP, c.popAf, c.jpPXx, c.di, c.callPXx, c.pushAf, c.orX, c.rst(0x30),
 		c.retM, c.ldSpSs("HL"), c.jpMXx, c.ei, c.callMXx, c.die, c.cpX, c.rst(0x38),
@@ -1780,11 +1780,32 @@ func (c *CPU) retPo() uint8 {
 	return 11
 }
 
-func (c *CPU) popHl() uint8 {
-	c.HL = c.popStack()
-	c.PC++
+func (c *CPU) popSs(ss string) func() uint8 {
+	switch ss {
+	case "HL":
+		return func() uint8 {
+			c.HL = c.popStack()
+			c.PC++
 
-	return 10
+			return 10
+		}
+	case "IX":
+		return func() uint8 {
+			c.IX = c.popStack()
+			c.PC += 2
+
+			return 14
+		}
+	case "IY":
+		return func() uint8 {
+			c.IY = c.popStack()
+			c.PC += 2
+
+			return 14
+		}
+	}
+
+	panic("Invalid `ss` type")
 }
 
 func (c *CPU) jpPoXx() uint8 {
