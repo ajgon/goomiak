@@ -130,7 +130,7 @@ func TestAdc_Hl_(t *testing.T) {
 		cpu.setAcc(row[0])
 		cpu.setC(row[2] == 1)
 		dmaX.SetMemoryByte(cpu.HL, row[1])
-		tstates := cpu.adcA_Hl_()
+		tstates := cpu.adcA_Ss_("HL")()
 
 		if cpu.getAcc() != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
 			t.Errorf(
@@ -142,6 +142,62 @@ func TestAdc_Hl_(t *testing.T) {
 
 		if cpu.PC != 1 || tstates != 7 {
 			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 1, 7)
+		}
+	}
+}
+
+func TestAdc_Ix_(t *testing.T) {
+	var mem = memory.MemoryNew()
+	var dmaX = dma.DMANew(mem)
+	var cpu = CPUNew(dmaX)
+	cpu.IX = 0x121b
+
+	for _, row := range adcTruthTable {
+		cpu.PC = 0
+		cpu.setAcc(row[0])
+		cpu.setC(row[2] == 1)
+		dmaX.SetMemoryByte(0x1234, row[1])
+		dmaX.SetMemoryByte(0x0002, 0x19)
+		tstates := cpu.adcA_Ss_("IX")()
+
+		if cpu.getAcc() != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
+			t.Errorf(
+				"\ngot:  A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t\nwant: A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t for (%d + %d + %d)",
+				cpu.getAcc(), cpu.getC(), cpu.getN(), cpu.getPV(), cpu.getH(), cpu.getZ(), cpu.getS(),
+				row[3], row[4] == 1, row[5] == 1, row[6] == 1, row[7] == 1, row[8] == 1, row[9] == 1, row[0], row[1], row[2],
+			)
+		}
+
+		if cpu.PC != 3 || tstates != 19 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 3, 19)
+		}
+	}
+}
+
+func TestAdc_Iy_(t *testing.T) {
+	var mem = memory.MemoryNew()
+	var dmaX = dma.DMANew(mem)
+	var cpu = CPUNew(dmaX)
+	cpu.IY = 0x121b
+
+	for _, row := range adcTruthTable {
+		cpu.PC = 0
+		cpu.setAcc(row[0])
+		cpu.setC(row[2] == 1)
+		dmaX.SetMemoryByte(0x1234, row[1])
+		dmaX.SetMemoryByte(0x0002, 0x19)
+		tstates := cpu.adcA_Ss_("IY")()
+
+		if cpu.getAcc() != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
+			t.Errorf(
+				"\ngot:  A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t\nwant: A=0x%02x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t for (%d + %d + %d)",
+				cpu.getAcc(), cpu.getC(), cpu.getN(), cpu.getPV(), cpu.getH(), cpu.getZ(), cpu.getS(),
+				row[3], row[4] == 1, row[5] == 1, row[6] == 1, row[7] == 1, row[8] == 1, row[9] == 1, row[0], row[1], row[2],
+			)
+		}
+
+		if cpu.PC != 3 || tstates != 19 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 3, 19)
 		}
 	}
 }
