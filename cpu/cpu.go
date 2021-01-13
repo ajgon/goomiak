@@ -157,7 +157,7 @@ func (c *CPU) initializeMnemonics() {
 		c.retZ, c.ret, c.jpZXx, c.die, c.callZXx, c.callXx, c.adcAX, c.rst(0x08),
 		c.retNc, c.popDe, c.jpNcXx, c.out_X_A, c.callNcXx, c.pushDe, c.subX, c.rst(0x10),
 		c.retC, c.exx, c.jpCXx, c.inA_X_, c.callCXx, c.die, c.sbcAX, c.rst(0x18),
-		c.retPo, c.popSs("HL"), c.jpPoXx, c.ex_Sp_Hl, c.callPoXx, c.pushSs("HL"), c.andX, c.rst(0x20),
+		c.retPo, c.popSs("HL"), c.jpPoXx, c.ex_Sp_Ss("HL"), c.callPoXx, c.pushSs("HL"), c.andX, c.rst(0x20),
 		c.retPe, c.jp_Hl_, c.jpPeXx, c.exDeHl, c.callPeXx, c.die, c.xorX, c.rst(0x28),
 		c.retP, c.popAf, c.jpPXx, c.di, c.callPXx, c.pushAf, c.orX, c.rst(0x30),
 		c.retM, c.ldSpSs("HL"), c.jpMXx, c.ei, c.callMXx, c.die, c.cpX, c.rst(0x38),
@@ -1818,13 +1818,38 @@ func (c *CPU) jpPoXx() uint8 {
 	return 10
 }
 
-func (c *CPU) ex_Sp_Hl() uint8 {
-	value := c.readWord(c.SP)
-	c.writeWord(c.SP, c.HL)
-	c.HL = value
+func (c *CPU) ex_Sp_Ss(ss string) func() uint8 {
+	switch ss {
+	case "HL":
+		return func() uint8 {
+			value := c.readWord(c.SP)
+			c.writeWord(c.SP, c.HL)
+			c.HL = value
 
-	c.PC++
-	return 19
+			c.PC++
+			return 19
+		}
+	case "IX":
+		return func() uint8 {
+			value := c.readWord(c.SP)
+			c.writeWord(c.SP, c.IX)
+			c.IX = value
+
+			c.PC += 2
+			return 23
+		}
+	case "IY":
+		return func() uint8 {
+			value := c.readWord(c.SP)
+			c.writeWord(c.SP, c.IY)
+			c.IY = value
+
+			c.PC += 2
+			return 23
+		}
+	}
+
+	panic("Invalid `ss` type")
 }
 
 func (c *CPU) callPoXx() uint8 {
