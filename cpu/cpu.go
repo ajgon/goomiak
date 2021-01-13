@@ -158,7 +158,7 @@ func (c *CPU) initializeMnemonics() {
 		c.retNc, c.popDe, c.jpNcXx, c.out_X_A, c.callNcXx, c.pushDe, c.subX, c.rst(0x10),
 		c.retC, c.exx, c.jpCXx, c.inA_X_, c.callCXx, c.die, c.sbcAX, c.rst(0x18),
 		c.retPo, c.popSs("HL"), c.jpPoXx, c.ex_Sp_Ss("HL"), c.callPoXx, c.pushSs("HL"), c.andX, c.rst(0x20),
-		c.retPe, c.jp_Ss_("HL"), c.jpPeXx, c.exDeHl, c.callPeXx, c.die, c.xorX, c.rst(0x28),
+		c.retPe, c.jp_Ss_("HL"), c.jpPeXx, c.exDeSs("HL"), c.callPeXx, c.die, c.xorX, c.rst(0x28),
 		c.retP, c.popAf, c.jpPXx, c.di, c.callPXx, c.pushAf, c.orX, c.rst(0x30),
 		c.retM, c.ldSpSs("HL"), c.jpMXx, c.ei, c.callMXx, c.die, c.cpX, c.rst(0x38),
 	}
@@ -2128,11 +2128,32 @@ func (c *CPU) jpPeXx() uint8 {
 	return 10
 }
 
-func (c *CPU) exDeHl() uint8 {
-	c.DE, c.HL = c.HL, c.DE
+func (c *CPU) exDeSs(ss string) func() uint8 {
+	switch ss {
+	case "HL":
+		return func() uint8 {
+			c.DE, c.HL = c.HL, c.DE
 
-	c.PC++
-	return 4
+			c.PC++
+			return 4
+		}
+	case "IX":
+		return func() uint8 {
+			c.DE, c.IX = c.IX, c.DE
+
+			c.PC += 2
+			return 8
+		}
+	case "IY":
+		return func() uint8 {
+			c.DE, c.IY = c.IY, c.DE
+
+			c.PC += 2
+			return 8
+		}
+	}
+
+	panic("Invalid `ss` type")
 }
 
 func (c *CPU) callPeXx() uint8 {

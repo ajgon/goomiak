@@ -2278,7 +2278,23 @@ func TestExDeHl(t *testing.T) {
 	cpu.DE = 0x2822
 	cpu.HL = 0x499a
 
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x499a, "HL": 0x2822}, cpu.exDeHl)
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x499a, "HL": 0x2822}, cpu.exDeSs("HL"))
+}
+
+func TestExDeIx(t *testing.T) {
+	resetAll()
+	cpu.DE = 0x2822
+	cpu.IX = 0x499a
+
+	checkCpu(t, 8, map[string]uint16{"PC": 2, "DE": 0x499a, "IX": 0x2822}, cpu.exDeSs("IX"))
+}
+
+func TestExDeIy(t *testing.T) {
+	resetAll()
+	cpu.DE = 0x2822
+	cpu.IY = 0x499a
+
+	checkCpu(t, 8, map[string]uint16{"PC": 2, "DE": 0x499a, "IY": 0x2822}, cpu.exDeSs("IY"))
 }
 
 func TestCallPeXx(t *testing.T) {
