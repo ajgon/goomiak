@@ -2342,7 +2342,7 @@ func TestLdSpHl(t *testing.T) {
 	cpu.SP = 0xfffc
 	cpu.HL = 0x442e
 
-	checkCpu(t, 6, map[string]uint16{"PC": 1, "SP": 0x442e, "HL": 0x442e}, cpu.ldSpHl)
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "SP": 0x442e, "HL": 0x442e}, cpu.ldSpSs("HL"))
 }
 
 func TestJpMXx(t *testing.T) {
@@ -3072,4 +3072,20 @@ func TestLd_Xx_Iy(t *testing.T) {
 	if gotH != wantH || gotL != wantL {
 		t.Errorf("got 0x%x%x, want 0x%x%x", gotH, gotL, wantH, wantL)
 	}
+}
+
+func TestLdSpIx(t *testing.T) {
+	resetAll()
+	cpu.SP = 0xfffc
+	cpu.IX = 0x442e
+
+	checkCpu(t, 10, map[string]uint16{"PC": 2, "SP": 0x442e, "IX": 0x442e}, cpu.ldSpSs("IX"))
+}
+
+func TestLdSpIy(t *testing.T) {
+	resetAll()
+	cpu.SP = 0xfffc
+	cpu.IY = 0x442e
+
+	checkCpu(t, 10, map[string]uint16{"PC": 2, "SP": 0x442e, "IY": 0x442e}, cpu.ldSpSs("IY"))
 }

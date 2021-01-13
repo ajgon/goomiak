@@ -160,7 +160,7 @@ func (c *CPU) initializeMnemonics() {
 		c.retPo, c.popHl, c.jpPoXx, c.ex_Sp_Hl, c.callPoXx, c.pushHl, c.andX, c.rst(0x20),
 		c.retPe, c.jp_Hl_, c.jpPeXx, c.exDeHl, c.callPeXx, c.die, c.xorX, c.rst(0x28),
 		c.retP, c.popAf, c.jpPXx, c.di, c.callPXx, c.pushAf, c.orX, c.rst(0x30),
-		c.retM, c.ldSpHl, c.jpMXx, c.ei, c.callMXx, c.die, c.cpX, c.rst(0x38),
+		c.retM, c.ldSpSs("HL"), c.jpMXx, c.ei, c.callMXx, c.die, c.cpX, c.rst(0x38),
 	}
 
 	c.mnemonics.xx80xx = [256]func() uint8{
@@ -1977,11 +1977,24 @@ func (c *CPU) retM() uint8 {
 	return 11
 }
 
-func (c *CPU) ldSpHl() uint8 {
-	c.SP = c.HL
+func (c *CPU) ldSpSs(ss string) func() uint8 {
+	if ss == "HL" {
+		return func() uint8 {
+			c.SP = c.HL
 
-	c.PC++
-	return 6
+			c.PC++
+			return 6
+		}
+	}
+
+	rvalue := c.extractRegisterPair(ss)
+
+	return func() uint8 {
+		c.SP = rvalue
+
+		c.PC += 2
+		return 10
+	}
 }
 
 func (c *CPU) jpMXx() uint8 {
