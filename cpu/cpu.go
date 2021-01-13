@@ -119,6 +119,8 @@ type CPU struct {
 	HL_    uint16
 	I      uint8
 	R      uint8
+	IX     uint16
+	IY     uint16
 	States CPUStates
 
 	dma       *dma.DMA
@@ -135,14 +137,14 @@ func (c *CPU) initializeMnemonics() {
 		c.jrZX, c.addHlHl, c.ldHl_Xx_, c.decHl, c.incL, c.decL, c.ldLX, c.cpl,
 		c.jrNcX, c.ldSpXx, c.ld_Xx_A, c.incSp, c.inc_Hl_, c.dec_Hl_, c.ld_Hl_X, c.scf,
 		c.jrCX, c.addHlSp, c.ldA_Xx_, c.decSp, c.incA, c.decA, c.ldAX, c.ccf,
-		c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', 'H'), c.ldRR_('B', 'L'), c.ldR_Hl_('B'), c.ldRR_('B', 'A'),
-		c.ldRR_('C', 'B'), c.ldRR_('C', 'C'), c.ldRR_('C', 'D'), c.ldRR_('C', 'E'), c.ldRR_('C', 'H'), c.ldRR_('C', 'L'), c.ldR_Hl_('C'), c.ldRR_('C', 'A'),
-		c.ldRR_('D', 'B'), c.ldRR_('D', 'C'), c.ldRR_('D', 'D'), c.ldRR_('D', 'E'), c.ldRR_('D', 'H'), c.ldRR_('D', 'L'), c.ldR_Hl_('D'), c.ldRR_('D', 'A'),
-		c.ldRR_('E', 'B'), c.ldRR_('E', 'C'), c.ldRR_('E', 'D'), c.ldRR_('E', 'E'), c.ldRR_('E', 'H'), c.ldRR_('E', 'L'), c.ldR_Hl_('E'), c.ldRR_('E', 'A'),
-		c.ldRR_('H', 'B'), c.ldRR_('H', 'C'), c.ldRR_('H', 'D'), c.ldRR_('H', 'E'), c.ldRR_('H', 'H'), c.ldRR_('H', 'L'), c.ldR_Hl_('H'), c.ldRR_('H', 'A'),
-		c.ldRR_('L', 'B'), c.ldRR_('L', 'C'), c.ldRR_('L', 'D'), c.ldRR_('L', 'E'), c.ldRR_('L', 'H'), c.ldRR_('L', 'L'), c.ldR_Hl_('L'), c.ldRR_('L', 'A'),
+		c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', 'H'), c.ldRR_('B', 'L'), c.ldR_Ss_('B', "HL"), c.ldRR_('B', 'A'),
+		c.ldRR_('C', 'B'), c.ldRR_('C', 'C'), c.ldRR_('C', 'D'), c.ldRR_('C', 'E'), c.ldRR_('C', 'H'), c.ldRR_('C', 'L'), c.ldR_Ss_('C', "HL"), c.ldRR_('C', 'A'),
+		c.ldRR_('D', 'B'), c.ldRR_('D', 'C'), c.ldRR_('D', 'D'), c.ldRR_('D', 'E'), c.ldRR_('D', 'H'), c.ldRR_('D', 'L'), c.ldR_Ss_('D', "HL"), c.ldRR_('D', 'A'),
+		c.ldRR_('E', 'B'), c.ldRR_('E', 'C'), c.ldRR_('E', 'D'), c.ldRR_('E', 'E'), c.ldRR_('E', 'H'), c.ldRR_('E', 'L'), c.ldR_Ss_('E', "HL"), c.ldRR_('E', 'A'),
+		c.ldRR_('H', 'B'), c.ldRR_('H', 'C'), c.ldRR_('H', 'D'), c.ldRR_('H', 'E'), c.ldRR_('H', 'H'), c.ldRR_('H', 'L'), c.ldR_Ss_('H', "HL"), c.ldRR_('H', 'A'),
+		c.ldRR_('L', 'B'), c.ldRR_('L', 'C'), c.ldRR_('L', 'D'), c.ldRR_('L', 'E'), c.ldRR_('L', 'H'), c.ldRR_('L', 'L'), c.ldR_Ss_('L', "HL"), c.ldRR_('L', 'A'),
 		c.ld_Hl_R('B'), c.ld_Hl_R('C'), c.ld_Hl_R('D'), c.ld_Hl_R('E'), c.ld_Hl_R('H'), c.ld_Hl_R('L'), c.halt, c.ld_Hl_R('A'),
-		c.ldRR_('A', 'B'), c.ldRR_('A', 'C'), c.ldRR_('A', 'D'), c.ldRR_('A', 'E'), c.ldRR_('A', 'H'), c.ldRR_('A', 'L'), c.ldR_Hl_('A'), c.ldRR_('A', 'A'),
+		c.ldRR_('A', 'B'), c.ldRR_('A', 'C'), c.ldRR_('A', 'D'), c.ldRR_('A', 'E'), c.ldRR_('A', 'H'), c.ldRR_('A', 'L'), c.ldR_Ss_('A', "HL"), c.ldRR_('A', 'A'),
 		c.addAR('B'), c.addAR('C'), c.addAR('D'), c.addAR('E'), c.addAR('H'), c.addAR('L'), c.addA_Hl_, c.addAR('A'),
 		c.adcAR('B'), c.adcAR('C'), c.adcAR('D'), c.adcAR('E'), c.adcAR('H'), c.adcAR('L'), c.adcA_Hl_, c.adcAR('A'),
 		c.subR('B'), c.subR('C'), c.subR('D'), c.subR('E'), c.subR('H'), c.subR('L'), c.sub_Hl_, c.subR('A'),
@@ -370,6 +372,10 @@ func (c *CPU) extractRegisterPair(rr string) (rvalue uint16) {
 		rvalue = c.HL
 	case "SP":
 		rvalue = c.SP
+	case "IX":
+		rvalue = c.IX
+	case "IY":
+		rvalue = c.IY
 	default:
 		panic("Invalid `rr` part of the mnemonic")
 	}
@@ -1085,7 +1091,7 @@ func (c *CPU) ldRR_(r, r_ byte) func() uint8 {
 	}
 }
 
-func (c *CPU) ldR_Hl_(r byte) func() uint8 {
+func (c *CPU) ldR_Ss_(r byte, ss string) func() uint8 {
 	var lhigh bool
 	var lvalue *uint16
 
@@ -1102,8 +1108,26 @@ func (c *CPU) ldR_Hl_(r byte) func() uint8 {
 		panic("Invalid `r` part of the mnemonic")
 	}
 
+	if ss == "HL" {
+		return func() uint8 {
+			right := c.dma.GetMemory(c.HL)
+
+			if lhigh {
+				*lvalue = (*lvalue & 0x00ff) | (uint16(right) << 8)
+			} else {
+				*lvalue = (*lvalue & 0xff00) | uint16(right)
+			}
+
+			c.PC++
+
+			return 7
+		}
+	}
+
+	rvalue := c.extractRegisterPair(ss)
+
 	return func() uint8 {
-		right := c.dma.GetMemory(c.HL)
+		right := c.dma.GetMemory(rvalue + uint16(c.dma.GetMemory(c.PC+2)))
 
 		if lhigh {
 			*lvalue = (*lvalue & 0x00ff) | (uint16(right) << 8)
@@ -1111,9 +1135,9 @@ func (c *CPU) ldR_Hl_(r byte) func() uint8 {
 			*lvalue = (*lvalue & 0xff00) | uint16(right)
 		}
 
-		c.PC++
+		c.PC += 3
 
-		return 7
+		return 19
 	}
 }
 
@@ -2203,6 +2227,8 @@ func (c *CPU) Reset() {
 	c.HL_ = 0
 	c.I = 0
 	c.R = 0
+	c.IX = 0
+	c.IY = 0
 	c.States = CPUStates{IFF1: true, IFF2: true}
 }
 
