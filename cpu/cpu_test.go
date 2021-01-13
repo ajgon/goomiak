@@ -765,7 +765,7 @@ func TestLdHl_Xx_(t *testing.T) {
 	dmaX.SetMemoryBulk(0x0000, []uint8{0x2a, 0x29, 0xb2})
 	dmaX.SetMemoryBulk(0xb229, []uint8{0x37, 0xa1})
 
-	checkCpu(t, 16, map[string]uint16{"PC": 3, "HL": 0xa137}, cpu.ldHl_Xx_)
+	checkCpu(t, 16, map[string]uint16{"PC": 3, "HL": 0xa137}, cpu.ldSs_Xx_("HL"))
 }
 
 func TestDecHl(t *testing.T) {
@@ -3026,4 +3026,20 @@ func TestLdIyXx(t *testing.T) {
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0x21, 0x64, 0x32})
 
 	checkCpu(t, 14, map[string]uint16{"PC": 4, "IY": 0x3264}, cpu.ldSsXx("IY"))
+}
+
+func TestLdIx_Xx_(t *testing.T) {
+	resetAll()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0x2a, 0x29, 0xb2})
+	dmaX.SetMemoryBulk(0xb229, []uint8{0x37, 0xa1})
+
+	checkCpu(t, 20, map[string]uint16{"PC": 4, "IX": 0xa137}, cpu.ldSs_Xx_("IX"))
+}
+
+func TestLdIy_Xx_(t *testing.T) {
+	resetAll()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0x2a, 0x29, 0xb2})
+	dmaX.SetMemoryBulk(0xb229, []uint8{0x37, 0xa1})
+
+	checkCpu(t, 20, map[string]uint16{"PC": 4, "IY": 0xa137}, cpu.ldSs_Xx_("IY"))
 }
