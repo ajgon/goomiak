@@ -341,14 +341,46 @@ func TestAddHlBc(t *testing.T) {
 	cpu.HL = 0x5933 //  0101 1001 0011 0011
 	cpu.setFlags(0b00000010)
 
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "BC": 0xa76c, "HL": 0x009f, "Flags": 0b00010001}, cpu.addHlBc)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "BC": 0xa76c, "HL": 0x009f, "Flags": 0b00010001}, cpu.addSsRr("HL", "BC"))
 
 	resetAll()
 	cpu.BC = 0x7fff
 	cpu.HL = 0x7fff
 	cpu.setFlags(0b00000010)
 
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "BC": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlBc)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "BC": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("HL", "BC"))
+}
+
+func TestAddIxBc(t *testing.T) {
+	resetAll()
+	cpu.BC = 0xa76c //  1010 0111 0110 1100
+	cpu.IX = 0x5933 //  0101 1001 0011 0011
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "BC": 0xa76c, "IX": 0x009f, "Flags": 0b00010001}, cpu.addSsRr("IX", "BC"))
+
+	resetAll()
+	cpu.BC = 0x7fff
+	cpu.IX = 0x7fff
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "BC": 0x7fff, "IX": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("IX", "BC"))
+}
+
+func TestAddIyBc(t *testing.T) {
+	resetAll()
+	cpu.BC = 0xa76c //  1010 0111 0110 1100
+	cpu.IY = 0x5933 //  0101 1001 0011 0011
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "BC": 0xa76c, "IY": 0x009f, "Flags": 0b00010001}, cpu.addSsRr("IY", "BC"))
+
+	resetAll()
+	cpu.BC = 0x7fff
+	cpu.IY = 0x7fff
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "BC": 0x7fff, "IY": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("IY", "BC"))
 }
 
 func TestLdA_Bc_(t *testing.T) {
@@ -561,14 +593,46 @@ func TestAddHlDe(t *testing.T) {
 	cpu.HL = 0x5933 //  0101 1001 0011 0011
 	cpu.setFlags(0b00000010)
 
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "DE": 0xa76c, "HL": 0x009f, "Flags": 0b00010001}, cpu.addHlDe)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "DE": 0xa76c, "HL": 0x009f, "Flags": 0b00010001}, cpu.addSsRr("HL", "DE"))
 
 	resetAll()
 	cpu.DE = 0x7fff
 	cpu.HL = 0x7fff
 	cpu.setFlags(0b00000010)
 
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "DE": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlDe)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "DE": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("HL", "DE"))
+}
+
+func TestAddIxDe(t *testing.T) {
+	resetAll()
+	cpu.DE = 0xa76c //  1010 0111 0110 1100
+	cpu.IX = 0x5933 //  0101 1001 0011 0011
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "DE": 0xa76c, "IX": 0x009f, "Flags": 0b00010001}, cpu.addSsRr("IX", "DE"))
+
+	resetAll()
+	cpu.DE = 0x7fff
+	cpu.IX = 0x7fff
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "DE": 0x7fff, "IX": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("IX", "DE"))
+}
+
+func TestAddIyDe(t *testing.T) {
+	resetAll()
+	cpu.DE = 0xa76c //  1010 0111 0110 1100
+	cpu.IY = 0x5933 //  0101 1001 0011 0011
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "DE": 0xa76c, "IY": 0x009f, "Flags": 0b00010001}, cpu.addSsRr("IY", "DE"))
+
+	resetAll()
+	cpu.DE = 0x7fff
+	cpu.IY = 0x7fff
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "DE": 0x7fff, "IY": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("IY", "DE"))
 }
 
 func TestLdA_De_(t *testing.T) {
@@ -751,13 +815,41 @@ func TestAddHlHl(t *testing.T) {
 	cpu.HL = 0xae6c
 	cpu.setFlags(0b00000010)
 
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x5cd8, "Flags": 0b00010001}, cpu.addHlHl)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0x5cd8, "Flags": 0b00010001}, cpu.addSsRr("HL", "HL"))
 
 	resetAll()
 	cpu.HL = 0x7fff
 	cpu.setFlags(0b00000010)
 
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlHl)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("HL", "HL"))
+}
+
+func TestAddIxIx(t *testing.T) {
+	resetAll()
+	cpu.IX = 0xae6c
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "IX": 0x5cd8, "Flags": 0b00010001}, cpu.addSsRr("IX", "IX"))
+
+	resetAll()
+	cpu.IX = 0x7fff
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "IX": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("IX", "IX"))
+}
+
+func TestAddIyIy(t *testing.T) {
+	resetAll()
+	cpu.IY = 0xae6c
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "IY": 0x5cd8, "Flags": 0b00010001}, cpu.addSsRr("IY", "IY"))
+
+	resetAll()
+	cpu.IY = 0x7fff
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "IY": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("IY", "IY"))
 }
 
 func TestLdHl_Xx_(t *testing.T) {
@@ -999,14 +1091,46 @@ func TestAddHlSp(t *testing.T) {
 	cpu.HL = 0x5933 //  0101 1001 0011 0011
 	cpu.setFlags(0b00000010)
 
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "SP": 0xa76c, "HL": 0x009f, "Flags": 0b00010001}, cpu.addHlSp)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "SP": 0xa76c, "HL": 0x009f, "Flags": 0b00010001}, cpu.addSsRr("HL", "SP"))
 
 	resetAll()
 	cpu.SP = 0x7fff
 	cpu.HL = 0x7fff
 	cpu.setFlags(0b00000010)
 
-	checkCpu(t, 11, map[string]uint16{"PC": 1, "SP": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addHlSp)
+	checkCpu(t, 11, map[string]uint16{"PC": 1, "SP": 0x7fff, "HL": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("HL", "SP"))
+}
+
+func TestAddIxSp(t *testing.T) {
+	resetAll()
+	cpu.SP = 0xa76c //  1010 0111 0110 1100
+	cpu.IX = 0x5933 //  0101 1001 0011 0011
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "SP": 0xa76c, "IX": 0x009f, "Flags": 0b00010001}, cpu.addSsRr("IX", "SP"))
+
+	resetAll()
+	cpu.SP = 0x7fff
+	cpu.IX = 0x7fff
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "SP": 0x7fff, "IX": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("IX", "SP"))
+}
+
+func TestAddIySp(t *testing.T) {
+	resetAll()
+	cpu.SP = 0xa76c //  1010 0111 0110 1100
+	cpu.IY = 0x5933 //  0101 1001 0011 0011
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "SP": 0xa76c, "IY": 0x009f, "Flags": 0b00010001}, cpu.addSsRr("IY", "SP"))
+
+	resetAll()
+	cpu.SP = 0x7fff
+	cpu.IY = 0x7fff
+	cpu.setFlags(0b00000010)
+
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "SP": 0x7fff, "IY": 0xfffe, "Flags": 0b00010000}, cpu.addSsRr("IY", "SP"))
 }
 
 func TestLdA_Xx_(t *testing.T) {

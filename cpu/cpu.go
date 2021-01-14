@@ -130,13 +130,13 @@ type CPU struct {
 func (c *CPU) initializeMnemonics() {
 	c.mnemonics.base = [256]func() uint8{
 		c.nop, c.ldBcXx, c.ld_Bc_A, c.incBc, c.incB, c.decB, c.ldBX, c.rlca,
-		c.exAfAf_, c.addHlBc, c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCX, c.rrca,
+		c.exAfAf_, c.addSsRr("HL", "BC"), c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCX, c.rrca,
 		c.djnzX, c.ldDeXx, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDX, c.rla,
-		c.jrX, c.addHlDe, c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEX, c.rra,
+		c.jrX, c.addSsRr("HL", "DE"), c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEX, c.rra,
 		c.jrNzX, c.ldSsXx("HL"), c.ld_Xx_Ss("HL"), c.incHl, c.incH, c.decH, c.ldHX, c.daa,
-		c.jrZX, c.addHlHl, c.ldSs_Xx_("HL"), c.decHl, c.incL, c.decL, c.ldLX, c.cpl,
+		c.jrZX, c.addSsRr("HL", "HL"), c.ldSs_Xx_("HL"), c.decHl, c.incL, c.decL, c.ldLX, c.cpl,
 		c.jrNcX, c.ldSpXx, c.ld_Xx_A, c.incSp, c.inc_Ss_("HL"), c.dec_Ss_("HL"), c.ld_Ss_X("HL"), c.scf,
-		c.jrCX, c.addHlSp, c.ldA_Xx_, c.decSp, c.incA, c.decA, c.ldAX, c.ccf,
+		c.jrCX, c.addSsRr("HL", "SP"), c.ldA_Xx_, c.decSp, c.incA, c.decA, c.ldAX, c.ccf,
 		c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', 'H'), c.ldRR_('B', 'L'), c.ldR_Ss_('B', "HL"), c.ldRR_('B', 'A'),
 		c.ldRR_('C', 'B'), c.ldRR_('C', 'C'), c.ldRR_('C', 'D'), c.ldRR_('C', 'E'), c.ldRR_('C', 'H'), c.ldRR_('C', 'L'), c.ldR_Ss_('C', "HL"), c.ldRR_('C', 'A'),
 		c.ldRR_('D', 'B'), c.ldRR_('D', 'C'), c.ldRR_('D', 'D'), c.ldRR_('D', 'E'), c.ldRR_('D', 'H'), c.ldRR_('D', 'L'), c.ldR_Ss_('D', "HL"), c.ldRR_('D', 'A'),
@@ -458,16 +458,14 @@ func (c *CPU) decreaseRegister(name rune) uint8 {
 }
 
 // left stores the result
-func (c *CPU) addRegisters(left, right *uint16) uint8 {
-	sum := *left + *right
+func (c *CPU) addRegisters(left *uint16, right uint16) {
+	sum := *left + right
 
-	c.setC(sum < *left || sum < *right)
+	c.setC(sum < *left || sum < right)
 	c.setN(false)
-	c.setH((*left^*right^sum)&0x1000 == 0x1000)
+	c.setH((*left^right^sum)&0x1000 == 0x1000)
 
 	*left = sum
-	c.PC++
-	return 11
 }
 
 func (c *CPU) adcValueToAcc(value uint8) {
@@ -594,8 +592,34 @@ func (c *CPU) exAfAf_() uint8 {
 	return 4
 }
 
-func (c *CPU) addHlBc() uint8 {
-	return c.addRegisters(&c.HL, &c.BC)
+func (c *CPU) addSsRr(ss, rr string) func() uint8 {
+	rvalue := c.extractRegisterPair(rr)
+
+	switch ss {
+	case "HL":
+		return func() uint8 {
+			c.addRegisters(&c.HL, rvalue)
+			c.PC++
+
+			return 11
+		}
+	case "IX":
+		return func() uint8 {
+			c.addRegisters(&c.IX, rvalue)
+			c.PC += 2
+
+			return 15
+		}
+	case "IY":
+		return func() uint8 {
+			c.addRegisters(&c.IY, rvalue)
+			c.PC += 2
+
+			return 15
+		}
+	}
+
+	panic("Invalid `ss` type")
 }
 
 func (c *CPU) ldA_Bc_() uint8 {
@@ -717,10 +741,6 @@ func (c *CPU) jrX() uint8 {
 	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
 
 	return 12
-}
-
-func (c *CPU) addHlDe() uint8 {
-	return c.addRegisters(&c.HL, &c.DE)
 }
 
 func (c *CPU) ldA_De_() uint8 {
@@ -914,10 +934,6 @@ func (c *CPU) jrZX() uint8 {
 
 	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
 	return 12
-}
-
-func (c *CPU) addHlHl() uint8 {
-	return c.addRegisters(&c.HL, &c.HL)
 }
 
 func (c *CPU) ldSs_Xx_(ss string) func() uint8 {
@@ -1114,10 +1130,6 @@ func (c *CPU) jrCX() uint8 {
 
 	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
 	return 12
-}
-
-func (c *CPU) addHlSp() uint8 {
-	return c.addRegisters(&c.HL, &c.SP)
 }
 
 func (c *CPU) ldA_Xx_() uint8 {
