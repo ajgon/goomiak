@@ -748,7 +748,21 @@ func TestIncHl(t *testing.T) {
 	resetAll()
 	cpu.HL = 0x1020
 
-	checkCpu(t, 6, map[string]uint16{"PC": 1, "HL": 0x1021}, cpu.incHl)
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "HL": 0x1021}, cpu.incSs("HL"))
+}
+
+func TestIncIx(t *testing.T) {
+	resetAll()
+	cpu.IX = 0x1020
+
+	checkCpu(t, 10, map[string]uint16{"PC": 2, "IX": 0x1021}, cpu.incSs("IX"))
+}
+
+func TestIncIy(t *testing.T) {
+	resetAll()
+	cpu.IY = 0x1020
+
+	checkCpu(t, 10, map[string]uint16{"PC": 2, "IY": 0x1021}, cpu.incSs("IY"))
 }
 
 func TestIncH(t *testing.T) {

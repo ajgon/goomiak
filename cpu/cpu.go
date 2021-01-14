@@ -133,7 +133,7 @@ func (c *CPU) initializeMnemonics() {
 		c.exAfAf_, c.addSsRr("HL", "BC"), c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCX, c.rrca,
 		c.djnzX, c.ldDeXx, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDX, c.rla,
 		c.jrX, c.addSsRr("HL", "DE"), c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEX, c.rra,
-		c.jrNzX, c.ldSsXx("HL"), c.ld_Xx_Ss("HL"), c.incHl, c.incH, c.decH, c.ldHX, c.daa,
+		c.jrNzX, c.ldSsXx("HL"), c.ld_Xx_Ss("HL"), c.incSs("IX"), c.incH, c.decH, c.ldHX, c.daa,
 		c.jrZX, c.addSsRr("HL", "HL"), c.ldSs_Xx_("HL"), c.decHl, c.incL, c.decL, c.ldLX, c.cpl,
 		c.jrNcX, c.ldSpXx, c.ld_Xx_A, c.incSp, c.inc_Ss_("HL"), c.dec_Ss_("HL"), c.ld_Ss_X("HL"), c.scf,
 		c.jrCX, c.addSsRr("HL", "SP"), c.ldA_Xx_, c.decSp, c.incA, c.decA, c.ldAX, c.ccf,
@@ -850,10 +850,29 @@ func (c *CPU) ld_Xx_Ss(ss string) func() uint8 {
 	}
 }
 
-func (c *CPU) incHl() uint8 {
-	c.HL++
-	c.PC++
-	return 6
+func (c *CPU) incSs(ss string) func() uint8 {
+	switch ss {
+	case "HL":
+		return func() uint8 {
+			c.HL++
+			c.PC++
+			return 6
+		}
+	case "IX":
+		return func() uint8 {
+			c.IX++
+			c.PC += 2
+			return 10
+		}
+	case "IY":
+		return func() uint8 {
+			c.IY++
+			c.PC += 2
+			return 10
+		}
+	}
+
+	panic("Invalid `ss` type")
 }
 
 func (c *CPU) incH() uint8 {
