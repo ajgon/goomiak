@@ -32,14 +32,14 @@ type MnemonicsDebug struct {
 
 var mnemonicsDebug = MnemonicsDebug{
 	base: [256]string{
-		"nop", "ld bc,xx", "ld (bc),a", "inc bc", "inc b", "dec b", "ld b,x", "rlca",
-		"ex af,af'", "add hl,bc", "ld a,(bc)", "dec bc", "inc c", "dec c", "ld c,x", "rrca",
-		"djnz x", "ld de,xx", "ld (de),a", "inc de", "inc d", "dec d", "ld d,x", "rla",
-		"jr x", "add hl,de", "ld a,(de)", "dec de", "inc e", "dec e", "ld e,x", "rra",
-		"jr nz,x", "ld hl,xx", "ld (xx),hl", "inc hl", "inc h", "dec h", "ld h,x", "daa",
-		"jr z,x", "add hl,hl", "ld hl,(xx)", "dec hl", "inc l", "dec l", "ld l,x", "cpl",
-		"jr nc,x", "ld sp,xx", "ld (xx),a", "inc sp", "inc (hl)", "dec (hl)", "ld (hl),x", "scf",
-		"jr c,x", "add hl,sp", "ld a,(xx)", "dec sp", "inc a", "dec a", "ld a,x", "ccf",
+		"nop", "ld bc,nn", "ld (bc),a", "inc bc", "inc b", "dec b", "ld b,n", "rlca",
+		"ex af,af'", "add hl,bc", "ld a,(bc)", "dec bc", "inc c", "dec c", "ld c,n", "rrca",
+		"djnz n", "ld de,nn", "ld (de),a", "inc de", "inc d", "dec d", "ld d,n", "rla",
+		"jr n", "add hl,de", "ld a,(de)", "dec de", "inc e", "dec e", "ld e,n", "rra",
+		"jr nz,n", "ld hl,nn", "ld (nn),hl", "inc hl", "inc h", "dec h", "ld h,n", "daa",
+		"jr z,n", "add hl,hl", "ld hl,(nn)", "dec hl", "inc l", "dec l", "ld l,n", "cpl",
+		"jr nc,n", "ld sp,nn", "ld (nn),a", "inc sp", "inc (hl)", "dec (hl)", "ld (hl),n", "scf",
+		"jr c,n", "add hl,sp", "ld a,(nn)", "dec sp", "inc a", "dec a", "ld a,n", "ccf",
 		"ld b,b", "ld b,c", "ld b,d", "ld b,e", "ld b,h", "ld b,l", "ld b,(hl)", "ld b,a",
 		"ld c,b", "ld c,c", "ld c,d", "ld c,e", "ld c,h", "ld c,l", "ld c,(hl)", "ld c,a",
 		"ld d,b", "ld d,c", "ld d,d", "ld d,e", "ld d,h", "ld d,l", "ld d,(hl)", "ld d,a",
@@ -129,14 +129,14 @@ type CPU struct {
 
 func (c *CPU) initializeMnemonics() {
 	c.mnemonics.base = [256]func() uint8{
-		c.nop, c.ldBcXx, c.ld_Bc_A, c.incBc, c.incB, c.decB, c.ldBX, c.rlca,
-		c.exAfAf_, c.addSsRr("HL", "BC"), c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCX, c.rrca,
-		c.djnzX, c.ldDeXx, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDX, c.rla,
-		c.jrX, c.addSsRr("HL", "DE"), c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEX, c.rra,
-		c.jrNzX, c.ldSsXx("HL"), c.ld_Xx_Ss("HL"), c.incSs("IX"), c.incH, c.decH, c.ldHX, c.daa,
-		c.jrZX, c.addSsRr("HL", "HL"), c.ldSs_Xx_("HL"), c.decSs("HL"), c.incL, c.decL, c.ldLX, c.cpl,
-		c.jrNcX, c.ldSpXx, c.ld_Xx_A, c.incSp, c.inc_Ss_("HL"), c.dec_Ss_("HL"), c.ld_Ss_X("HL"), c.scf,
-		c.jrCX, c.addSsRr("HL", "SP"), c.ldA_Xx_, c.decSp, c.incA, c.decA, c.ldAX, c.ccf,
+		c.nop, c.ldBcNn, c.ld_Bc_A, c.incBc, c.incB, c.decB, c.ldBN, c.rlca,
+		c.exAfAf_, c.addSsRr("HL", "BC"), c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCN, c.rrca,
+		c.djnzN, c.ldDeNn, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDN, c.rla,
+		c.jrN, c.addSsRr("HL", "DE"), c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEN, c.rra,
+		c.jrNzN, c.ldSsNn("HL"), c.ld_Nn_Ss("HL"), c.incSs("IX"), c.incH, c.decH, c.ldHN, c.daa,
+		c.jrZN, c.addSsRr("HL", "HL"), c.ldSs_Nn_("HL"), c.decSs("HL"), c.incL, c.decL, c.ldLN, c.cpl,
+		c.jrNcN, c.ldSpNn, c.ld_Nn_A, c.incSp, c.inc_Ss_("HL"), c.dec_Ss_("HL"), c.ld_Ss_N("HL"), c.scf,
+		c.jrCN, c.addSsRr("HL", "SP"), c.ldA_Nn_, c.decSp, c.incA, c.decA, c.ldAN, c.ccf,
 		c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', 'H'), c.ldRR_('B', 'L'), c.ldR_Ss_('B', "HL"), c.ldRR_('B', 'A'),
 		c.ldRR_('C', 'B'), c.ldRR_('C', 'C'), c.ldRR_('C', 'D'), c.ldRR_('C', 'E'), c.ldRR_('C', 'H'), c.ldRR_('C', 'L'), c.ldR_Ss_('C', "HL"), c.ldRR_('C', 'A'),
 		c.ldRR_('D', 'B'), c.ldRR_('D', 'C'), c.ldRR_('D', 'D'), c.ldRR_('D', 'E'), c.ldRR_('D', 'H'), c.ldRR_('D', 'L'), c.ldR_Ss_('D', "HL"), c.ldRR_('D', 'A'),
@@ -153,14 +153,14 @@ func (c *CPU) initializeMnemonics() {
 		c.xorR('B'), c.xorR('C'), c.xorR('D'), c.xorR('E'), c.xorR('H'), c.xorR('L'), c.xor_Ss_("HL"), c.xorR('A'),
 		c.orR('B'), c.orR('C'), c.orR('D'), c.orR('E'), c.orR('H'), c.orR('L'), c.or_Ss_("HL"), c.orR('A'),
 		c.cpR('B'), c.cpR('C'), c.cpR('D'), c.cpR('E'), c.cpR('H'), c.cpR('L'), c.cp_Ss_("HL"), c.cpR('A'),
-		c.retNz, c.popBc, c.jpNzXx, c.jpXx, c.callNzXx, c.pushBc, c.addAX, c.rst(0x00),
-		c.retZ, c.ret, c.jpZXx, c.die, c.callZXx, c.callXx, c.adcAX, c.rst(0x08),
-		c.retNc, c.popDe, c.jpNcXx, c.out_X_A, c.callNcXx, c.pushDe, c.subX, c.rst(0x10),
-		c.retC, c.exx, c.jpCXx, c.inA_X_, c.callCXx, c.die, c.sbcAX, c.rst(0x18),
-		c.retPo, c.popSs("HL"), c.jpPoXx, c.ex_Sp_Ss("HL"), c.callPoXx, c.pushSs("HL"), c.andX, c.rst(0x20),
-		c.retPe, c.jp_Ss_("HL"), c.jpPeXx, c.exDeSs("HL"), c.callPeXx, c.die, c.xorX, c.rst(0x28),
-		c.retP, c.popAf, c.jpPXx, c.di, c.callPXx, c.pushAf, c.orX, c.rst(0x30),
-		c.retM, c.ldSpSs("HL"), c.jpMXx, c.ei, c.callMXx, c.die, c.cpX, c.rst(0x38),
+		c.retNz, c.popBc, c.jpNzNn, c.jpNn, c.callNzNn, c.pushBc, c.addAN, c.rst(0x00),
+		c.retZ, c.ret, c.jpZNn, c.die, c.callZNn, c.callNn, c.adcAN, c.rst(0x08),
+		c.retNc, c.popDe, c.jpNcNn, c.out_N_A, c.callNcNn, c.pushDe, c.subN, c.rst(0x10),
+		c.retC, c.exx, c.jpCNn, c.inA_N_, c.callCNn, c.die, c.sbcAN, c.rst(0x18),
+		c.retPo, c.popSs("HL"), c.jpPoNn, c.ex_Sp_Ss("HL"), c.callPoNn, c.pushSs("HL"), c.andN, c.rst(0x20),
+		c.retPe, c.jp_Ss_("HL"), c.jpPeNn, c.exDeSs("HL"), c.callPeNn, c.die, c.xorN, c.rst(0x28),
+		c.retP, c.popAf, c.jpPNn, c.di, c.callPNn, c.pushAf, c.orN, c.rst(0x30),
+		c.retM, c.ldSpSs("HL"), c.jpMNn, c.ei, c.callMNn, c.die, c.cpN, c.rst(0x38),
 	}
 
 	c.mnemonics.xx80xx = [256]func() uint8{
@@ -172,14 +172,14 @@ func (c *CPU) initializeMnemonics() {
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
-		c.inR_C_('B'), c.out_C_R('B'), c.sbcHlRr("BC"), c.ld_Xx_Rr("BC"), c.neg, c.retn, c.im(0), c.ldIA,
-		c.inR_C_('C'), c.out_C_R('C'), c.adcHlRr("BC"), c.ldRr_Xx_("BC"), c.neg, c.reti, c.nop, c.ldRA,
-		c.inR_C_('D'), c.out_C_R('D'), c.sbcHlRr("DE"), c.ld_Xx_Rr("DE"), c.neg, c.retn, c.im(1), c.ldAI,
-		c.inR_C_('E'), c.out_C_R('E'), c.adcHlRr("DE"), c.ldRr_Xx_("DE"), c.neg, c.retn, c.im(2), c.ldAR,
-		c.inR_C_('H'), c.out_C_R('H'), c.sbcHlRr("HL"), c.ld_Xx_Rr("HL"), c.neg, c.retn, c.nop, c.rrd,
-		c.inR_C_('L'), c.out_C_R('L'), c.adcHlRr("HL"), c.ldRr_Xx_("HL"), c.neg, c.retn, c.nop, c.rld,
-		c.inR_C_(' '), c.out_C_R(' '), c.sbcHlRr("SP"), c.ld_Xx_Rr("SP"), c.neg, c.retn, c.nop, c.nop,
-		c.inR_C_('A'), c.out_C_R('A'), c.adcHlRr("SP"), c.ldRr_Xx_("SP"), c.neg, c.reti, c.nop, c.nop,
+		c.inR_C_('B'), c.out_C_R('B'), c.sbcHlRr("BC"), c.ld_Nn_Rr("BC"), c.neg, c.retn, c.im(0), c.ldIA,
+		c.inR_C_('C'), c.out_C_R('C'), c.adcHlRr("BC"), c.ldRr_Nn_("BC"), c.neg, c.reti, c.nop, c.ldRA,
+		c.inR_C_('D'), c.out_C_R('D'), c.sbcHlRr("DE"), c.ld_Nn_Rr("DE"), c.neg, c.retn, c.im(1), c.ldAI,
+		c.inR_C_('E'), c.out_C_R('E'), c.adcHlRr("DE"), c.ldRr_Nn_("DE"), c.neg, c.retn, c.im(2), c.ldAR,
+		c.inR_C_('H'), c.out_C_R('H'), c.sbcHlRr("HL"), c.ld_Nn_Rr("HL"), c.neg, c.retn, c.nop, c.rrd,
+		c.inR_C_('L'), c.out_C_R('L'), c.adcHlRr("HL"), c.ldRr_Nn_("HL"), c.neg, c.retn, c.nop, c.rld,
+		c.inR_C_(' '), c.out_C_R(' '), c.sbcHlRr("SP"), c.ld_Nn_Rr("SP"), c.neg, c.retn, c.nop, c.nop,
+		c.inR_C_('A'), c.out_C_R('A'), c.adcHlRr("SP"), c.ldRr_Nn_("SP"), c.neg, c.reti, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
@@ -534,7 +534,7 @@ func (c *CPU) nop() uint8 {
 	return 4
 }
 
-func (c *CPU) ldBcXx() uint8 {
+func (c *CPU) ldBcNn() uint8 {
 	c.BC = c.readWord(c.PC + 1)
 	c.PC += 3
 
@@ -561,7 +561,7 @@ func (c *CPU) decB() uint8 {
 	return c.decreaseRegister('B')
 }
 
-func (c *CPU) ldBX() uint8 {
+func (c *CPU) ldBN() uint8 {
 	c.BC = (c.BC & 0x00ff) | (uint16(c.dma.GetMemory(c.PC+1)) << 8)
 	c.PC += 2
 
@@ -645,7 +645,7 @@ func (c *CPU) decC() uint8 {
 	return c.decreaseRegister('C')
 }
 
-func (c *CPU) ldCX() uint8 {
+func (c *CPU) ldCN() uint8 {
 	c.BC = (c.BC & 0xff00) | uint16(c.dma.GetMemory(c.PC+1))
 	c.PC += 2
 
@@ -670,7 +670,7 @@ func (c *CPU) rrca() uint8 {
 	return 4
 }
 
-func (c *CPU) djnzX() uint8 {
+func (c *CPU) djnzN() uint8 {
 	c.BC -= 256
 	if c.BC < 256 {
 		c.PC += 2
@@ -681,7 +681,7 @@ func (c *CPU) djnzX() uint8 {
 	return 13
 }
 
-func (c *CPU) ldDeXx() uint8 {
+func (c *CPU) ldDeNn() uint8 {
 	c.DE = c.readWord(c.PC + 1)
 	c.PC += 3
 
@@ -708,7 +708,7 @@ func (c *CPU) decD() uint8 {
 	return c.decreaseRegister('D')
 }
 
-func (c *CPU) ldDX() uint8 {
+func (c *CPU) ldDN() uint8 {
 	c.DE = (c.DE & 0x00ff) | (uint16(c.dma.GetMemory(c.PC+1)) << 8)
 	c.PC += 2
 
@@ -737,7 +737,7 @@ func (c *CPU) rla() uint8 {
 	return 4
 }
 
-func (c *CPU) jrX() uint8 {
+func (c *CPU) jrN() uint8 {
 	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
 
 	return 12
@@ -766,7 +766,7 @@ func (c *CPU) decE() uint8 {
 	return c.decreaseRegister('E')
 }
 
-func (c *CPU) ldEX() uint8 {
+func (c *CPU) ldEN() uint8 {
 	c.DE = (c.DE & 0xff00) | uint16(c.dma.GetMemory(c.PC+1))
 	c.PC += 2
 
@@ -794,7 +794,7 @@ func (c *CPU) rra() uint8 {
 	return 4
 }
 
-func (c *CPU) jrNzX() uint8 {
+func (c *CPU) jrNzN() uint8 {
 	if c.getZ() {
 		c.PC += 2
 		return 7
@@ -804,7 +804,7 @@ func (c *CPU) jrNzX() uint8 {
 	return 12
 }
 
-func (c *CPU) ldSsXx(ss string) func() uint8 {
+func (c *CPU) ldSsNn(ss string) func() uint8 {
 	switch ss {
 	case "HL":
 		return func() uint8 {
@@ -832,7 +832,7 @@ func (c *CPU) ldSsXx(ss string) func() uint8 {
 	panic("Invalid `ss` type")
 }
 
-func (c *CPU) ld_Xx_Ss(ss string) func() uint8 {
+func (c *CPU) ld_Nn_Ss(ss string) func() uint8 {
 	if ss == "HL" {
 		return func() uint8 {
 			c.writeWord(c.readWord(c.PC+1), c.HL)
@@ -883,7 +883,7 @@ func (c *CPU) decH() uint8 {
 	return c.decreaseRegister('H')
 }
 
-func (c *CPU) ldHX() uint8 {
+func (c *CPU) ldHN() uint8 {
 	c.HL = (c.HL & 0x00ff) | (uint16(c.dma.GetMemory(c.PC+1)) << 8)
 	c.PC += 2
 
@@ -945,7 +945,7 @@ func (c *CPU) daa() uint8 {
 	return 4
 }
 
-func (c *CPU) jrZX() uint8 {
+func (c *CPU) jrZN() uint8 {
 	if !c.getZ() {
 		c.PC += 2
 		return 7
@@ -955,7 +955,7 @@ func (c *CPU) jrZX() uint8 {
 	return 12
 }
 
-func (c *CPU) ldSs_Xx_(ss string) func() uint8 {
+func (c *CPU) ldSs_Nn_(ss string) func() uint8 {
 	switch ss {
 	case "HL":
 		return func() uint8 {
@@ -1017,7 +1017,7 @@ func (c *CPU) decL() uint8 {
 	return c.decreaseRegister('L')
 }
 
-func (c *CPU) ldLX() uint8 {
+func (c *CPU) ldLN() uint8 {
 	c.HL = (c.HL & 0xff00) | uint16(c.dma.GetMemory(c.PC+1))
 	c.PC += 2
 
@@ -1033,7 +1033,7 @@ func (c *CPU) cpl() uint8 {
 	return 4
 }
 
-func (c *CPU) jrNcX() uint8 {
+func (c *CPU) jrNcN() uint8 {
 	if c.getC() {
 		c.PC += 2
 		return 7
@@ -1043,14 +1043,14 @@ func (c *CPU) jrNcX() uint8 {
 	return 12
 }
 
-func (c *CPU) ldSpXx() uint8 {
+func (c *CPU) ldSpNn() uint8 {
 	c.SP = c.readWord(c.PC + 1)
 	c.PC += 3
 
 	return 10
 }
 
-func (c *CPU) ld_Xx_A() uint8 {
+func (c *CPU) ld_Nn_A() uint8 {
 	c.dma.SetMemoryByte(c.readWord(c.PC+1), c.getAcc())
 	c.PC += 3
 	return 13
@@ -1134,7 +1134,7 @@ func (c *CPU) dec_Ss_(ss string) func() uint8 {
 	}
 }
 
-func (c *CPU) ld_Ss_X(ss string) func() uint8 {
+func (c *CPU) ld_Ss_N(ss string) func() uint8 {
 	if ss == "HL" {
 		return func() uint8 {
 			c.dma.SetMemoryByte(c.HL, c.dma.GetMemory(c.PC+1))
@@ -1162,7 +1162,7 @@ func (c *CPU) scf() uint8 {
 	return 4
 }
 
-func (c *CPU) jrCX() uint8 {
+func (c *CPU) jrCN() uint8 {
 	if !c.getC() {
 		c.PC += 2
 		return 7
@@ -1172,7 +1172,7 @@ func (c *CPU) jrCX() uint8 {
 	return 12
 }
 
-func (c *CPU) ldA_Xx_() uint8 {
+func (c *CPU) ldA_Nn_() uint8 {
 	c.setAcc(c.dma.GetMemory(c.readWord(c.PC + 1)))
 	c.PC += 3
 
@@ -1194,7 +1194,7 @@ func (c *CPU) decA() uint8 {
 	return c.decreaseRegister('A')
 }
 
-func (c *CPU) ldAX() uint8 {
+func (c *CPU) ldAN() uint8 {
 	c.setAcc(c.dma.GetMemory(c.PC + 1))
 	c.PC += 2
 
@@ -1781,7 +1781,7 @@ func (c *CPU) popBc() uint8 {
 	return 10
 }
 
-func (c *CPU) jpNzXx() uint8 {
+func (c *CPU) jpNzNn() uint8 {
 	if c.getZ() {
 		c.PC += 3
 		return 10
@@ -1791,12 +1791,12 @@ func (c *CPU) jpNzXx() uint8 {
 	return 10
 }
 
-func (c *CPU) jpXx() uint8 {
+func (c *CPU) jpNn() uint8 {
 	c.PC = c.readWord(c.PC + 1)
 	return 10
 }
 
-func (c *CPU) callNzXx() uint8 {
+func (c *CPU) callNzNn() uint8 {
 	if c.getZ() {
 		c.PC += 3
 		return 10
@@ -1814,7 +1814,7 @@ func (c *CPU) pushBc() uint8 {
 	return 11
 }
 
-func (c *CPU) addAX() uint8 {
+func (c *CPU) addAN() uint8 {
 	c.setC(false)
 	c.adcValueToAcc(c.dma.GetMemory(c.PC + 1))
 
@@ -1853,7 +1853,7 @@ func (c *CPU) ret() uint8 {
 	return 10
 }
 
-func (c *CPU) jpZXx() uint8 {
+func (c *CPU) jpZNn() uint8 {
 	if !c.getZ() {
 		c.PC += 3
 		return 10
@@ -1863,7 +1863,7 @@ func (c *CPU) jpZXx() uint8 {
 	return 10
 }
 
-func (c *CPU) callZXx() uint8 {
+func (c *CPU) callZNn() uint8 {
 	if !c.getZ() {
 		c.PC += 3
 		return 10
@@ -1874,14 +1874,14 @@ func (c *CPU) callZXx() uint8 {
 	return 17
 }
 
-func (c *CPU) callXx() uint8 {
+func (c *CPU) callNn() uint8 {
 	c.pushStack(c.PC)
 	c.PC = c.readWord(c.PC + 1)
 
 	return 17
 }
 
-func (c *CPU) adcAX() uint8 {
+func (c *CPU) adcAN() uint8 {
 	c.adcValueToAcc(c.dma.GetMemory(c.PC + 1))
 
 	c.PC += 2
@@ -1906,7 +1906,7 @@ func (c *CPU) popDe() uint8 {
 	return 10
 }
 
-func (c *CPU) jpNcXx() uint8 {
+func (c *CPU) jpNcNn() uint8 {
 	if c.getC() {
 		c.PC += 3
 		return 10
@@ -1916,14 +1916,14 @@ func (c *CPU) jpNcXx() uint8 {
 	return 10
 }
 
-func (c *CPU) out_X_A() uint8 {
+func (c *CPU) out_N_A() uint8 {
 	c.setPort(c.dma.GetMemory(c.PC+1), c.getAcc())
 
 	c.PC += 2
 	return 11
 }
 
-func (c *CPU) callNcXx() uint8 {
+func (c *CPU) callNcNn() uint8 {
 	if c.getC() {
 		c.PC += 3
 		return 10
@@ -1941,7 +1941,7 @@ func (c *CPU) pushDe() uint8 {
 	return 11
 }
 
-func (c *CPU) subX() uint8 {
+func (c *CPU) subN() uint8 {
 	c.setC(true)
 	c.adcValueToAcc(c.dma.GetMemory(c.PC+1) ^ 0xff)
 
@@ -1973,7 +1973,7 @@ func (c *CPU) exx() uint8 {
 	return 4
 }
 
-func (c *CPU) jpCXx() uint8 {
+func (c *CPU) jpCNn() uint8 {
 	if !c.getC() {
 		c.PC += 3
 		return 10
@@ -1983,14 +1983,14 @@ func (c *CPU) jpCXx() uint8 {
 	return 10
 }
 
-func (c *CPU) inA_X_() uint8 {
+func (c *CPU) inA_N_() uint8 {
 	c.setAcc(c.getPort(c.dma.GetMemory(c.PC + 1)))
 
 	c.PC += 2
 	return 11
 }
 
-func (c *CPU) callCXx() uint8 {
+func (c *CPU) callCNn() uint8 {
 	if !c.getC() {
 		c.PC += 3
 		return 10
@@ -2001,7 +2001,7 @@ func (c *CPU) callCXx() uint8 {
 	return 17
 }
 
-func (c *CPU) sbcAX() uint8 {
+func (c *CPU) sbcAN() uint8 {
 	c.setC(!c.getC())
 	c.adcValueToAcc(c.dma.GetMemory(c.PC+1) ^ 0xff)
 
@@ -2052,7 +2052,7 @@ func (c *CPU) popSs(ss string) func() uint8 {
 	panic("Invalid `ss` type")
 }
 
-func (c *CPU) jpPoXx() uint8 {
+func (c *CPU) jpPoNn() uint8 {
 	if c.getPV() {
 		c.PC += 3
 		return 10
@@ -2096,7 +2096,7 @@ func (c *CPU) ex_Sp_Ss(ss string) func() uint8 {
 	panic("Invalid `ss` type")
 }
 
-func (c *CPU) callPoXx() uint8 {
+func (c *CPU) callPoNn() uint8 {
 	if c.getPV() {
 		c.PC += 3
 		return 10
@@ -2128,7 +2128,7 @@ func (c *CPU) pushSs(ss string) func() uint8 {
 
 }
 
-func (c *CPU) andX() uint8 {
+func (c *CPU) andN() uint8 {
 	result := c.getAcc() & c.dma.GetMemory(c.PC+1)
 
 	c.PC++
@@ -2170,7 +2170,7 @@ func (c *CPU) jp_Ss_(ss string) func() uint8 {
 	}
 }
 
-func (c *CPU) jpPeXx() uint8 {
+func (c *CPU) jpPeNn() uint8 {
 	if !c.getPV() {
 		c.PC += 3
 		return 10
@@ -2208,7 +2208,7 @@ func (c *CPU) exDeSs(ss string) func() uint8 {
 	panic("Invalid `ss` type")
 }
 
-func (c *CPU) callPeXx() uint8 {
+func (c *CPU) callPeNn() uint8 {
 	if !c.getPV() {
 		c.PC += 3
 		return 10
@@ -2219,7 +2219,7 @@ func (c *CPU) callPeXx() uint8 {
 	return 17
 }
 
-func (c *CPU) xorX() uint8 {
+func (c *CPU) xorN() uint8 {
 	result := c.getAcc() ^ c.dma.GetMemory(c.PC+1)
 
 	c.PC += 2
@@ -2252,7 +2252,7 @@ func (c *CPU) popAf() uint8 {
 	return 10
 }
 
-func (c *CPU) jpPXx() uint8 {
+func (c *CPU) jpPNn() uint8 {
 	if c.getS() {
 		c.PC += 3
 		return 10
@@ -2269,7 +2269,7 @@ func (c *CPU) di() uint8 {
 	return 4
 }
 
-func (c *CPU) callPXx() uint8 {
+func (c *CPU) callPNn() uint8 {
 	if c.getS() {
 		c.PC += 3
 		return 10
@@ -2287,7 +2287,7 @@ func (c *CPU) pushAf() uint8 {
 	return 11
 }
 
-func (c *CPU) orX() uint8 {
+func (c *CPU) orN() uint8 {
 	result := c.getAcc() | c.dma.GetMemory(c.PC+1)
 
 	c.PC += 2
@@ -2333,7 +2333,7 @@ func (c *CPU) ldSpSs(ss string) func() uint8 {
 	}
 }
 
-func (c *CPU) jpMXx() uint8 {
+func (c *CPU) jpMNn() uint8 {
 	if !c.getS() {
 		c.PC += 3
 		return 10
@@ -2350,7 +2350,7 @@ func (c *CPU) ei() uint8 {
 	return 4
 }
 
-func (c *CPU) callMXx() uint8 {
+func (c *CPU) callMNn() uint8 {
 	if !c.getS() {
 		c.PC += 3
 		return 10
@@ -2361,7 +2361,7 @@ func (c *CPU) callMXx() uint8 {
 	return 17
 }
 
-func (c *CPU) cpX() uint8 {
+func (c *CPU) cpN() uint8 {
 	acc := c.getAcc()
 	c.setC(true)
 	c.adcValueToAcc(c.dma.GetMemory(c.PC+1) ^ 0xff)
@@ -2466,7 +2466,7 @@ func (c *CPU) adcHlRr(rr string) func() uint8 {
 	}
 }
 
-func (c *CPU) ld_Xx_Rr(rr string) func() uint8 {
+func (c *CPU) ld_Nn_Rr(rr string) func() uint8 {
 	rvalue := c.extractRegisterPair(rr)
 
 	return func() uint8 {
@@ -2535,7 +2535,7 @@ func (c *CPU) ldAI() uint8 {
 	return 9
 }
 
-func (c *CPU) ldRr_Xx_(rr string) func() uint8 {
+func (c *CPU) ldRr_Nn_(rr string) func() uint8 {
 	var lvalue *uint16
 
 	switch rr {

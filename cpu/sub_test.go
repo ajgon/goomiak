@@ -170,7 +170,7 @@ func TestSubX(t *testing.T) {
 		cpu.PC = 0
 		cpu.setAcc(row[0])
 		dmaX.SetMemoryByte(0x0001, row[1])
-		tstates := cpu.subX()
+		tstates := cpu.subN()
 
 		if cpu.getAcc() != row[2] || cpu.getC() != (row[3] == 1) || cpu.getN() != (row[4] == 1) || cpu.getPV() != (row[5] == 1) || cpu.getH() != (row[6] == 1) || cpu.getZ() != (row[7] == 1) || cpu.getS() != (row[8] == 1) {
 			t.Errorf(
