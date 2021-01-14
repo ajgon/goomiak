@@ -1801,7 +1801,7 @@ func (c *CPU) callNzNn() uint8 {
 		c.PC += 3
 		return 10
 	}
-	c.pushStack(c.PC)
+	c.pushStack(c.PC + 3)
 	c.PC = c.readWord(c.PC + 1)
 
 	return 17
@@ -1829,7 +1829,7 @@ func (c *CPU) rst(p uint8) func() uint8 {
 	}
 
 	return func() uint8 {
-		c.pushStack(c.PC)
+		c.pushStack(c.PC + 1)
 		c.PC = uint16(p)
 
 		return 11
@@ -1868,14 +1868,14 @@ func (c *CPU) callZNn() uint8 {
 		c.PC += 3
 		return 10
 	}
-	c.pushStack(c.PC)
+	c.pushStack(c.PC + 3)
 	c.PC = c.readWord(c.PC + 1)
 
 	return 17
 }
 
 func (c *CPU) callNn() uint8 {
-	c.pushStack(c.PC)
+	c.pushStack(c.PC + 3)
 	c.PC = c.readWord(c.PC + 1)
 
 	return 17
@@ -1928,7 +1928,7 @@ func (c *CPU) callNcNn() uint8 {
 		c.PC += 3
 		return 10
 	}
-	c.pushStack(c.PC)
+	c.pushStack(c.PC + 3)
 	c.PC = c.readWord(c.PC + 1)
 
 	return 17
@@ -1995,7 +1995,7 @@ func (c *CPU) callCNn() uint8 {
 		c.PC += 3
 		return 10
 	}
-	c.pushStack(c.PC)
+	c.pushStack(c.PC + 3)
 	c.PC = c.readWord(c.PC + 1)
 
 	return 17
@@ -2101,7 +2101,7 @@ func (c *CPU) callPoNn() uint8 {
 		c.PC += 3
 		return 10
 	}
-	c.pushStack(c.PC)
+	c.pushStack(c.PC + 3)
 	c.PC = c.readWord(c.PC + 1)
 
 	return 17
@@ -2213,7 +2213,7 @@ func (c *CPU) callPeNn() uint8 {
 		c.PC += 3
 		return 10
 	}
-	c.pushStack(c.PC)
+	c.pushStack(c.PC + 3)
 	c.PC = c.readWord(c.PC + 1)
 
 	return 17
@@ -2274,7 +2274,7 @@ func (c *CPU) callPNn() uint8 {
 		c.PC += 3
 		return 10
 	}
-	c.pushStack(c.PC)
+	c.pushStack(c.PC + 3)
 	c.PC = c.readWord(c.PC + 1)
 
 	return 17
@@ -2355,7 +2355,7 @@ func (c *CPU) callMNn() uint8 {
 		c.PC += 3
 		return 10
 	}
-	c.pushStack(c.PC)
+	c.pushStack(c.PC + 3)
 	c.PC = c.readWord(c.PC + 1)
 
 	return 17

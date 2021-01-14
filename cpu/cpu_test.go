@@ -1910,7 +1910,7 @@ func TestCallNzNn(t *testing.T) {
 	checkCpu(t, 17, map[string]uint16{"PC": 0x5678, "SP": 0xfffe, "Flags": 0b10010111}, cpu.callNzNn)
 
 	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
-	wantL, wantH := uint8(0x34), uint8(0x12)
+	wantL, wantH := uint8(0x37), uint8(0x12)
 
 	if gotL != wantL || gotH != wantH {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
@@ -1955,7 +1955,7 @@ func TestRst(t *testing.T) {
 		checkCpu(t, 11, map[string]uint16{"PC": uint16(addr), "SP": 0xfffe}, cpu.rst(addr))
 
 		gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
-		wantL, wantH := uint8(0x34), uint8(0x12)
+		wantL, wantH := uint8(0x35), uint8(0x12)
 
 		if gotL != wantL || gotH != wantH {
 			t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
@@ -2016,7 +2016,7 @@ func TestCallZNn(t *testing.T) {
 	checkCpu(t, 17, map[string]uint16{"PC": 0x5678, "SP": 0xfffe, "Flags": 0b11010111}, cpu.callZNn)
 
 	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
-	wantL, wantH := uint8(0x34), uint8(0x12)
+	wantL, wantH := uint8(0x37), uint8(0x12)
 
 	if gotL != wantL || gotH != wantH {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
@@ -2047,7 +2047,7 @@ func TestCallNn(t *testing.T) {
 	checkCpu(t, 17, map[string]uint16{"PC": 0x5678, "SP": 0xfffe}, cpu.callNn)
 
 	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
-	wantL, wantH := uint8(0x34), uint8(0x12)
+	wantL, wantH := uint8(0x37), uint8(0x12)
 
 	if gotL != wantL || gotH != wantH {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
@@ -2122,7 +2122,7 @@ func TestCallNcNn(t *testing.T) {
 	checkCpu(t, 17, map[string]uint16{"PC": 0x5678, "SP": 0xfffe, "Flags": 0b11010110}, cpu.callNcNn)
 
 	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
-	wantL, wantH := uint8(0x34), uint8(0x12)
+	wantL, wantH := uint8(0x37), uint8(0x12)
 
 	if gotL != wantL || gotH != wantH {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
@@ -2222,7 +2222,7 @@ func TestCallCNn(t *testing.T) {
 	checkCpu(t, 17, map[string]uint16{"PC": 0x5678, "SP": 0xfffe, "Flags": 0b11010111}, cpu.callCNn)
 
 	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
-	wantL, wantH := uint8(0x34), uint8(0x12)
+	wantL, wantH := uint8(0x37), uint8(0x12)
 
 	if gotL != wantL || gotH != wantH {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
@@ -2314,7 +2314,7 @@ func TestCallPoNn(t *testing.T) {
 	checkCpu(t, 17, map[string]uint16{"PC": 0x5678, "SP": 0xfffe, "Flags": 0b11010011}, cpu.callPoNn)
 
 	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
-	wantL, wantH := uint8(0x34), uint8(0x12)
+	wantL, wantH := uint8(0x37), uint8(0x12)
 
 	if gotL != wantL || gotH != wantH {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
@@ -2459,7 +2459,7 @@ func TestCallPeNn(t *testing.T) {
 	checkCpu(t, 17, map[string]uint16{"PC": 0x5678, "SP": 0xfffe, "Flags": 0b11010111}, cpu.callPeNn)
 
 	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
-	wantL, wantH := uint8(0x34), uint8(0x12)
+	wantL, wantH := uint8(0x37), uint8(0x12)
 
 	if gotL != wantL || gotH != wantH {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
@@ -2563,7 +2563,7 @@ func TestCallPNn(t *testing.T) {
 	checkCpu(t, 17, map[string]uint16{"PC": 0x5678, "SP": 0xfffe, "Flags": 0b01010111}, cpu.callPNn)
 
 	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
-	wantL, wantH := uint8(0x34), uint8(0x12)
+	wantL, wantH := uint8(0x37), uint8(0x12)
 
 	if gotL != wantL || gotH != wantH {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
@@ -2679,7 +2679,7 @@ func TestCallMNn(t *testing.T) {
 	checkCpu(t, 17, map[string]uint16{"PC": 0x5678, "SP": 0xfffe, "Flags": 0b11010111}, cpu.callMNn)
 
 	gotL, gotH := dmaX.GetMemory(0xfffe), dmaX.GetMemory(0xffff)
-	wantL, wantH := uint8(0x34), uint8(0x12)
+	wantL, wantH := uint8(0x37), uint8(0x12)
 
 	if gotL != wantL || gotH != wantH {
 		t.Errorf("got 0x%02x%02x, want 0x%02x%02x", gotH, gotL, wantH, wantL)
