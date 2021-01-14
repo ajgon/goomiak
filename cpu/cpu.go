@@ -343,21 +343,25 @@ func (c *CPU) writeWord(address uint16, value uint16) {
 	c.dma.SetMemoryBulk(address, []uint8{uint8(value), uint8(value >> 8)})
 }
 
-func (c *CPU) extractRegister(r byte) (rhigh bool, rvalue uint16) {
+func (c *CPU) extractRegister(r byte) uint8 {
 	switch r {
 	case 'A':
-		rhigh, rvalue = true, c.AF
-	case 'B', 'C':
-		rhigh, rvalue = r == 'B', c.BC
-	case 'D', 'E':
-		rhigh, rvalue = r == 'D', c.DE
-	case 'H', 'L':
-		rhigh, rvalue = r == 'H', c.HL
-	default:
-		panic("Invalid `r` part of the mnemonic")
+		return c.getAcc()
+	case 'B':
+		return uint8(c.BC >> 8)
+	case 'C':
+		return uint8(c.BC)
+	case 'D':
+		return uint8(c.DE >> 8)
+	case 'E':
+		return uint8(c.DE)
+	case 'H':
+		return uint8(c.HL >> 8)
+	case 'L':
+		return uint8(c.HL)
 	}
 
-	return
+	panic("Invalid `r` part of the mnemonic")
 }
 
 func (c *CPU) extractRegisterPair(rr string) (rvalue uint16) {
@@ -1228,17 +1232,9 @@ func (c *CPU) ldRR_(r, r_ byte) func() uint8 {
 		panic("Invalid `r` part of the mnemonic")
 	}
 
-	rhigh, rvalue := c.extractRegister(r_)
+	right := c.extractRegister(r_)
 
 	return func() uint8 {
-		var right uint8
-
-		if rhigh {
-			right = uint8(rvalue >> 8)
-		} else {
-			right = uint8(rvalue)
-		}
-
 		if lhigh {
 			*lvalue = (*lvalue & 0x00ff) | (uint16(right) << 8)
 		} else {
@@ -1302,18 +1298,10 @@ func (c *CPU) ldR_Ss_(r byte, ss string) func() uint8 {
 }
 
 func (c *CPU) ld_Ss_R(ss string, r byte) func() uint8 {
-	rhigh, rvalue := c.extractRegister(r)
+	right := c.extractRegister(r)
 
 	if ss == "HL" {
 		return func() uint8 {
-			var right uint8
-
-			if rhigh {
-				right = uint8(rvalue >> 8)
-			} else {
-				right = uint8(rvalue)
-			}
-
 			c.dma.SetMemoryByte(c.HL, right)
 
 			c.PC++
@@ -1325,14 +1313,6 @@ func (c *CPU) ld_Ss_R(ss string, r byte) func() uint8 {
 	addrBase := c.extractRegisterPair(ss)
 
 	return func() uint8 {
-		var right uint8
-
-		if rhigh {
-			right = uint8(rvalue >> 8)
-		} else {
-			right = uint8(rvalue)
-		}
-
 		c.dma.SetMemoryByte(addrBase+uint16(c.dma.GetMemory(c.PC+2)), right)
 
 		c.PC += 3
@@ -1349,15 +1329,11 @@ func (c *CPU) halt() uint8 {
 }
 
 func (c *CPU) addAR(r byte) func() uint8 {
-	rhigh, rvalue := c.extractRegister(r)
+	right := c.extractRegister(r)
 
 	return func() uint8 {
 		c.setC(false)
-		if rhigh {
-			c.adcValueToAcc(uint8(rvalue >> 8))
-		} else {
-			c.adcValueToAcc(uint8(rvalue))
-		}
+		c.adcValueToAcc(right)
 
 		c.PC++
 
@@ -1390,15 +1366,10 @@ func (c *CPU) addA_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) adcAR(r byte) func() uint8 {
-	rhigh, rvalue := c.extractRegister(r)
+	right := c.extractRegister(r)
 
 	return func() uint8 {
-		if rhigh {
-			c.adcValueToAcc(uint8(rvalue >> 8))
-		} else {
-			c.adcValueToAcc(uint8(rvalue))
-		}
-
+		c.adcValueToAcc(right)
 		c.PC++
 
 		return 4
@@ -1428,15 +1399,11 @@ func (c *CPU) adcA_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) subR(r byte) func() uint8 {
-	rhigh, rvalue := c.extractRegister(r)
+	right := c.extractRegister(r)
 
 	return func() uint8 {
 		c.setC(true)
-		if rhigh {
-			c.adcValueToAcc(uint8(rvalue>>8) ^ 0xff)
-		} else {
-			c.adcValueToAcc(uint8(rvalue) ^ 0xff)
-		}
+		c.adcValueToAcc(right ^ 0xff)
 
 		c.PC++
 		c.setN(true)
@@ -1478,15 +1445,11 @@ func (c *CPU) sub_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) sbcAR(r byte) func() uint8 {
-	rhigh, rvalue := c.extractRegister(r)
+	right := c.extractRegister(r)
 
 	return func() uint8 {
 		c.setC(!c.getC())
-		if rhigh {
-			c.adcValueToAcc(uint8(rvalue>>8) ^ 0xff)
-		} else {
-			c.adcValueToAcc(uint8(rvalue) ^ 0xff)
-		}
+		c.adcValueToAcc(right ^ 0xff)
 
 		c.PC++
 		c.setN(true)
@@ -1528,15 +1491,11 @@ func (c *CPU) sbcA_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) andR(r byte) func() uint8 {
-	rhigh, rvalue := c.extractRegister(r)
+	right := c.extractRegister(r)
 
 	return func() uint8 {
 		var result uint8
-		if rhigh {
-			result = c.getAcc() & uint8(rvalue>>8)
-		} else {
-			result = c.getAcc() & uint8(rvalue)
-		}
+		result = c.getAcc() & right
 
 		c.PC++
 		c.setAcc(result)
@@ -1588,15 +1547,11 @@ func (c *CPU) and_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) xorR(r byte) func() uint8 {
-	rhigh, rvalue := c.extractRegister(r)
+	right := c.extractRegister(r)
 
 	return func() uint8 {
 		var result uint8
-		if rhigh {
-			result = c.getAcc() ^ uint8(rvalue>>8)
-		} else {
-			result = c.getAcc() ^ uint8(rvalue)
-		}
+		result = c.getAcc() ^ right
 
 		c.PC++
 		c.setAcc(result)
@@ -1648,15 +1603,11 @@ func (c *CPU) xor_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) orR(r byte) func() uint8 {
-	rhigh, rvalue := c.extractRegister(r)
+	right := c.extractRegister(r)
 
 	return func() uint8 {
 		var result uint8
-		if rhigh {
-			result = c.getAcc() | uint8(rvalue>>8)
-		} else {
-			result = c.getAcc() | uint8(rvalue)
-		}
+		result = c.getAcc() | right
 
 		c.PC++
 		c.setAcc(result)
@@ -1708,16 +1659,12 @@ func (c *CPU) or_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) cpR(r byte) func() uint8 {
-	rhigh, rvalue := c.extractRegister(r)
+	right := c.extractRegister(r)
 
 	return func() uint8 {
 		acc := c.getAcc()
 		c.setC(true)
-		if rhigh {
-			c.adcValueToAcc(uint8(rvalue>>8) ^ 0xff)
-		} else {
-			c.adcValueToAcc(uint8(rvalue) ^ 0xff)
-		}
+		c.adcValueToAcc(right ^ 0xff)
 
 		c.PC++
 		c.setAcc(acc)
@@ -2418,21 +2365,16 @@ func (c *CPU) inR_C_(r byte) func() uint8 {
 }
 
 func (c *CPU) out_C_R(r byte) func() uint8 {
-	var rhigh bool
-	var rvalue uint16
+	var right uint8
 
 	if r == ' ' {
-		rvalue = 0
+		right = 0
 	} else {
-		rhigh, rvalue = c.extractRegister(r)
+		right = c.extractRegister(r)
 	}
 
 	return func() uint8 {
-		if rhigh {
-			c.setPort(uint8(c.BC), uint8(rvalue>>8))
-		} else {
-			c.setPort(uint8(c.BC), uint8(rvalue))
-		}
+		c.setPort(uint8(c.BC), right)
 
 		c.PC += 2
 		return 12
