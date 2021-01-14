@@ -134,7 +134,7 @@ func (c *CPU) initializeMnemonics() {
 		c.djnzX, c.ldDeXx, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDX, c.rla,
 		c.jrX, c.addSsRr("HL", "DE"), c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEX, c.rra,
 		c.jrNzX, c.ldSsXx("HL"), c.ld_Xx_Ss("HL"), c.incSs("IX"), c.incH, c.decH, c.ldHX, c.daa,
-		c.jrZX, c.addSsRr("HL", "HL"), c.ldSs_Xx_("HL"), c.decHl, c.incL, c.decL, c.ldLX, c.cpl,
+		c.jrZX, c.addSsRr("HL", "HL"), c.ldSs_Xx_("HL"), c.decSs("HL"), c.incL, c.decL, c.ldLX, c.cpl,
 		c.jrNcX, c.ldSpXx, c.ld_Xx_A, c.incSp, c.inc_Ss_("HL"), c.dec_Ss_("HL"), c.ld_Ss_X("HL"), c.scf,
 		c.jrCX, c.addSsRr("HL", "SP"), c.ldA_Xx_, c.decSp, c.incA, c.decA, c.ldAX, c.ccf,
 		c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', 'H'), c.ldRR_('B', 'L'), c.ldR_Ss_('B', "HL"), c.ldRR_('B', 'A'),
@@ -981,11 +981,32 @@ func (c *CPU) ldSs_Xx_(ss string) func() uint8 {
 	panic("Invalid `ss` type")
 }
 
-func (c *CPU) decHl() uint8 {
-	c.HL--
-	c.PC++
+func (c *CPU) decSs(ss string) func() uint8 {
+	switch ss {
+	case "HL":
+		return func() uint8 {
+			c.HL--
+			c.PC++
 
-	return 6
+			return 6
+		}
+	case "IX":
+		return func() uint8 {
+			c.IX--
+			c.PC += 2
+
+			return 10
+		}
+	case "IY":
+		return func() uint8 {
+			c.IY--
+			c.PC += 2
+
+			return 10
+		}
+	}
+
+	panic("Invalid `ss` type")
 }
 
 func (c *CPU) incL() uint8 {

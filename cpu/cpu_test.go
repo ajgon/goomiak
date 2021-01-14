@@ -878,7 +878,21 @@ func TestDecHl(t *testing.T) {
 	resetAll()
 	cpu.HL = 0x1000
 
-	checkCpu(t, 6, map[string]uint16{"PC": 1, "HL": 0x0fff}, cpu.decHl)
+	checkCpu(t, 6, map[string]uint16{"PC": 1, "HL": 0x0fff}, cpu.decSs("HL"))
+}
+
+func TestDecIx(t *testing.T) {
+	resetAll()
+	cpu.IX = 0x1000
+
+	checkCpu(t, 10, map[string]uint16{"PC": 2, "IX": 0x0fff}, cpu.decSs("IX"))
+}
+
+func TestDecIy(t *testing.T) {
+	resetAll()
+	cpu.IY = 0x1000
+
+	checkCpu(t, 10, map[string]uint16{"PC": 2, "IY": 0x0fff}, cpu.decSs("IY"))
 }
 
 func TestIncL(t *testing.T) {
