@@ -597,26 +597,24 @@ func (c *CPU) exAfAf_() uint8 {
 }
 
 func (c *CPU) addSsRr(ss, rr string) func() uint8 {
-	rvalue := c.extractRegisterPair(rr)
-
 	switch ss {
 	case "HL":
 		return func() uint8 {
-			c.addRegisters(&c.HL, rvalue)
+			c.addRegisters(&c.HL, c.extractRegisterPair(rr))
 			c.PC++
 
 			return 11
 		}
 	case "IX":
 		return func() uint8 {
-			c.addRegisters(&c.IX, rvalue)
+			c.addRegisters(&c.IX, c.extractRegisterPair(rr))
 			c.PC += 2
 
 			return 15
 		}
 	case "IY":
 		return func() uint8 {
-			c.addRegisters(&c.IY, rvalue)
+			c.addRegisters(&c.IY, c.extractRegisterPair(rr))
 			c.PC += 2
 
 			return 15
@@ -845,10 +843,8 @@ func (c *CPU) ld_Nn_Ss(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		c.writeWord(c.readWord(c.PC+2), rvalue)
+		c.writeWord(c.readWord(c.PC+2), c.extractRegisterPair(ss))
 		c.PC += 4
 		return 20
 	}
@@ -1084,10 +1080,8 @@ func (c *CPU) inc_Ss_(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		addr := rvalue + uint16(c.dma.GetMemory(c.PC+2))
+		addr := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
 		result := c.dma.GetMemory(addr) + 1
 		c.dma.SetMemoryByte(addr, result)
 		c.PC += 3
@@ -1120,10 +1114,8 @@ func (c *CPU) dec_Ss_(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		addr := rvalue + uint16(c.dma.GetMemory(c.PC+2))
+		addr := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
 		result := c.dma.GetMemory(addr) - 1
 		c.dma.SetMemoryByte(addr, result)
 		c.PC += 3
@@ -1147,10 +1139,8 @@ func (c *CPU) ld_Ss_N(ss string) func() uint8 {
 		}
 	}
 
-	addrBase := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		c.dma.SetMemoryByte(addrBase+uint16(c.dma.GetMemory(c.PC+2)), c.dma.GetMemory(c.PC+3))
+		c.dma.SetMemoryByte(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2)), c.dma.GetMemory(c.PC+3))
 		c.PC += 4
 		return 19
 	}
@@ -1216,25 +1206,25 @@ func (c *CPU) ccf() uint8 {
 }
 
 func (c *CPU) ldRR_(r, r_ byte) func() uint8 {
-	var lhigh bool
-	var lvalue *uint16
-
-	switch r {
-	case 'A':
-		lhigh, lvalue = true, &c.AF
-	case 'B', 'C':
-		lhigh, lvalue = r == 'B', &c.BC
-	case 'D', 'E':
-		lhigh, lvalue = r == 'D', &c.DE
-	case 'H', 'L':
-		lhigh, lvalue = r == 'H', &c.HL
-	default:
-		panic("Invalid `r` part of the mnemonic")
-	}
-
-	right := c.extractRegister(r_)
-
 	return func() uint8 {
+		var lhigh bool
+		var lvalue *uint16
+
+		switch r {
+		case 'A':
+			lhigh, lvalue = true, &c.AF
+		case 'B', 'C':
+			lhigh, lvalue = r == 'B', &c.BC
+		case 'D', 'E':
+			lhigh, lvalue = r == 'D', &c.DE
+		case 'H', 'L':
+			lhigh, lvalue = r == 'H', &c.HL
+		default:
+			panic("Invalid `r` part of the mnemonic")
+		}
+
+		right := c.extractRegister(r_)
+
 		if lhigh {
 			*lvalue = (*lvalue & 0x00ff) | (uint16(right) << 8)
 		} else {
@@ -1248,25 +1238,26 @@ func (c *CPU) ldRR_(r, r_ byte) func() uint8 {
 }
 
 func (c *CPU) ldR_Ss_(r byte, ss string) func() uint8 {
-	var lhigh bool
-	var lvalue *uint16
-
-	switch r {
-	case 'A':
-		lhigh, lvalue = true, &c.AF
-	case 'B', 'C':
-		lhigh, lvalue = r == 'B', &c.BC
-	case 'D', 'E':
-		lhigh, lvalue = r == 'D', &c.DE
-	case 'H', 'L':
-		lhigh, lvalue = r == 'H', &c.HL
-	default:
-		panic("Invalid `r` part of the mnemonic")
-	}
-
 	if ss == "HL" {
 		return func() uint8 {
-			right := c.dma.GetMemory(c.HL)
+			var lhigh bool
+			var lvalue *uint16
+			var right uint8
+
+			switch r {
+			case 'A':
+				lhigh, lvalue = true, &c.AF
+			case 'B', 'C':
+				lhigh, lvalue = r == 'B', &c.BC
+			case 'D', 'E':
+				lhigh, lvalue = r == 'D', &c.DE
+			case 'H', 'L':
+				lhigh, lvalue = r == 'H', &c.HL
+			default:
+				panic("Invalid `r` part of the mnemonic")
+			}
+
+			right = c.dma.GetMemory(c.HL)
 
 			if lhigh {
 				*lvalue = (*lvalue & 0x00ff) | (uint16(right) << 8)
@@ -1275,15 +1266,29 @@ func (c *CPU) ldR_Ss_(r byte, ss string) func() uint8 {
 			}
 
 			c.PC++
-
 			return 7
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		right := c.dma.GetMemory(rvalue + uint16(c.dma.GetMemory(c.PC+2)))
+		var lhigh bool
+		var lvalue *uint16
+		var right uint8
+
+		switch r {
+		case 'A':
+			lhigh, lvalue = true, &c.AF
+		case 'B', 'C':
+			lhigh, lvalue = r == 'B', &c.BC
+		case 'D', 'E':
+			lhigh, lvalue = r == 'D', &c.DE
+		case 'H', 'L':
+			lhigh, lvalue = r == 'H', &c.HL
+		default:
+			panic("Invalid `r` part of the mnemonic")
+		}
+
+		right = c.dma.GetMemory(c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2)))
 
 		if lhigh {
 			*lvalue = (*lvalue & 0x00ff) | (uint16(right) << 8)
@@ -1292,31 +1297,24 @@ func (c *CPU) ldR_Ss_(r byte, ss string) func() uint8 {
 		}
 
 		c.PC += 3
-
 		return 19
 	}
+
 }
 
 func (c *CPU) ld_Ss_R(ss string, r byte) func() uint8 {
-	right := c.extractRegister(r)
-
 	if ss == "HL" {
 		return func() uint8 {
-			c.dma.SetMemoryByte(c.HL, right)
-
+			c.dma.SetMemoryByte(c.HL, c.extractRegister(r))
 			c.PC++
-
 			return 7
+
 		}
 	}
 
-	addrBase := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		c.dma.SetMemoryByte(addrBase+uint16(c.dma.GetMemory(c.PC+2)), right)
-
+		c.dma.SetMemoryByte(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2)), c.extractRegister(r))
 		c.PC += 3
-
 		return 19
 	}
 }
@@ -1329,11 +1327,9 @@ func (c *CPU) halt() uint8 {
 }
 
 func (c *CPU) addAR(r byte) func() uint8 {
-	right := c.extractRegister(r)
-
 	return func() uint8 {
 		c.setC(false)
-		c.adcValueToAcc(right)
+		c.adcValueToAcc(c.extractRegister(r))
 
 		c.PC++
 
@@ -1346,30 +1342,22 @@ func (c *CPU) addA_Ss_(ss string) func() uint8 {
 		return func() uint8 {
 			c.setC(false)
 			c.adcValueToAcc(c.dma.GetMemory(c.HL))
-
 			c.PC++
-
 			return 7
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
 		c.setC(false)
-		c.adcValueToAcc(c.dma.GetMemory(rvalue + uint16(c.dma.GetMemory(c.PC+2))))
-
+		c.adcValueToAcc(c.dma.GetMemory(c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))))
 		c.PC += 3
-
 		return 19
 	}
 }
 
 func (c *CPU) adcAR(r byte) func() uint8 {
-	right := c.extractRegister(r)
-
 	return func() uint8 {
-		c.adcValueToAcc(right)
+		c.adcValueToAcc(c.extractRegister(r))
 		c.PC++
 
 		return 4
@@ -1380,30 +1368,22 @@ func (c *CPU) adcA_Ss_(ss string) func() uint8 {
 	if ss == "HL" {
 		return func() uint8 {
 			c.adcValueToAcc(c.dma.GetMemory(c.HL))
-
 			c.PC++
-
 			return 7
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		c.adcValueToAcc(c.dma.GetMemory(rvalue + uint16(c.dma.GetMemory(c.PC+2))))
-
+		c.adcValueToAcc(c.dma.GetMemory(c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))))
 		c.PC += 3
-
 		return 19
 	}
 }
 
 func (c *CPU) subR(r byte) func() uint8 {
-	right := c.extractRegister(r)
-
 	return func() uint8 {
 		c.setC(true)
-		c.adcValueToAcc(right ^ 0xff)
+		c.adcValueToAcc(c.extractRegister(r) ^ 0xff)
 
 		c.PC++
 		c.setN(true)
@@ -1429,11 +1409,9 @@ func (c *CPU) sub_Ss_(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
 		c.setC(true)
-		c.adcValueToAcc(c.dma.GetMemory(rvalue+uint16(c.dma.GetMemory(c.PC+2))) ^ 0xff)
+		c.adcValueToAcc(c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2))) ^ 0xff)
 
 		c.PC += 3
 		c.setN(true)
@@ -1445,11 +1423,9 @@ func (c *CPU) sub_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) sbcAR(r byte) func() uint8 {
-	right := c.extractRegister(r)
-
 	return func() uint8 {
 		c.setC(!c.getC())
-		c.adcValueToAcc(right ^ 0xff)
+		c.adcValueToAcc(c.extractRegister(r) ^ 0xff)
 
 		c.PC++
 		c.setN(true)
@@ -1475,11 +1451,9 @@ func (c *CPU) sbcA_Ss_(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
 		c.setC(!c.getC())
-		c.adcValueToAcc(c.dma.GetMemory(rvalue+uint16(c.dma.GetMemory(c.PC+2))) ^ 0xff)
+		c.adcValueToAcc(c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2))) ^ 0xff)
 
 		c.PC += 3
 		c.setN(true)
@@ -1491,11 +1465,9 @@ func (c *CPU) sbcA_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) andR(r byte) func() uint8 {
-	right := c.extractRegister(r)
-
 	return func() uint8 {
 		var result uint8
-		result = c.getAcc() & right
+		result = c.getAcc() & c.extractRegister(r)
 
 		c.PC++
 		c.setAcc(result)
@@ -1528,10 +1500,8 @@ func (c *CPU) and_Ss_(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		result := c.getAcc() & c.dma.GetMemory(rvalue+uint16(c.dma.GetMemory(c.PC+2)))
+		result := c.getAcc() & c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2)))
 
 		c.PC += 3
 		c.setAcc(result)
@@ -1547,11 +1517,9 @@ func (c *CPU) and_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) xorR(r byte) func() uint8 {
-	right := c.extractRegister(r)
-
 	return func() uint8 {
 		var result uint8
-		result = c.getAcc() ^ right
+		result = c.getAcc() ^ c.extractRegister(r)
 
 		c.PC++
 		c.setAcc(result)
@@ -1584,10 +1552,8 @@ func (c *CPU) xor_Ss_(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		result := c.getAcc() ^ c.dma.GetMemory(rvalue+uint16(c.dma.GetMemory(c.PC+2)))
+		result := c.getAcc() ^ c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2)))
 
 		c.PC += 3
 		c.setAcc(result)
@@ -1603,11 +1569,9 @@ func (c *CPU) xor_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) orR(r byte) func() uint8 {
-	right := c.extractRegister(r)
-
 	return func() uint8 {
 		var result uint8
-		result = c.getAcc() | right
+		result = c.getAcc() | c.extractRegister(r)
 
 		c.PC++
 		c.setAcc(result)
@@ -1640,10 +1604,8 @@ func (c *CPU) or_Ss_(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		result := c.getAcc() | c.dma.GetMemory(rvalue+uint16(c.dma.GetMemory(c.PC+2)))
+		result := c.getAcc() | c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2)))
 
 		c.PC += 3
 		c.setAcc(result)
@@ -1659,12 +1621,10 @@ func (c *CPU) or_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) cpR(r byte) func() uint8 {
-	right := c.extractRegister(r)
-
 	return func() uint8 {
 		acc := c.getAcc()
 		c.setC(true)
-		c.adcValueToAcc(right ^ 0xff)
+		c.adcValueToAcc(c.extractRegister(r) ^ 0xff)
 
 		c.PC++
 		c.setAcc(acc)
@@ -1693,12 +1653,10 @@ func (c *CPU) cp_Ss_(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
 		acc := c.getAcc()
 		c.setC(true)
-		c.adcValueToAcc(c.dma.GetMemory(rvalue+uint16(c.dma.GetMemory(c.PC+2))) ^ 0xff)
+		c.adcValueToAcc(c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2))) ^ 0xff)
 
 		c.PC += 3
 		c.setAcc(acc)
@@ -2064,10 +2022,8 @@ func (c *CPU) pushSs(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		c.pushStack(rvalue)
+		c.pushStack(c.extractRegisterPair(ss))
 		c.PC += 2
 
 		return 15
@@ -2109,10 +2065,8 @@ func (c *CPU) jp_Ss_(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		c.PC = c.readWord(rvalue)
+		c.PC = c.readWord(c.extractRegisterPair(ss))
 		return 8
 	}
 }
@@ -2270,10 +2224,8 @@ func (c *CPU) ldSpSs(ss string) func() uint8 {
 		}
 	}
 
-	rvalue := c.extractRegisterPair(ss)
-
 	return func() uint8 {
-		c.SP = rvalue
+		c.SP = c.extractRegisterPair(ss)
 
 		c.PC += 2
 		return 10
@@ -2323,24 +2275,24 @@ func (c *CPU) cpN() uint8 {
 }
 
 func (c *CPU) inR_C_(r byte) func() uint8 {
-	var lhigh bool
-	var lvalue *uint16
-
-	switch r {
-	case 'A':
-		lhigh, lvalue = true, &c.AF
-	case 'B', 'C':
-		lhigh, lvalue = r == 'B', &c.BC
-	case 'D', 'E':
-		lhigh, lvalue = r == 'D', &c.DE
-	case 'H', 'L':
-		lhigh, lvalue = r == 'H', &c.HL
-	case ' ':
-	default:
-		panic("Invalid `r` part of the mnemonic")
-	}
-
 	return func() uint8 {
+		var lhigh bool
+		var lvalue *uint16
+
+		switch r {
+		case 'A':
+			lhigh, lvalue = true, &c.AF
+		case 'B', 'C':
+			lhigh, lvalue = r == 'B', &c.BC
+		case 'D', 'E':
+			lhigh, lvalue = r == 'D', &c.DE
+		case 'H', 'L':
+			lhigh, lvalue = r == 'H', &c.HL
+		case ' ':
+		default:
+			panic("Invalid `r` part of the mnemonic")
+		}
+
 		result := c.getPort(uint8(c.BC))
 
 		if r != ' ' {
@@ -2365,15 +2317,15 @@ func (c *CPU) inR_C_(r byte) func() uint8 {
 }
 
 func (c *CPU) out_C_R(r byte) func() uint8 {
-	var right uint8
-
-	if r == ' ' {
-		right = 0
-	} else {
-		right = c.extractRegister(r)
-	}
-
 	return func() uint8 {
+		var right uint8
+
+		if r == ' ' {
+			right = 0
+		} else {
+			right = c.extractRegister(r)
+		}
+
 		c.setPort(uint8(c.BC), right)
 
 		c.PC += 2
@@ -2382,11 +2334,9 @@ func (c *CPU) out_C_R(r byte) func() uint8 {
 }
 
 func (c *CPU) sbcHlRr(rr string) func() uint8 {
-	rvalue := c.extractRegisterPair(rr)
-
 	return func() uint8 {
 		c.setC(!c.getC())
-		c.HL = c.adc16bit(c.HL, rvalue^0xffff)
+		c.HL = c.adc16bit(c.HL, c.extractRegisterPair(rr)^0xffff)
 
 		c.PC += 2
 		c.setN(true)
@@ -2398,10 +2348,8 @@ func (c *CPU) sbcHlRr(rr string) func() uint8 {
 }
 
 func (c *CPU) adcHlRr(rr string) func() uint8 {
-	rvalue := c.extractRegisterPair(rr)
-
 	return func() uint8 {
-		c.HL = c.adc16bit(c.HL, rvalue)
+		c.HL = c.adc16bit(c.HL, c.extractRegisterPair(rr))
 
 		c.PC += 2
 		return 15
@@ -2409,10 +2357,8 @@ func (c *CPU) adcHlRr(rr string) func() uint8 {
 }
 
 func (c *CPU) ld_Nn_Rr(rr string) func() uint8 {
-	rvalue := c.extractRegisterPair(rr)
-
 	return func() uint8 {
-		c.writeWord(c.readWord(c.PC+2), rvalue)
+		c.writeWord(c.readWord(c.PC+2), c.extractRegisterPair(rr))
 
 		c.PC += 4
 		return 20
@@ -2478,24 +2424,24 @@ func (c *CPU) ldAI() uint8 {
 }
 
 func (c *CPU) ldRr_Nn_(rr string) func() uint8 {
-	var lvalue *uint16
-
-	switch rr {
-	case "AF":
-		lvalue = &c.AF
-	case "BC":
-		lvalue = &c.BC
-	case "DE":
-		lvalue = &c.DE
-	case "HL":
-		lvalue = &c.HL
-	case "SP":
-		lvalue = &c.SP
-	default:
-		panic("Invalid `rr` part of the mnemonic")
-	}
-
 	return func() uint8 {
+		var lvalue *uint16
+
+		switch rr {
+		case "AF":
+			lvalue = &c.AF
+		case "BC":
+			lvalue = &c.BC
+		case "DE":
+			lvalue = &c.DE
+		case "HL":
+			lvalue = &c.HL
+		case "SP":
+			lvalue = &c.SP
+		default:
+			panic("Invalid `rr` part of the mnemonic")
+		}
+
 		*lvalue = c.readWord(c.readWord(c.PC + 2))
 
 		c.PC += 4

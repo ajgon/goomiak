@@ -1623,7 +1623,7 @@ func TestAndR(t *testing.T) {
 		cpu.DE = 0xa9a9
 		cpu.HL = 0xa9a9
 
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x00, "Flags": 0b01010100}, cpu.andR(register))
+		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x00, "BC": 0xa9a9, "DE": 0xa9a9, "HL": 0xa9a9, "Flags": 0b01010100}, cpu.andR(register))
 
 		resetAll()
 		if register == 'A' {
@@ -1635,7 +1635,7 @@ func TestAndR(t *testing.T) {
 		cpu.DE = 0xb7b7
 		cpu.HL = 0xb7b7
 
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "Flags": 0b10010000}, cpu.andR(register))
+		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "BC": 0xb7b7, "DE": 0xb7b7, "HL": 0xb7b7, "Flags": 0b10010000}, cpu.andR(register))
 	}
 }
 
@@ -1704,7 +1704,7 @@ func TestXorR(t *testing.T) {
 		cpu.DE = 0x5656
 		cpu.HL = 0x5656
 
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x00, "Flags": 0b01000100}, cpu.xorR(register))
+		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x00, "BC": 0x5656, "DE": 0x5656, "HL": 0x5656, "Flags": 0b01000100}, cpu.xorR(register))
 
 		if register == 'A' {
 			continue
@@ -1716,7 +1716,7 @@ func TestXorR(t *testing.T) {
 		cpu.DE = 0xb7b7
 		cpu.HL = 0xb7b7
 
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "Flags": 0b10000000}, cpu.xorR(register))
+		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "BC": 0xb7b7, "DE": 0xb7b7, "HL": 0xb7b7, "Flags": 0b10000000}, cpu.xorR(register))
 	}
 }
 
@@ -1780,7 +1780,7 @@ func TestOrR(t *testing.T) {
 		cpu.DE = 0x0000
 		cpu.HL = 0x0000
 
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x00, "Flags": 0b01000100}, cpu.orR(register))
+		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x00, "BC": 0x0000, "DE": 0x0000, "HL": 0x0000, "Flags": 0b01000100}, cpu.orR(register))
 
 		resetAll()
 		if register == 'A' {
@@ -1793,7 +1793,7 @@ func TestOrR(t *testing.T) {
 		cpu.DE = 0x1313
 		cpu.HL = 0x1313
 
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "Flags": 0b10000000}, cpu.orR(register))
+		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "BC": 0x1313, "DE": 0x1313, "HL": 0x1313, "Flags": 0b10000000}, cpu.orR(register))
 	}
 }
 
@@ -2792,7 +2792,7 @@ func TestLd_Nn_Rr(t *testing.T) {
 		cpu.SP = 0x4644
 		dmaX.SetMemoryBulk(0x0002, []uint8{0x20, 0x10})
 
-		checkCpu(t, 20, map[string]uint16{"PC": 4, "BC": 0x4644, "DE": 0x4644, "HL": 0x4644}, cpu.ld_Nn_Rr(registerPair))
+		checkCpu(t, 20, map[string]uint16{"PC": 4, "BC": 0x4644, "DE": 0x4644, "HL": 0x4644, "SP": 0x4644}, cpu.ld_Nn_Rr(registerPair))
 
 		gotL, gotH := dmaX.GetMemory(0x1020), dmaX.GetMemory(0x1021)
 		wantL, wantH := uint8(0x44), uint8(0x46)
