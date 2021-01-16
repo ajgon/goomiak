@@ -267,7 +267,7 @@ func (c *CPU) initializeMnemonics() {
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.ldi, c.cpi, c.ini, c.outi, c.nop, c.nop, c.nop, c.nop,
 		c.ldd, c.cpd, c.ind, c.outd, c.nop, c.nop, c.nop, c.nop,
-		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
+		c.ldir, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
@@ -2702,6 +2702,17 @@ func (c *CPU) outd() uint8 {
 
 	c.PC += 2
 	return 16
+}
+
+func (c *CPU) ldir() uint8 {
+	c.ldi()
+
+	if c.BC == 0 {
+		return 16
+	}
+
+	c.PC -= 2
+	return 21
 }
 
 func (c *CPU) die() uint8 {

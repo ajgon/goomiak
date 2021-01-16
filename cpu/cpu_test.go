@@ -3893,3 +3893,38 @@ func TestOutd(t *testing.T) {
 		t.Errorf("got %02x, want %02x", got, want)
 	}
 }
+
+func TestLdir(t *testing.T) {
+	resetAll()
+	cpu.HL = 0x1111
+	cpu.DE = 0x2222
+	cpu.BC = 0x0003
+	cpu.setFlags(0b11010111)
+	dmaX.SetMemoryBulk(0x1111, []uint8{0x88, 0x36, 0xa5})
+	dmaX.SetMemoryBulk(0x2222, []uint8{0x66, 0x59, 0xc5})
+
+	for cpu.BC > 1 {
+		got := cpu.ldir()
+		want := uint8(21)
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
+	}
+
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "HL": 0x1114, "DE": 0x2225, "BC": 0x0000, "Flags": 0b11000001}, cpu.ldir)
+
+	gotHLA, gotHLB, gotHLC := dmaX.GetMemory(0x1111), dmaX.GetMemory(0x1112), dmaX.GetMemory(0x1113)
+	wantHLA, wantHLB, wantHLC := uint8(0x88), uint8(0x36), uint8(0xa5)
+
+	if gotHLA != wantHLA || gotHLB != wantHLB || gotHLC != wantHLC {
+		t.Errorf("got %02x%02x%02x, want %02x%02x%02x", gotHLA, gotHLB, gotHLC, wantHLA, wantHLB, wantHLC)
+	}
+
+	gotDEA, gotDEB, gotDEC := dmaX.GetMemory(0x2222), dmaX.GetMemory(0x2223), dmaX.GetMemory(0x2224)
+	wantDEA, wantDEB, wantDEC := uint8(0x88), uint8(0x36), uint8(0xa5)
+
+	if gotDEA != wantDEA || gotDEB != wantDEB || gotDEC != wantDEC {
+		t.Errorf("got %02x%02x%02x, want %02x%02x%02x", gotDEA, gotDEB, gotDEC, wantDEA, wantDEB, wantDEC)
+	}
+}
