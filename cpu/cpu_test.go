@@ -4299,3 +4299,91 @@ func TestRrcR(t *testing.T) {
 		}
 	}
 }
+
+func TestRrcHl(t *testing.T) {
+	resetAll()
+	cpu.HL = 0x1234
+	cpu.setFlags(0b11010110)
+	dmaX.SetMemoryByte(0x1234, 0x8d)
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b11000101}, cpu.rrcSs("HL"))
+
+	got := dmaX.GetMemory(0x1234)
+	want := uint8(0xc6)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+
+	resetAll()
+	cpu.HL = 0x1234
+	dmaX.SetMemoryByte(0x1234, 0x4c)
+	cpu.setFlags(0b11010111)
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b11000100}, cpu.rrcSs("HL"))
+
+	got = dmaX.GetMemory(0x1234)
+	want = uint8(0x26)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+}
+
+func TestRrcIx(t *testing.T) {
+	resetAll()
+	cpu.IX = 0x121b
+	cpu.setFlags(0b11010110)
+	dmaX.SetMemoryByte(0x1234, 0x8d)
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b11000101}, cpu.rrcSs("IX"))
+
+	got := dmaX.GetMemory(0x1234)
+	want := uint8(0xc6)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+
+	resetAll()
+	cpu.IX = 0x121b
+	dmaX.SetMemoryByte(0x1234, 0x4c)
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
+	cpu.setFlags(0b11010111)
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b11000100}, cpu.rrcSs("IX"))
+
+	got = dmaX.GetMemory(0x1234)
+	want = uint8(0x26)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+}
+
+func TestRrcIy(t *testing.T) {
+	resetAll()
+	cpu.IY = 0x121b
+	cpu.setFlags(0b11010110)
+	dmaX.SetMemoryByte(0x1234, 0x8d)
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b11000101}, cpu.rrcSs("IY"))
+
+	got := dmaX.GetMemory(0x1234)
+	want := uint8(0xc6)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+
+	resetAll()
+	cpu.IY = 0x121b
+	dmaX.SetMemoryByte(0x1234, 0x4c)
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
+	cpu.setFlags(0b11010111)
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b11000100}, cpu.rrcSs("IY"))
+
+	got = dmaX.GetMemory(0x1234)
+	want = uint8(0x26)
+
+	if got != want {
+		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+}
