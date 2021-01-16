@@ -267,7 +267,7 @@ func (c *CPU) initializeMnemonics() {
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.ldi, c.cpi, c.ini, c.outi, c.nop, c.nop, c.nop, c.nop,
 		c.ldd, c.cpd, c.ind, c.outd, c.nop, c.nop, c.nop, c.nop,
-		c.ldir, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
+		c.ldir, c.cpir, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
@@ -2712,6 +2712,29 @@ func (c *CPU) ldir() uint8 {
 	}
 
 	c.PC -= 2
+	return 21
+}
+
+func (c *CPU) cpir() uint8 {
+	acc := c.getAcc()
+	flagC := c.getC()
+	c.setC(true)
+	c.adcValueToAcc(c.dma.GetMemory(c.HL) ^ 0xff)
+	result := c.getAcc()
+	c.HL++
+	c.BC--
+
+	c.setAcc(acc)
+	c.setC(flagC)
+	c.setN(true)
+	c.setPV(c.BC != 0)
+	c.setH(!c.getH())
+
+	if c.BC == 0 || result == 0 {
+		c.PC += 2
+		return 16
+	}
+
 	return 21
 }
 
