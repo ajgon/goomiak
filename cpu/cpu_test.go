@@ -319,12 +319,12 @@ func TestRlca(t *testing.T) {
 	resetAll()
 	cpu.setAcc(0x8c)
 	cpu.setFlags(0b11010110)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x19, "Flags": 0b11000101}, cpu.rlcR(' '))
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x19, "Flags": 0b00000001}, cpu.rlcR(' '))
 
 	resetAll()
 	cpu.setAcc(0x4d)
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x9a, "Flags": 0b11000100}, cpu.rlcR(' '))
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x9a, "Flags": 0b10000100}, cpu.rlcR(' '))
 }
 
 func TestExAfAf_(t *testing.T) {
@@ -446,12 +446,12 @@ func TestRrca(t *testing.T) {
 	resetAll()
 	cpu.setAcc(0x8d)
 	cpu.setFlags(0b11010110)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0xc6, "Flags": 0b11000101}, cpu.rrcR(' '))
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0xc6, "Flags": 0b10000101}, cpu.rrcR(' '))
 
 	resetAll()
 	cpu.setAcc(0x4c)
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x26, "Flags": 0b11000100}, cpu.rrcR(' '))
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x26, "Flags": 0b00000000}, cpu.rrcR(' '))
 }
 
 func TestDjnzN(t *testing.T) {
@@ -559,12 +559,12 @@ func TestRla(t *testing.T) {
 	resetAll()
 	cpu.setAcc(0x8c)
 	cpu.setFlags(0b11010110)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x18, "Flags": 0b11000101}, cpu.rlR(' '))
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x18, "Flags": 0b00000101}, cpu.rlR(' '))
 
 	resetAll()
 	cpu.setAcc(0x4d)
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x9b, "Flags": 0b11000100}, cpu.rlR(' '))
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x9b, "Flags": 0b10000000}, cpu.rlR(' '))
 }
 
 func TestJrN(t *testing.T) {
@@ -698,12 +698,12 @@ func TestRra(t *testing.T) {
 	resetAll()
 	cpu.setAcc(0x8d)
 	cpu.setFlags(0b11010110)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x46, "Flags": 0b11000101}, cpu.rrR(' '))
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x46, "Flags": 0b00000001}, cpu.rrR(' '))
 
 	resetAll()
 	cpu.setAcc(0x4c)
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0xa6, "Flags": 0b11000100}, cpu.rrR(' '))
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0xa6, "Flags": 0b10000100}, cpu.rrR(' '))
 }
 
 func TestJrNzN(t *testing.T) {
@@ -4144,9 +4144,9 @@ func TestRlcR(t *testing.T) {
 
 		switch register {
 		case 'A':
-			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x19, "Flags": 0b11000101}, cpu.rlcR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x19, "Flags": 0b00000001}, cpu.rlcR(register))
 		default:
-			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000101}, cpu.rlcR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b00000001}, cpu.rlcR(register))
 		}
 
 		expectedValueMap = map[byte]uint16{
@@ -4162,9 +4162,9 @@ func TestRlcR(t *testing.T) {
 
 		switch register {
 		case 'A':
-			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x9a, "Flags": 0b11000100}, cpu.rlcR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x9a, "Flags": 0b10000100}, cpu.rlcR(register))
 		default:
-			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000100}, cpu.rlcR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b10000100}, cpu.rlcR(register))
 		}
 	}
 }
@@ -4174,7 +4174,7 @@ func TestRlcHl(t *testing.T) {
 	cpu.HL = 0x1234
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8c)
-	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b11000101}, cpu.rlcSs("HL"))
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b00000001}, cpu.rlcSs("HL"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0x19)
@@ -4187,7 +4187,7 @@ func TestRlcHl(t *testing.T) {
 	cpu.HL = 0x1234
 	dmaX.SetMemoryByte(0x1234, 0x4d)
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b11000100}, cpu.rlcSs("HL"))
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b10000100}, cpu.rlcSs("HL"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0x9a)
@@ -4203,7 +4203,7 @@ func TestRlcIx(t *testing.T) {
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8c)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b11000101}, cpu.rlcSs("IX"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b00000001}, cpu.rlcSs("IX"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0x19)
@@ -4217,7 +4217,7 @@ func TestRlcIx(t *testing.T) {
 	dmaX.SetMemoryByte(0x1234, 0x4d)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b11000100}, cpu.rlcSs("IX"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b10000100}, cpu.rlcSs("IX"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0x9a)
@@ -4233,7 +4233,7 @@ func TestRlcIy(t *testing.T) {
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8c)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b11000101}, cpu.rlcSs("IY"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b00000001}, cpu.rlcSs("IY"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0x19)
@@ -4247,7 +4247,7 @@ func TestRlcIy(t *testing.T) {
 	dmaX.SetMemoryByte(0x1234, 0x4d)
 	cpu.setFlags(0b11010111)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b11000100}, cpu.rlcSs("IY"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b10000100}, cpu.rlcSs("IY"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0x9a)
@@ -4275,9 +4275,9 @@ func TestRrcR(t *testing.T) {
 
 		switch register {
 		case 'A':
-			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0xc6, "Flags": 0b11000101}, cpu.rrcR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0xc6, "Flags": 0b10000101}, cpu.rrcR(register))
 		default:
-			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000101}, cpu.rrcR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b10000101}, cpu.rrcR(register))
 		}
 
 		expectedValueMap = map[byte]uint16{
@@ -4293,9 +4293,9 @@ func TestRrcR(t *testing.T) {
 
 		switch register {
 		case 'A':
-			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x26, "Flags": 0b11000100}, cpu.rrcR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x26, "Flags": 0b00000000}, cpu.rrcR(register))
 		default:
-			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000100}, cpu.rrcR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b00000000}, cpu.rrcR(register))
 		}
 	}
 }
@@ -4305,7 +4305,7 @@ func TestRrcHl(t *testing.T) {
 	cpu.HL = 0x1234
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8d)
-	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b11000101}, cpu.rrcSs("HL"))
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b10000101}, cpu.rrcSs("HL"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0xc6)
@@ -4318,7 +4318,7 @@ func TestRrcHl(t *testing.T) {
 	cpu.HL = 0x1234
 	dmaX.SetMemoryByte(0x1234, 0x4c)
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b11000100}, cpu.rrcSs("HL"))
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b00000000}, cpu.rrcSs("HL"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0x26)
@@ -4334,7 +4334,7 @@ func TestRrcIx(t *testing.T) {
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8d)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b11000101}, cpu.rrcSs("IX"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b10000101}, cpu.rrcSs("IX"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0xc6)
@@ -4348,7 +4348,7 @@ func TestRrcIx(t *testing.T) {
 	dmaX.SetMemoryByte(0x1234, 0x4c)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b11000100}, cpu.rrcSs("IX"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b00000000}, cpu.rrcSs("IX"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0x26)
@@ -4364,7 +4364,7 @@ func TestRrcIy(t *testing.T) {
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8d)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b11000101}, cpu.rrcSs("IY"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b10000101}, cpu.rrcSs("IY"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0xc6)
@@ -4378,7 +4378,7 @@ func TestRrcIy(t *testing.T) {
 	dmaX.SetMemoryByte(0x1234, 0x4c)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b11000100}, cpu.rrcSs("IY"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b00000000}, cpu.rrcSs("IY"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0x26)
@@ -4406,9 +4406,9 @@ func TestRlR(t *testing.T) {
 
 		switch register {
 		case 'A':
-			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x18, "Flags": 0b11000101}, cpu.rlR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x18, "Flags": 0b00000101}, cpu.rlR(register))
 		default:
-			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000101}, cpu.rlR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b00000101}, cpu.rlR(register))
 		}
 
 		expectedValueMap = map[byte]uint16{
@@ -4424,9 +4424,9 @@ func TestRlR(t *testing.T) {
 
 		switch register {
 		case 'A':
-			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x9b, "Flags": 0b11000100}, cpu.rlR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x9b, "Flags": 0b10000000}, cpu.rlR(register))
 		default:
-			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000100}, cpu.rlR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b10000000}, cpu.rlR(register))
 		}
 	}
 }
@@ -4436,7 +4436,7 @@ func TestRlHl(t *testing.T) {
 	cpu.HL = 0x1234
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8c)
-	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b11000101}, cpu.rlSs("HL"))
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b00000101}, cpu.rlSs("HL"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0x18)
@@ -4449,7 +4449,7 @@ func TestRlHl(t *testing.T) {
 	cpu.HL = 0x1234
 	dmaX.SetMemoryByte(0x1234, 0x4d)
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b11000100}, cpu.rlSs("HL"))
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b10000000}, cpu.rlSs("HL"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0x9b)
@@ -4465,7 +4465,7 @@ func TestRlIx(t *testing.T) {
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8c)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b11000101}, cpu.rlSs("IX"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b00000101}, cpu.rlSs("IX"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0x18)
@@ -4479,7 +4479,7 @@ func TestRlIx(t *testing.T) {
 	dmaX.SetMemoryByte(0x1234, 0x4d)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b11000100}, cpu.rlSs("IX"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b10000000}, cpu.rlSs("IX"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0x9b)
@@ -4495,7 +4495,7 @@ func TestRlIy(t *testing.T) {
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8c)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b11000101}, cpu.rlSs("IY"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b00000101}, cpu.rlSs("IY"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0x18)
@@ -4509,7 +4509,7 @@ func TestRlIy(t *testing.T) {
 	dmaX.SetMemoryByte(0x1234, 0x4d)
 	cpu.setFlags(0b11010111)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b11000100}, cpu.rlSs("IY"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b10000000}, cpu.rlSs("IY"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0x9b)
@@ -4537,9 +4537,9 @@ func TestRrR(t *testing.T) {
 
 		switch register {
 		case 'A':
-			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x46, "Flags": 0b11000101}, cpu.rrR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x46, "Flags": 0b00000001}, cpu.rrR(register))
 		default:
-			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000101}, cpu.rrR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b00000001}, cpu.rrR(register))
 		}
 
 		expectedValueMap = map[byte]uint16{
@@ -4555,9 +4555,9 @@ func TestRrR(t *testing.T) {
 
 		switch register {
 		case 'A':
-			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0xa6, "Flags": 0b11000100}, cpu.rrR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0xa6, "Flags": 0b10000100}, cpu.rrR(register))
 		default:
-			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000100}, cpu.rrR(register))
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b10000100}, cpu.rrR(register))
 		}
 	}
 }
@@ -4567,7 +4567,7 @@ func TestRrHl(t *testing.T) {
 	cpu.HL = 0x1234
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8d)
-	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b11000101}, cpu.rrSs("HL"))
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b00000001}, cpu.rrSs("HL"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0x46)
@@ -4580,7 +4580,7 @@ func TestRrHl(t *testing.T) {
 	cpu.HL = 0x1234
 	cpu.setFlags(0b11010111)
 	dmaX.SetMemoryByte(0x1234, 0x4c)
-	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b11000100}, cpu.rrSs("HL"))
+	checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234, "Flags": 0b10000100}, cpu.rrSs("HL"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0xa6)
@@ -4596,7 +4596,7 @@ func TestRrIx(t *testing.T) {
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8d)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b11000101}, cpu.rrSs("IX"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b00000001}, cpu.rrSs("IX"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0x46)
@@ -4610,7 +4610,7 @@ func TestRrIx(t *testing.T) {
 	cpu.setFlags(0b11010111)
 	dmaX.SetMemoryByte(0x1234, 0x4c)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b11000100}, cpu.rrSs("IX"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b, "Flags": 0b10000100}, cpu.rrSs("IX"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0xa6)
@@ -4626,7 +4626,7 @@ func TestRrIy(t *testing.T) {
 	cpu.setFlags(0b11010110)
 	dmaX.SetMemoryByte(0x1234, 0x8d)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b11000101}, cpu.rrSs("IY"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b00000001}, cpu.rrSs("IY"))
 
 	got := dmaX.GetMemory(0x1234)
 	want := uint8(0x46)
@@ -4640,7 +4640,7 @@ func TestRrIy(t *testing.T) {
 	cpu.setFlags(0b11010111)
 	dmaX.SetMemoryByte(0x1234, 0x4c)
 	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
-	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b11000100}, cpu.rrSs("IY"))
+	checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b, "Flags": 0b10000100}, cpu.rrSs("IY"))
 
 	got = dmaX.GetMemory(0x1234)
 	want = uint8(0xa6)

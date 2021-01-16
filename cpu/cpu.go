@@ -695,7 +695,10 @@ func (c *CPU) rlcR(r byte) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
+		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setZ(rvalue == 0)
+		c.setS(rvalue > 127)
 
 		return 4 + size*4
 	}
@@ -855,7 +858,10 @@ func (c *CPU) rlR(r byte) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
+		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setZ(rvalue == 0)
+		c.setS(rvalue > 127)
 
 		return 4 + size*4
 	}
@@ -880,7 +886,10 @@ func (c *CPU) rlSs(ss string) func() uint8 {
 
 			c.setC(signed)
 			c.setN(false)
+			c.setPV(parityTable[rvalue])
 			c.setH(false)
+			c.setZ(rvalue == 0)
+			c.setS(rvalue > 127)
 
 			return 15
 		}
@@ -904,7 +913,10 @@ func (c *CPU) rlSs(ss string) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
+		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setZ(rvalue == 0)
+		c.setS(rvalue > 127)
 
 		return 23
 	}
@@ -990,7 +1002,10 @@ func (c *CPU) rrR(r byte) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
+		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setZ(rvalue == 0)
+		c.setS(rvalue > 127)
 
 		return 4 + size*4
 	}
@@ -1015,7 +1030,10 @@ func (c *CPU) rrSs(ss string) func() uint8 {
 
 			c.setC(signed)
 			c.setN(false)
+			c.setPV(parityTable[rvalue])
 			c.setH(false)
+			c.setZ(rvalue == 0)
+			c.setS(rvalue > 127)
 
 			return 15
 		}
@@ -1039,7 +1057,10 @@ func (c *CPU) rrSs(ss string) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
+		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setZ(rvalue == 0)
+		c.setS(rvalue > 127)
 
 		return 23
 	}
@@ -3001,7 +3022,10 @@ func (c *CPU) rlcSs(ss string) func() uint8 {
 
 			c.setC(signed)
 			c.setN(false)
+			c.setPV(parityTable[rvalue])
 			c.setH(false)
+			c.setZ(rvalue == 0)
+			c.setS(rvalue > 127)
 
 			return 15
 		}
@@ -3023,7 +3047,10 @@ func (c *CPU) rlcSs(ss string) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
+		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setZ(rvalue == 0)
+		c.setS(rvalue > 127)
 
 		return 23
 	}
@@ -3071,7 +3098,10 @@ func (c *CPU) rrcR(r byte) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
+		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setZ(rvalue == 0)
+		c.setS(rvalue > 127)
 
 		return 4 + size*4
 	}
@@ -3094,7 +3124,10 @@ func (c *CPU) rrcSs(ss string) func() uint8 {
 
 			c.setC(signed)
 			c.setN(false)
+			c.setPV(parityTable[rvalue])
 			c.setH(false)
+			c.setZ(rvalue == 0)
+			c.setS(rvalue > 127)
 
 			return 15
 		}
@@ -3116,7 +3149,10 @@ func (c *CPU) rrcSs(ss string) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
+		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setZ(rvalue == 0)
+		c.setS(rvalue > 127)
 
 		return 23
 	}
