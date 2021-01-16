@@ -28,6 +28,8 @@ var parityTable [256]bool = [256]bool{
 type MnemonicsDebug struct {
 	base   [256]string
 	xx80xx [256]string
+	xxIXxx [256]string
+	xxIYxx [256]string
 }
 
 var mnemonicsDebug = MnemonicsDebug{
@@ -56,14 +58,14 @@ var mnemonicsDebug = MnemonicsDebug{
 		"xor b", "xor c", "xor d", "xor e", "xor h", "xor l", "xor (hl)", "xor a",
 		"or b", "or c", "or d", "or e", "or h", "or l", "or (hl)", "or a",
 		"cp b", "cp c", "cp d", "cp e", "cp h", "cp l", "cp (hl)", "cp a",
-		"ret nz", "pop bc", "jp nz,xx", "jp xx", "call nz,xx", "push bc", "add a,x", "rst 00h",
-		"ret z", "ret", "jp z,xx", "xxBITxx", "call z,xx", "call xx", "adc a,x", "rst 08h",
-		"ret nc", "pop de", "jp nc,xx", "out (x),a", "call nc,xx", "push de", "sub x", "rst 10h",
-		"ret c", "exx", "jp c,xx", "in a,(x)", "call c,xx", "xxIXxx", "sbc a,x", "rst 18h",
-		"ret po", "pop hl", "jp po,xx", "ex (sp),hl", "call po,xx", "push hl", "and x", "rst 20h",
-		"ret pe", "jp (hl)", "jp pe,xx", "ex de,hl", "call pe,xx", "xx80xx", "xor x", "rst 28h",
-		"ret p", "pop af", "jp p,xx", "di", "call p,xx", "push af", "or x", "rst 30h",
-		"ret m", "ld sp,hl", "jp m,xx", "ei", "call m,xx", "xxIYxx", "cp x", "rst 38h",
+		"ret nz", "pop bc", "jp nz,nn", "jp nn", "call nz,nn", "push bc", "add a,n", "rst 00h",
+		"ret z", "ret", "jp z,nn", "nnBITnn", "call z,nn", "call nn", "adc a,n", "rst 08h",
+		"ret nc", "pop de", "jp nc,nn", "out (n),a", "call nc,nn", "push de", "sub n", "rst 10h",
+		"ret c", "enn", "jp c,nn", "in a,(n)", "call c,nn", "xxIXxx", "sbc a,n", "rst 18h",
+		"ret po", "pop hl", "jp po,nn", "ex (sp),hl", "call po,nn", "push hl", "and n", "rst 20h",
+		"ret pe", "jp (hl)", "jp pe,nn", "ex de,hl", "call pe,nn", "xx80xx", "xor n", "rst 28h",
+		"ret p", "pop af", "jp p,nn", "di", "call p,nn", "push af", "or n", "rst 30h",
+		"ret m", "ld sp,hl", "jp m,nn", "ei", "call m,nn", "xxIYxx", "cp n", "rst 38h",
 	},
 	xx80xx: [256]string{
 		"nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
@@ -91,6 +93,74 @@ var mnemonicsDebug = MnemonicsDebug{
 		"ldir", "cpir", "inir", "otir", "nop", "nop", "nop", "nop",
 		"lddr", "cpdr", "indr", "otdr", "nop", "nop", "nop", "nop",
 	},
+	xxIXxx: [256]string{
+		"nop", "ld bc,nn", "ld (bc),a", "inc bc", "inc b", "dec b", "ld b,n", "rlca",
+		"ex af,af'", "add ix,bc", "ld a,(bc)", "dec bc", "inc c", "dec c", "ld c,n", "rrca",
+		"djnz n", "ld de,nn", "ld (de),a", "inc de", "inc d", "dec d", "ld d,n", "rla",
+		"jr n", "add ix,de", "ld a,(de)", "dec de", "inc e", "dec e", "ld e,n", "rra",
+		"jr nz,n", "ld ix,nn", "ld (nn),ix", "inc ix", "inc ixh", "dec ixh", "ld ixh,n", "daa",
+		"jr z,n", "add ix,ix", "ld ix,(nn)", "dec ix", "inc ixl", "dec ixl", "ld ixl,n", "cpl",
+		"jr nc,n", "ld sp,nn", "ld (nn),a", "inc sp", "inc (ix+d)", "dec (ix+d)", "ld (ix+d),n", "scf",
+		"jr c,n", "add ix,sp", "ld a,(nn)", "dec sp", "inc a", "dec a", "ld a,n", "ccf",
+		"ld b,b", "ld b,c", "ld b,d", "ld b,e", "ld b,ixh", "ld b,ixl", "ld b,(ix+d)", "ld b,a",
+		"ld c,b", "ld c,c", "ld c,d", "ld c,e", "ld c,ixh", "ld c,ixl", "ld c,(ix+d)", "ld c,a",
+		"ld d,b", "ld d,c", "ld d,d", "ld d,e", "ld d,ixh", "ld d,ixl", "ld d,(ix+d)", "ld d,a",
+		"ld e,b", "ld e,c", "ld e,d", "ld e,e", "ld e,ixh", "ld e,ixl", "ld e,(ix+d)", "ld e,a",
+		"ld ixh,b", "ld ixh,c", "ld ixh,d", "ld ixh,e", "ld ixh,ixh", "ld ixh,ixl", "ld ixh,(ix+d)", "ld ixh,a",
+		"ld ixl,b", "ld ixl,c", "ld ixl,d", "ld ixl,e", "ld ixl,ixh", "ld ixl,ixl", "ld ixl,(ix+d)", "ld ixl,a",
+		"ld (ix+d),b", "ld (ix+d),c", "ld (ix+d),d", "ld (ix+d),e", "ld (ix+d),ixh", "ld (ix+d),ixl", "halt", "ld (ix+d),a",
+		"ld a,b", "ld a,c", "ld a,d", "ld a,e", "ld a,ixh", "ld a,ixl", "ld a,(ix+d)", "ld a,a",
+		"add a,b", "add a,c", "add a,d", "add a,e", "add a,ixh", "add a,ixl", "add a,(ix+d)", "add a,a",
+		"adc a,b", "adc a,c", "adc a,d", "adc a,e", "adc a,ixh", "adc a,ixl", "adc a,(ix+d)", "adc a,a",
+		"sub b", "sub c", "sub d", "sub e", "sub ixh", "sub ixl", "sub (ix+d)", "sub a",
+		"sbc a,b", "sbc a,c", "sbc a,d", "sbc a,e", "sbc a,ixh", "sbc a,ixl", "sbc a,(ix+d)", "sbc a,a",
+		"and b", "and c", "and d", "and e", "and ixh", "and ixl", "and (ix+d)", "and a",
+		"xor b", "xor c", "xor d", "xor e", "xor ixh", "xor ixl", "xor (ix+d)", "xor a",
+		"or b", "or c", "or d", "or e", "or ixh", "or ixl", "or (ix+d)", "or a",
+		"cp b", "cp c", "cp d", "cp e", "cp ixh", "cp ixl", "cp (ix+d)", "cp a",
+		"ret nz", "pop bc", "jp nz,nn", "jp nn", "call nz,nn", "push bc", "add a,n", "rst 00h",
+		"ret z", "ret", "jp z,nn", "nnBITnn", "call z,nn", "call nn", "adc a,n", "rst 08h",
+		"ret nc", "pop de", "jp nc,nn", "out (n),a", "call nc,nn", "push de", "sub n", "rst 10h",
+		"ret c", "enn", "jp c,nn", "in a,(n)", "call c,nn", "xxIXxx", "sbc a,n", "rst 18h",
+		"ret po", "pop ix", "jp po,nn", "ex (sp),ix", "call po,nn", "push ix", "and n", "rst 20h",
+		"ret pe", "jp (ix+d)", "jp pe,nn", "ex de,ix", "call pe,nn", "xx80xx", "xor n", "rst 28h",
+		"ret p", "pop af", "jp p,nn", "di", "call p,nn", "push af", "or n", "rst 30h",
+		"ret m", "ld sp,ix", "jp m,nn", "ei", "call m,nn", "xxIYxx", "cp n", "rst 38h",
+	},
+	xxIYxx: [256]string{
+		"nop", "ld bc,nn", "ld (bc),a", "inc bc", "inc b", "dec b", "ld b,n", "rlca",
+		"ex af,af'", "add iy,bc", "ld a,(bc)", "dec bc", "inc c", "dec c", "ld c,n", "rrca",
+		"djnz n", "ld de,nn", "ld (de),a", "inc de", "inc d", "dec d", "ld d,n", "rla",
+		"jr n", "add iy,de", "ld a,(de)", "dec de", "inc e", "dec e", "ld e,n", "rra",
+		"jr nz,n", "ld iy,nn", "ld (nn),iy", "inc iy", "inc iyh", "dec iyh", "ld iyh,n", "daa",
+		"jr z,n", "add iy,iy", "ld iy,(nn)", "dec iy", "inc iyl", "dec iyl", "ld iyl,n", "cpl",
+		"jr nc,n", "ld sp,nn", "ld (nn),a", "inc sp", "inc (iy+d)", "dec (iy+d)", "ld (iy+d),n", "scf",
+		"jr c,n", "add iy,sp", "ld a,(nn)", "dec sp", "inc a", "dec a", "ld a,n", "ccf",
+		"ld b,b", "ld b,c", "ld b,d", "ld b,e", "ld b,iyh", "ld b,iyl", "ld b,(iy+d)", "ld b,a",
+		"ld c,b", "ld c,c", "ld c,d", "ld c,e", "ld c,iyh", "ld c,iyl", "ld c,(iy+d)", "ld c,a",
+		"ld d,b", "ld d,c", "ld d,d", "ld d,e", "ld d,iyh", "ld d,iyl", "ld d,(iy+d)", "ld d,a",
+		"ld e,b", "ld e,c", "ld e,d", "ld e,e", "ld e,iyh", "ld e,iyl", "ld e,(iy+d)", "ld e,a",
+		"ld iyh,b", "ld iyh,c", "ld iyh,d", "ld iyh,e", "ld iyh,iyh", "ld iyh,iyl", "ld iyh,(iy+d)", "ld iyh,a",
+		"ld iyl,b", "ld iyl,c", "ld iyl,d", "ld iyl,e", "ld iyl,iyh", "ld iyl,iyl", "ld iyl,(iy+d)", "ld iyl,a",
+		"ld (iy+d),b", "ld (iy+d),c", "ld (iy+d),d", "ld (iy+d),e", "ld (iy+d),iyh", "ld (iy+d),iyl", "halt", "ld (iy+d),a",
+		"ld a,b", "ld a,c", "ld a,d", "ld a,e", "ld a,iyh", "ld a,iyl", "ld a,(iy+d)", "ld a,a",
+		"add a,b", "add a,c", "add a,d", "add a,e", "add a,iyh", "add a,iyl", "add a,(iy+d)", "add a,a",
+		"adc a,b", "adc a,c", "adc a,d", "adc a,e", "adc a,iyh", "adc a,iyl", "adc a,(iy+d)", "adc a,a",
+		"sub b", "sub c", "sub d", "sub e", "sub iyh", "sub iyl", "sub (iy+d)", "sub a",
+		"sbc a,b", "sbc a,c", "sbc a,d", "sbc a,e", "sbc a,iyh", "sbc a,iyl", "sbc a,(iy+d)", "sbc a,a",
+		"and b", "and c", "and d", "and e", "and iyh", "and iyl", "and (iy+d)", "and a",
+		"xor b", "xor c", "xor d", "xor e", "xor iyh", "xor iyl", "xor (iy+d)", "xor a",
+		"or b", "or c", "or d", "or e", "or iyh", "or iyl", "or (iy+d)", "or a",
+		"cp b", "cp c", "cp d", "cp e", "cp iyh", "cp iyl", "cp (iy+d)", "cp a",
+		"ret nz", "pop bc", "jp nz,nn", "jp nn", "call nz,nn", "push bc", "add a,n", "rst 00h",
+		"ret z", "ret", "jp z,nn", "nnBITnn", "call z,nn", "call nn", "adc a,n", "rst 08h",
+		"ret nc", "pop de", "jp nc,nn", "out (n),a", "call nc,nn", "push de", "sub n", "rst 10h",
+		"ret c", "enn", "jp c,nn", "in a,(n)", "call c,nn", "xxIXxx", "sbc a,n", "rst 18h",
+		"ret po", "pop iy", "jp po,nn", "ex (sp),iy", "call po,nn", "push iy", "and n", "rst 20h",
+		"ret pe", "jp (iy+d)", "jp pe,nn", "ex de,iy", "call pe,nn", "xx80xx", "xor n", "rst 28h",
+		"ret p", "pop af", "jp p,nn", "di", "call p,nn", "push af", "or n", "rst 30h",
+		"ret m", "ld sp,iy", "jp m,nn", "ei", "call m,nn", "xxIYxx", "cp n", "rst 38h",
+	},
 }
 
 type CPUStates struct {
@@ -104,6 +174,8 @@ type CPUStates struct {
 type CPUMnemonics struct {
 	base   [256]func() uint8
 	xx80xx [256]func() uint8
+	xxIXxx [256]func() uint8
+	xxIYxx [256]func() uint8
 }
 
 type CPU struct {
@@ -128,41 +200,50 @@ type CPU struct {
 }
 
 func (c *CPU) initializeMnemonics() {
-	c.mnemonics.base = [256]func() uint8{
-		c.nop, c.ldBcNn, c.ld_Bc_A, c.incBc, c.incB, c.decB, c.ldBN, c.rlca,
-		c.exAfAf_, c.addSsRr("HL", "BC"), c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCN, c.rrca,
-		c.djnzN, c.ldDeNn, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDN, c.rla,
-		c.jrN, c.addSsRr("HL", "DE"), c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEN, c.rra,
-		c.jrNzN, c.ldSsNn("HL"), c.ld_Nn_Ss("HL"), c.incSs("IX"), c.incH, c.decH, c.ldHN, c.daa,
-		c.jrZN, c.addSsRr("HL", "HL"), c.ldSs_Nn_("HL"), c.decSs("HL"), c.incL, c.decL, c.ldLN, c.cpl,
-		c.jrNcN, c.ldSpNn, c.ld_Nn_A, c.incSp, c.inc_Ss_("HL"), c.dec_Ss_("HL"), c.ld_Ss_N("HL"), c.scf,
-		c.jrCN, c.addSsRr("HL", "SP"), c.ldA_Nn_, c.decSp, c.incA, c.decA, c.ldAN, c.ccf,
-		c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', 'H'), c.ldRR_('B', 'L'), c.ldR_Ss_('B', "HL"), c.ldRR_('B', 'A'),
-		c.ldRR_('C', 'B'), c.ldRR_('C', 'C'), c.ldRR_('C', 'D'), c.ldRR_('C', 'E'), c.ldRR_('C', 'H'), c.ldRR_('C', 'L'), c.ldR_Ss_('C', "HL"), c.ldRR_('C', 'A'),
-		c.ldRR_('D', 'B'), c.ldRR_('D', 'C'), c.ldRR_('D', 'D'), c.ldRR_('D', 'E'), c.ldRR_('D', 'H'), c.ldRR_('D', 'L'), c.ldR_Ss_('D', "HL"), c.ldRR_('D', 'A'),
-		c.ldRR_('E', 'B'), c.ldRR_('E', 'C'), c.ldRR_('E', 'D'), c.ldRR_('E', 'E'), c.ldRR_('E', 'H'), c.ldRR_('E', 'L'), c.ldR_Ss_('E', "HL"), c.ldRR_('E', 'A'),
-		c.ldRR_('H', 'B'), c.ldRR_('H', 'C'), c.ldRR_('H', 'D'), c.ldRR_('H', 'E'), c.ldRR_('H', 'H'), c.ldRR_('H', 'L'), c.ldR_Ss_('H', "HL"), c.ldRR_('H', 'A'),
-		c.ldRR_('L', 'B'), c.ldRR_('L', 'C'), c.ldRR_('L', 'D'), c.ldRR_('L', 'E'), c.ldRR_('L', 'H'), c.ldRR_('L', 'L'), c.ldR_Ss_('L', "HL"), c.ldRR_('L', 'A'),
-		c.ld_Ss_R("HL", 'B'), c.ld_Ss_R("HL", 'C'), c.ld_Ss_R("HL", 'D'), c.ld_Ss_R("HL", 'E'), c.ld_Ss_R("HL", 'H'), c.ld_Ss_R("HL", 'L'), c.halt, c.ld_Ss_R("HL", 'A'),
-		c.ldRR_('A', 'B'), c.ldRR_('A', 'C'), c.ldRR_('A', 'D'), c.ldRR_('A', 'E'), c.ldRR_('A', 'H'), c.ldRR_('A', 'L'), c.ldR_Ss_('A', "HL"), c.ldRR_('A', 'A'),
-		c.addAR('B'), c.addAR('C'), c.addAR('D'), c.addAR('E'), c.addAR('H'), c.addAR('L'), c.addA_Ss_("HL"), c.addAR('A'),
-		c.adcAR('B'), c.adcAR('C'), c.adcAR('D'), c.adcAR('E'), c.adcAR('H'), c.adcAR('L'), c.adcA_Ss_("HL"), c.adcAR('A'),
-		c.subR('B'), c.subR('C'), c.subR('D'), c.subR('E'), c.subR('H'), c.subR('L'), c.sub_Ss_("HL"), c.subR('A'),
-		c.sbcAR('B'), c.sbcAR('C'), c.sbcAR('D'), c.sbcAR('E'), c.sbcAR('H'), c.sbcAR('L'), c.sbcA_Ss_("HL"), c.sbcAR('A'),
-		c.andR('B'), c.andR('C'), c.andR('D'), c.andR('E'), c.andR('H'), c.andR('L'), c.and_Ss_("HL"), c.andR('A'),
-		c.xorR('B'), c.xorR('C'), c.xorR('D'), c.xorR('E'), c.xorR('H'), c.xorR('L'), c.xor_Ss_("HL"), c.xorR('A'),
-		c.orR('B'), c.orR('C'), c.orR('D'), c.orR('E'), c.orR('H'), c.orR('L'), c.or_Ss_("HL"), c.orR('A'),
-		c.cpR('B'), c.cpR('C'), c.cpR('D'), c.cpR('E'), c.cpR('H'), c.cpR('L'), c.cp_Ss_("HL"), c.cpR('A'),
-		c.retNz, c.popBc, c.jpNzNn, c.jpNn, c.callNzNn, c.pushBc, c.addAN, c.rst(0x00),
-		c.retZ, c.ret, c.jpZNn, c.die, c.callZNn, c.callNn, c.adcAN, c.rst(0x08),
-		c.retNc, c.popDe, c.jpNcNn, c.out_N_A, c.callNcNn, c.pushDe, c.subN, c.rst(0x10),
-		c.retC, c.exx, c.jpCNn, c.inA_N_, c.callCNn, c.die, c.sbcAN, c.rst(0x18),
-		c.retPo, c.popSs("HL"), c.jpPoNn, c.ex_Sp_Ss("HL"), c.callPoNn, c.pushSs("HL"), c.andN, c.rst(0x20),
-		c.retPe, c.jp_Ss_("HL"), c.jpPeNn, c.exDeSs("HL"), c.callPeNn, c.die, c.xorN, c.rst(0x28),
-		c.retP, c.popAf, c.jpPNn, c.di, c.callPNn, c.pushAf, c.orN, c.rst(0x30),
-		c.retM, c.ldSpSs("HL"), c.jpMNn, c.ei, c.callMNn, c.die, c.cpN, c.rst(0x38),
+	for _, reg := range [3]string{"HL", "IX", "IY"} {
+		baseList := [256]func() uint8{
+			c.nop, c.ldBcNn, c.ld_Bc_A, c.incBc, c.incB, c.decB, c.ldBN, c.rlca,
+			c.exAfAf_, c.addSsRr(reg, "BC"), c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCN, c.rrca,
+			c.djnzN, c.ldDeNn, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDN, c.rla,
+			c.jrN, c.addSsRr(reg, "DE"), c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEN, c.rra,
+			c.jrNzN, c.ldSsNn(reg), c.ld_Nn_Ss(reg), c.incSs(reg), c.incH, c.decH, c.ldHN, c.daa,
+			c.jrZN, c.addSsRr(reg, reg), c.ldSs_Nn_(reg), c.decSs(reg), c.incL, c.decL, c.ldLN, c.cpl,
+			c.jrNcN, c.ldSpNn, c.ld_Nn_A, c.incSp, c.inc_Ss_(reg), c.dec_Ss_(reg), c.ld_Ss_N(reg), c.scf,
+			c.jrCN, c.addSsRr(reg, "SP"), c.ldA_Nn_, c.decSp, c.incA, c.decA, c.ldAN, c.ccf,
+			c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', 'H'), c.ldRR_('B', 'L'), c.ldR_Ss_('B', reg), c.ldRR_('B', 'A'),
+			c.ldRR_('C', 'B'), c.ldRR_('C', 'C'), c.ldRR_('C', 'D'), c.ldRR_('C', 'E'), c.ldRR_('C', 'H'), c.ldRR_('C', 'L'), c.ldR_Ss_('C', reg), c.ldRR_('C', 'A'),
+			c.ldRR_('D', 'B'), c.ldRR_('D', 'C'), c.ldRR_('D', 'D'), c.ldRR_('D', 'E'), c.ldRR_('D', 'H'), c.ldRR_('D', 'L'), c.ldR_Ss_('D', reg), c.ldRR_('D', 'A'),
+			c.ldRR_('E', 'B'), c.ldRR_('E', 'C'), c.ldRR_('E', 'D'), c.ldRR_('E', 'E'), c.ldRR_('E', 'H'), c.ldRR_('E', 'L'), c.ldR_Ss_('E', reg), c.ldRR_('E', 'A'),
+			c.ldRR_('H', 'B'), c.ldRR_('H', 'C'), c.ldRR_('H', 'D'), c.ldRR_('H', 'E'), c.ldRR_('H', 'H'), c.ldRR_('H', 'L'), c.ldR_Ss_('H', reg), c.ldRR_('H', 'A'),
+			c.ldRR_('L', 'B'), c.ldRR_('L', 'C'), c.ldRR_('L', 'D'), c.ldRR_('L', 'E'), c.ldRR_('L', 'H'), c.ldRR_('L', 'L'), c.ldR_Ss_('L', reg), c.ldRR_('L', 'A'),
+			c.ld_Ss_R(reg, 'B'), c.ld_Ss_R(reg, 'C'), c.ld_Ss_R(reg, 'D'), c.ld_Ss_R(reg, 'E'), c.ld_Ss_R(reg, 'H'), c.ld_Ss_R(reg, 'L'), c.halt, c.ld_Ss_R(reg, 'A'),
+			c.ldRR_('A', 'B'), c.ldRR_('A', 'C'), c.ldRR_('A', 'D'), c.ldRR_('A', 'E'), c.ldRR_('A', 'H'), c.ldRR_('A', 'L'), c.ldR_Ss_('A', reg), c.ldRR_('A', 'A'),
+			c.addAR('B'), c.addAR('C'), c.addAR('D'), c.addAR('E'), c.addAR('H'), c.addAR('L'), c.addA_Ss_(reg), c.addAR('A'),
+			c.adcAR('B'), c.adcAR('C'), c.adcAR('D'), c.adcAR('E'), c.adcAR('H'), c.adcAR('L'), c.adcA_Ss_(reg), c.adcAR('A'),
+			c.subR('B'), c.subR('C'), c.subR('D'), c.subR('E'), c.subR('H'), c.subR('L'), c.sub_Ss_(reg), c.subR('A'),
+			c.sbcAR('B'), c.sbcAR('C'), c.sbcAR('D'), c.sbcAR('E'), c.sbcAR('H'), c.sbcAR('L'), c.sbcA_Ss_(reg), c.sbcAR('A'),
+			c.andR('B'), c.andR('C'), c.andR('D'), c.andR('E'), c.andR('H'), c.andR('L'), c.and_Ss_(reg), c.andR('A'),
+			c.xorR('B'), c.xorR('C'), c.xorR('D'), c.xorR('E'), c.xorR('H'), c.xorR('L'), c.xor_Ss_(reg), c.xorR('A'),
+			c.orR('B'), c.orR('C'), c.orR('D'), c.orR('E'), c.orR('H'), c.orR('L'), c.or_Ss_(reg), c.orR('A'),
+			c.cpR('B'), c.cpR('C'), c.cpR('D'), c.cpR('E'), c.cpR('H'), c.cpR('L'), c.cp_Ss_(reg), c.cpR('A'),
+			c.retNz, c.popBc, c.jpNzNn, c.jpNn, c.callNzNn, c.pushBc, c.addAN, c.rst(0x00),
+			c.retZ, c.ret, c.jpZNn, c.die, c.callZNn, c.callNn, c.adcAN, c.rst(0x08),
+			c.retNc, c.popDe, c.jpNcNn, c.out_N_A, c.callNcNn, c.pushDe, c.subN, c.rst(0x10),
+			c.retC, c.exx, c.jpCNn, c.inA_N_, c.callCNn, c.nop, c.sbcAN, c.rst(0x18),
+			c.retPo, c.popSs(reg), c.jpPoNn, c.ex_Sp_Ss(reg), c.callPoNn, c.pushSs(reg), c.andN, c.rst(0x20),
+			c.retPe, c.jp_Ss_(reg), c.jpPeNn, c.exDeSs(reg), c.callPeNn, c.die, c.xorN, c.rst(0x28),
+			c.retP, c.popAf, c.jpPNn, c.di, c.callPNn, c.pushAf, c.orN, c.rst(0x30),
+			c.retM, c.ldSpSs(reg), c.jpMNn, c.ei, c.callMNn, c.nop, c.cpN, c.rst(0x38),
+		}
+		switch reg {
+		case "HL":
+			c.mnemonics.base = baseList
+		case "IX":
+			c.mnemonics.xxIXxx = baseList
+		case "IY":
+			c.mnemonics.xxIYxx = baseList
+		}
 	}
-
 	c.mnemonics.xx80xx = [256]func() uint8{
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
@@ -2521,12 +2602,26 @@ func (c *CPU) Step() uint8 {
 	idx := c.dma.GetMemory(c.PC)
 	a, b := c.dma.GetMemory(c.PC+1), c.dma.GetMemory(c.PC+2)
 
-	if idx == 0xed {
+	if idx == 0xdd || idx == 0xed || idx == 0xfd {
+		var cycles uint8
+		groupIdx := idx
 		idx = c.dma.GetMemory(c.PC + 1)
 		a, b = c.dma.GetMemory(c.PC+2), c.dma.GetMemory(c.PC+3)
-		fmt.Printf("%04x: %s [ED %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xx80xx[idx], idx, a, b)
-		cycles := c.mnemonics.xx80xx[idx]()
-		fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
+		if groupIdx == 0xdd {
+			fmt.Printf("%04x: %s [DD %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xxIXxx[idx], idx, a, b)
+			cycles := c.mnemonics.xxIXxx[idx]()
+			fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
+		}
+		if groupIdx == 0xed {
+			fmt.Printf("%04x: %s [ED %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xx80xx[idx], idx, a, b)
+			cycles := c.mnemonics.xx80xx[idx]()
+			fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
+		}
+		if groupIdx == 0xfd {
+			fmt.Printf("%04x: %s [FD %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xxIYxx[idx], idx, a, b)
+			cycles := c.mnemonics.xxIYxx[idx]()
+			fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
+		}
 		return cycles
 	}
 	fmt.Printf("%04x: %s [%02x %02x %02x] -> ", c.PC, mnemonicsDebug.base[idx], idx, a, b)

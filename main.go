@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"z80/cpu"
 	"z80/dma"
@@ -33,8 +34,11 @@ func main() {
 
 	cpu := cpu.CPUNew(dma)
 	cpu.PC = 0x8000
+	tstates := uint64(0)
 
-	for i := 0; i < 100; i++ {
-		cpu.Step()
+	for {
+		//for i := 0; i < 32; i++ {
+		fmt.Printf("T: %d => ", tstates)
+		tstates += uint64(cpu.Step())
 	}
 }
