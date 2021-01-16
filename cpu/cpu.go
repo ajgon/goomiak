@@ -204,7 +204,7 @@ func (c *CPU) initializeMnemonics() {
 		baseList := [256]func() uint8{
 			c.nop, c.ldBcNn, c.ld_Bc_A, c.incBc, c.incB, c.decB, c.ldBN, c.rlcR(' '),
 			c.exAfAf_, c.addSsRr(reg, "BC"), c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCN, c.rrcR('A'),
-			c.djnzN, c.ldDeNn, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDN, c.rla,
+			c.djnzN, c.ldDeNn, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDN, c.rlR(' '),
 			c.jrN, c.addSsRr(reg, "DE"), c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEN, c.rra,
 			c.jrNzN, c.ldSsNn(reg), c.ld_Nn_Ss(reg), c.incSs(reg), c.incH, c.decH, c.ldHN, c.daa,
 			c.jrZN, c.addSsRr(reg, reg), c.ldSs_Nn_(reg), c.decSs(reg), c.incL, c.decL, c.ldLN, c.cpl,
@@ -811,26 +811,54 @@ func (c *CPU) ldDN() uint8 {
 	return 7
 }
 
-func (c *CPU) rla() uint8 {
-	a := c.getAcc()
-	signed := a&128 == 128
-	a = a << 1
+func (c *CPU) rlR(r byte) func() uint8 {
+	return func() uint8 {
+		var size, rvalue uint8
+		var lhigh bool
+		var lvalue *uint16
 
-	if c.getC() {
-		a = a | 0b00000001
-	} else {
-		a = a & 0b11111110
+		switch r {
+		case 'A', ' ':
+			lhigh, lvalue = true, &c.AF
+		case 'B', 'C':
+			lhigh, lvalue = r == 'B', &c.BC
+		case 'D', 'E':
+			lhigh, lvalue = r == 'D', &c.DE
+		case 'H', 'L':
+			lhigh, lvalue = r == 'H', &c.HL
+		default:
+			panic("Invalid `r` part of the mnemonic")
+		}
+
+		if r != ' ' {
+			size = 1
+			rvalue = c.extractRegister(r)
+		} else {
+			rvalue = c.getAcc()
+		}
+
+		signed := rvalue&128 == 128
+		rvalue = rvalue << 1
+		c.PC += uint16(1 + size)
+
+		if c.getC() {
+			rvalue = rvalue | 0b00000001
+		} else {
+			rvalue = rvalue & 0b11111110
+		}
+
+		if lhigh {
+			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+		} else {
+			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+		}
+
+		c.setC(signed)
+		c.setN(false)
+		c.setH(false)
+
+		return 4 + size*4
 	}
-
-	c.setAcc(a)
-	c.PC++
-
-	// C (carry) flag
-	c.setC(signed)
-	c.setN(false)
-	c.setH(false)
-
-	return 4
 }
 
 func (c *CPU) jrN() uint8 {
