@@ -268,7 +268,7 @@ func (c *CPU) initializeMnemonics() {
 		c.ldi, c.cpi, c.ini, c.outi, c.nop, c.nop, c.nop, c.nop,
 		c.ldd, c.cpd, c.ind, c.outd, c.nop, c.nop, c.nop, c.nop,
 		c.ldir, c.cpir, c.inir, c.otir, c.nop, c.nop, c.nop, c.nop,
-		c.lddr, c.cpdr, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
+		c.lddr, c.cpdr, c.indr, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
@@ -2791,6 +2791,17 @@ func (c *CPU) cpdr() uint8 {
 		return 16
 	}
 
+	return 21
+}
+
+func (c *CPU) indr() uint8 {
+	c.ind()
+
+	if c.extractRegister('B') == 0 {
+		return 16
+	}
+
+	c.PC -= 2
 	return 21
 }
 

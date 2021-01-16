@@ -4071,3 +4071,31 @@ func TestCpdr(t *testing.T) {
 		t.Errorf("got %02x%02x%02x, want %02x%02x%02x", gotHLA, gotHLB, gotHLC, wantHLA, wantHLB, wantHLC)
 	}
 }
+
+func TestIndr(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x0307
+	cpu.HL = 0x1000
+	ports := []uint8{0x51, 0xa9, 0x03}
+	cpu.setFlags(0b01000000)
+
+	for i := 0; cpu.BC > 512; i++ {
+		cpu.setPort(0x07, ports[i])
+		got := cpu.indr()
+		want := uint8(21)
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
+	}
+
+	cpu.setPort(0x07, ports[2])
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "HL": 0x0ffd, "BC": 0x0007, "Flags": 0b01000010}, cpu.indr)
+
+	gotA, gotB, gotC := dmaX.GetMemory(0x0ffe), dmaX.GetMemory(0x0fff), dmaX.GetMemory(0x1000)
+	wantA, wantB, wantC := uint8(0x03), uint8(0xa9), uint8(0x51)
+
+	if gotA != wantA || gotB != wantB || gotC != wantC {
+		t.Errorf("got %02x/%02x/%02x, want %02x/%02x/%02x", gotA, gotB, gotC, wantA, wantB, wantC)
+	}
+}
