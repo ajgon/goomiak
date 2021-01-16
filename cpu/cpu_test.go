@@ -319,12 +319,12 @@ func TestRlca(t *testing.T) {
 	resetAll()
 	cpu.setAcc(0x8c)
 	cpu.setFlags(0b11010110)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x19, "Flags": 0b11000101}, cpu.rlca)
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x19, "Flags": 0b11000101}, cpu.rlcR(' '))
 
 	resetAll()
 	cpu.setAcc(0x4d)
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x9a, "Flags": 0b11000100}, cpu.rlca)
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x9a, "Flags": 0b11000100}, cpu.rlcR(' '))
 }
 
 func TestExAfAf_(t *testing.T) {
@@ -4123,5 +4123,48 @@ func TestOtdr(t *testing.T) {
 
 	if got != want {
 		t.Errorf("got %02x, want %02x", got, want)
+	}
+}
+
+func TestRlcR(t *testing.T) {
+	expectedRegisterMap := map[byte]string{
+		'B': "BC", 'C': "BC", 'D': "DE", 'E': "DE", 'H': "HL", 'L': "HL", 'A': "A",
+	}
+	for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A'} {
+		expectedValueMap := map[byte]uint16{
+			'B': 0x198c, 'C': 0x8c19, 'D': 0x198c, 'E': 0x8c19, 'H': 0x198c, 'L': 0x8c19,
+		}
+
+		resetAll()
+		cpu.setAcc(0x8c)
+		cpu.BC = 0x8c8c
+		cpu.DE = 0x8c8c
+		cpu.HL = 0x8c8c
+		cpu.setFlags(0b11010110)
+
+		switch register {
+		case 'A':
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x19, "Flags": 0b11000101}, cpu.rlcR(register))
+		default:
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000101}, cpu.rlcR(register))
+		}
+
+		expectedValueMap = map[byte]uint16{
+			'B': 0x9a4d, 'C': 0x4d9a, 'D': 0x9a4d, 'E': 0x4d9a, 'H': 0x9a4d, 'L': 0x4d9a,
+		}
+
+		resetAll()
+		cpu.setAcc(0x4d)
+		cpu.BC = 0x4d4d
+		cpu.DE = 0x4d4d
+		cpu.HL = 0x4d4d
+		cpu.setFlags(0b11010111)
+
+		switch register {
+		case 'A':
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x9a, "Flags": 0b11000100}, cpu.rlcR(register))
+		default:
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000100}, cpu.rlcR(register))
+		}
 	}
 }
