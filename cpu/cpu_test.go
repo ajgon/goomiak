@@ -4099,3 +4099,29 @@ func TestIndr(t *testing.T) {
 		t.Errorf("got %02x/%02x/%02x, want %02x/%02x/%02x", gotA, gotB, gotC, wantA, wantB, wantC)
 	}
 }
+
+func TestOtdr(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x0307
+	cpu.HL = 0x1000
+	dmaX.SetMemoryBulk(0x0ffe, []uint8{0x51, 0xa9, 0x03})
+	cpu.setFlags(0b01000000)
+
+	for i := 0x1000; cpu.BC > 512; i-- {
+		gotT, gotPort := cpu.otdr(), cpu.getPort(0x07)
+		wantT, wantPort := uint8(21), uint8(dmaX.GetMemory(uint16(i)))
+
+		if gotT != wantT || gotPort != wantPort {
+			t.Errorf("got %02x (%d), want %02x (%d)", gotPort, gotT, wantPort, wantT)
+		}
+	}
+
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "HL": 0x0ffd, "BC": 0x0007, "Flags": 0b01000010}, cpu.otdr)
+
+	got := cpu.getPort(0x07)
+	want := uint8(0x51)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+}
