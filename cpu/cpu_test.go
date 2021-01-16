@@ -3861,3 +3861,35 @@ func TestInd(t *testing.T) {
 		t.Errorf("got %02x, want %02x", got, want)
 	}
 }
+
+func TestOutd(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x1007
+	cpu.HL = 0x1000
+	cpu.setFlags(0b01000000)
+	dmaX.SetMemoryByte(0x1000, 0x59)
+
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0f07, "Flags": 0b00000010}, cpu.outd)
+
+	got := cpu.getPort(0x07)
+	want := uint8(0x59)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+
+	resetAll()
+	cpu.BC = 0x0107
+	cpu.HL = 0x1000
+	cpu.setFlags(0b10010101)
+	dmaX.SetMemoryByte(0x1000, 0x59)
+
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0007, "Flags": 0b11010111}, cpu.outd)
+
+	got = cpu.getPort(0x07)
+	want = uint8(0x59)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+}
