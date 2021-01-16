@@ -266,7 +266,7 @@ func (c *CPU) initializeMnemonics() {
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.ldi, c.cpi, c.ini, c.outi, c.nop, c.nop, c.nop, c.nop,
-		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
+		c.ldd, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
@@ -2644,6 +2644,20 @@ func (c *CPU) outi() uint8 {
 
 	c.setZ(c.BC < 256)
 	c.setN(true)
+
+	c.PC += 2
+	return 16
+}
+
+func (c *CPU) ldd() uint8 {
+	c.writeWord(c.DE, c.readWord(c.HL))
+	c.DE--
+	c.HL--
+	c.BC--
+
+	c.setH(false)
+	c.setPV(c.BC != 0)
+	c.setN(false)
 
 	c.PC += 2
 	return 16
