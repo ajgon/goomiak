@@ -2847,6 +2847,51 @@ func (c *CPU) otdr() uint8 {
 	return 21
 }
 
+func (c *CPU) rlcSs(ss string) func() uint8 {
+	if ss == "HL" {
+		return func() uint8 {
+			rvalue := c.dma.GetMemory(c.HL)
+
+			signed := rvalue&128 == 128
+			rvalue = rvalue << 1
+			c.PC += 2
+
+			if signed {
+				rvalue = rvalue | 0x01
+			}
+
+			c.dma.SetMemoryByte(c.HL, rvalue)
+
+			c.setC(signed)
+			c.setN(false)
+			c.setH(false)
+
+			return 15
+		}
+	}
+
+	return func() uint8 {
+		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3))
+		rvalue := c.dma.GetMemory(address)
+
+		signed := rvalue&128 == 128
+		rvalue = rvalue << 1
+		c.PC += 4
+
+		if signed {
+			rvalue = rvalue | 0x01
+		}
+
+		c.dma.SetMemoryByte(address, rvalue)
+
+		c.setC(signed)
+		c.setN(false)
+		c.setH(false)
+
+		return 23
+	}
+}
+
 func (c *CPU) die() uint8 {
 	panic("unimplemented mnemonic")
 }
