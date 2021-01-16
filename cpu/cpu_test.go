@@ -3829,3 +3829,35 @@ func TestCpd(t *testing.T) {
 		t.Errorf("got %02x, want %02x", got, want)
 	}
 }
+
+func TestInd(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x1007
+	cpu.HL = 0x1000
+	cpu.States.Ports[0x07] = 0x7b
+	cpu.setFlags(0b01000000)
+
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0f07, "Flags": 0b00000010}, cpu.ind)
+
+	got := dmaX.GetMemory(0x1000)
+	want := uint8(0x7b)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+
+	resetAll()
+	cpu.BC = 0x0107
+	cpu.HL = 0x1000
+	cpu.States.Ports[0x07] = 0x7b
+	cpu.setFlags(0b10010101)
+
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0007, "Flags": 0b11010111}, cpu.ind)
+
+	got = dmaX.GetMemory(0x1000)
+	want = uint8(0x7b)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+}
