@@ -3601,6 +3601,37 @@ func (c *CPU) setBSs(b uint8, ss string) func() uint8 {
 	panic("Invalid `ss` type")
 }
 
+func (c *CPU) resBR(b uint8, r byte) func() uint8 {
+	return func() uint8 {
+		var lhigh bool
+		var lvalue *uint16
+
+		switch r {
+		case 'A':
+			lhigh, lvalue = true, &c.AF
+		case 'B', 'C':
+			lhigh, lvalue = r == 'B', &c.BC
+		case 'D', 'E':
+			lhigh, lvalue = r == 'D', &c.DE
+		case 'H', 'L':
+			lhigh, lvalue = r == 'H', &c.HL
+		default:
+			panic("Invalid `r` part of the mnemonic")
+		}
+
+		rvalue := c.extractRegister(r) & (uint8(1<<b) ^ 0xff)
+
+		if lhigh {
+			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+		} else {
+			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+		}
+
+		c.PC += 2
+		return 8
+	}
+}
+
 func (c *CPU) die() uint8 {
 	panic("unimplemented mnemonic")
 }

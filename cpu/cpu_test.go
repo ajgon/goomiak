@@ -5395,3 +5395,30 @@ func TestSetBIy(t *testing.T) {
 		}
 	}
 }
+
+func TestResBR(t *testing.T) {
+	expectedRegisterMap := map[byte]string{
+		'B': "BC", 'C': "BC", 'D': "DE", 'E': "DE", 'H': "HL", 'L': "HL", 'A': "A",
+	}
+	for bit := uint8(0); bit < 8; bit++ {
+		for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A'} {
+			mask := uint16(1 << bit)
+			expectedValueMap := map[byte]uint16{
+				'B': 0xffff - mask*256, 'C': 0xffff - mask, 'D': 0xffff - mask*256, 'E': 0xffff - mask, 'H': 0xffff - mask*256, 'L': 0xffff - mask,
+			}
+
+			resetAll()
+			cpu.setAcc(0xff)
+			cpu.BC = 0xffff
+			cpu.DE = 0xffff
+			cpu.HL = 0xffff
+
+			switch register {
+			case 'A':
+				checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0xff - mask}, cpu.resBR(bit, register))
+			default:
+				checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register]}, cpu.resBR(bit, register))
+			}
+		}
+	}
+}
