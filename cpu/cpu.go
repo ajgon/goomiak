@@ -3286,6 +3286,57 @@ func (c *CPU) sraR(r byte) func() uint8 {
 	}
 }
 
+func (c *CPU) sraSs(ss string) func() uint8 {
+	if ss == "HL" {
+		return func() uint8 {
+			rvalue := c.dma.GetMemory(c.HL)
+
+			c.setC(rvalue&1 == 1)
+			rvalue = rvalue >> 1
+			if rvalue&64 == 64 {
+				rvalue = rvalue | 0b10000000
+			} else {
+				rvalue = rvalue & 0b01111111
+			}
+			c.PC += 2
+
+			c.dma.SetMemoryByte(c.HL, rvalue)
+
+			c.setN(false)
+			c.setPV(parityTable[rvalue])
+			c.setH(false)
+			c.setZ(rvalue == 0)
+			c.setS(rvalue > 127)
+
+			return 15
+		}
+	}
+
+	return func() uint8 {
+		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3))
+		rvalue := c.dma.GetMemory(address)
+
+		c.setC(rvalue&1 == 1)
+		rvalue = rvalue >> 1
+		if rvalue&64 == 64 {
+			rvalue = rvalue | 0b10000000
+		} else {
+			rvalue = rvalue & 0b01111111
+		}
+		c.PC += 4
+
+		c.dma.SetMemoryByte(address, rvalue)
+
+		c.setN(false)
+		c.setPV(parityTable[rvalue])
+		c.setH(false)
+		c.setZ(rvalue == 0)
+		c.setS(rvalue > 127)
+
+		return 23
+	}
+}
+
 func (c *CPU) die() uint8 {
 	panic("unimplemented mnemonic")
 }
