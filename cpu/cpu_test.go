@@ -4044,3 +4044,30 @@ func TestLddr(t *testing.T) {
 		t.Errorf("got %02x%02x%02x, want %02x%02x%02x", gotDEA, gotDEB, gotDEC, wantDEA, wantDEB, wantDEC)
 	}
 }
+
+func TestCpdr(t *testing.T) {
+	resetAll()
+	cpu.HL = 0x1118
+	cpu.BC = 0x0007
+	cpu.setAcc(0xf3)
+	cpu.setFlags(0b11010001)
+	dmaX.SetMemoryBulk(0x1116, []uint8{0xf3, 0x00, 0x52})
+
+	for i := 0; i < 2; i++ {
+		got := cpu.cpdr()
+		want := uint8(21)
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
+	}
+
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "A": 0xf3, "HL": 0x1115, "BC": 0x0004, "Flags": 0b01000111}, cpu.cpdr)
+
+	gotHLA, gotHLB, gotHLC := dmaX.GetMemory(0x1116), dmaX.GetMemory(0x1117), dmaX.GetMemory(0x1118)
+	wantHLA, wantHLB, wantHLC := uint8(0xf3), uint8(0x00), uint8(0x52)
+
+	if gotHLA != wantHLA || gotHLB != wantHLB || gotHLC != wantHLC {
+		t.Errorf("got %02x%02x%02x, want %02x%02x%02x", gotHLA, gotHLB, gotHLC, wantHLA, wantHLB, wantHLC)
+	}
+}
