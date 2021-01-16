@@ -5173,3 +5173,48 @@ func TestSrlIy(t *testing.T) {
 		t.Errorf("got 0x%x, want 0x%x", got, want)
 	}
 }
+
+func TestBitBR(t *testing.T) {
+	expectedRegisterMap := map[byte]string{
+		'B': "BC", 'C': "BC", 'D': "DE", 'E': "DE", 'H': "HL", 'L': "HL", 'A': "A",
+	}
+	for bit := uint8(0); bit < 8; bit++ {
+		for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A'} {
+			expectedValueMap := map[byte]uint16{
+				'B': 0xffff, 'C': 0xffff, 'D': 0xffff, 'E': 0xffff, 'H': 0xffff, 'L': 0xffff,
+			}
+
+			resetAll()
+			cpu.setAcc(0xff)
+			cpu.BC = 0xffff
+			cpu.DE = 0xffff
+			cpu.HL = 0xffff
+			cpu.setFlags(0b01000010)
+
+			switch register {
+			case 'A':
+				checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0xff, "Flags": 0b00010000}, cpu.bitBR(bit, register))
+			default:
+				checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b00010000}, cpu.bitBR(bit, register))
+			}
+
+			expectedValueMap = map[byte]uint16{
+				'B': 0x0000, 'C': 0x0000, 'D': 0x0000, 'E': 0x0000, 'H': 0x0000, 'L': 0x0000,
+			}
+
+			resetAll()
+			cpu.setAcc(0x00)
+			cpu.BC = 0x0000
+			cpu.DE = 0x0000
+			cpu.HL = 0x0000
+			cpu.setFlags(0b00000010)
+
+			switch register {
+			case 'A':
+				checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x00, "Flags": 0b01010000}, cpu.bitBR(bit, register))
+			default:
+				checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b01010000}, cpu.bitBR(bit, register))
+			}
+		}
+	}
+}

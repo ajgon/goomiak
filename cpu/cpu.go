@@ -3501,6 +3501,20 @@ func (c *CPU) srlSs(ss string) func() uint8 {
 	}
 }
 
+func (c *CPU) bitBR(b uint8, r byte) func() uint8 {
+	return func() uint8 {
+		rvalue := c.extractRegister(r)
+		mask := uint8(1 << b)
+		c.setZ(rvalue&mask == 0)
+		c.PC += 2
+
+		c.setN(false)
+		c.setH(true)
+
+		return 8
+	}
+}
+
 func (c *CPU) die() uint8 {
 	panic("unimplemented mnemonic")
 }
