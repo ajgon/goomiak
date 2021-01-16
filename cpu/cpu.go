@@ -76,14 +76,14 @@ var mnemonicsDebug = MnemonicsDebug{
 		"nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
 		"nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
 		"nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
-		"in b,(c)", "out (c),b", "sbc hl,bc", "ld (xx),bc", "neg", "retn", "im 0", "ld i,a",
-		"in c,(c)", "out (c),c", "adc hl,bc", "ld bc,(xx)", "neg", "reti", "nop", "ld r,a",
-		"in d,(c)", "out (c),d", "sbc hl,de", "ld (xx),de", "neg", "retn", "im 1", "ld a,i",
-		"in e,(c)", "out (c),e", "adc hl,de", "ld de,(xx)", "neg", "retn", "im 2", "ld a,r",
-		"in h,(c)", "out (c),h", "sbc hl,hl", "ld (xx),hl", "neg", "retn", "nop", "ld rrd",
-		"in l,(c)", "out (c),l", "adc hl,hl", "ld hl,(xx)", "neg", "retn", "nop", "ld rld",
-		"in (c)", "out (c)", "sbc hl,sp", "ld (xx),sp", "neg", "retn", "nop", "nop",
-		"in a,(c)", "out (c),a", "adc hl,sp", "ld sp,(xx)", "neg", "reti", "nop", "nop",
+		"in b,(c)", "out (c),b", "sbc hl,bc", "ld (nn),bc", "neg", "retn", "im 0", "ld i,a",
+		"in c,(c)", "out (c),c", "adc hl,bc", "ld bc,(nn)", "neg", "reti", "nop", "ld r,a",
+		"in d,(c)", "out (c),d", "sbc hl,de", "ld (nn),de", "neg", "retn", "im 1", "ld a,i",
+		"in e,(c)", "out (c),e", "adc hl,de", "ld de,(nn)", "neg", "retn", "im 2", "ld a,r",
+		"in h,(c)", "out (c),h", "sbc hl,hl", "ld (nn),hl", "neg", "retn", "nop", "ld rrd",
+		"in l,(c)", "out (c),l", "adc hl,hl", "ld hl,(nn)", "neg", "retn", "nop", "ld rld",
+		"in (c)", "out (c)", "sbc hl,sp", "ld (nn),sp", "neg", "retn", "nop", "nop",
+		"in a,(c)", "out (c),a", "adc hl,sp", "ld sp,(nn)", "neg", "reti", "nop", "nop",
 		"nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
 		"nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
 		"nop", "nop", "nop", "nop", "nop", "nop", "nop", "nop",
@@ -119,13 +119,13 @@ var mnemonicsDebug = MnemonicsDebug{
 		"or b", "or c", "or d", "or e", "or ixh", "or ixl", "or (ix+d)", "or a",
 		"cp b", "cp c", "cp d", "cp e", "cp ixh", "cp ixl", "cp (ix+d)", "cp a",
 		"ret nz", "pop bc", "jp nz,nn", "jp nn", "call nz,nn", "push bc", "add a,n", "rst 00h",
-		"ret z", "ret", "jp z,nn", "nnBITnn", "call z,nn", "call nn", "adc a,n", "rst 08h",
+		"ret z", "ret", "jp z,nn", "xxIXBITxx", "call z,nn", "call nn", "adc a,n", "rst 08h",
 		"ret nc", "pop de", "jp nc,nn", "out (n),a", "call nc,nn", "push de", "sub n", "rst 10h",
-		"ret c", "enn", "jp c,nn", "in a,(n)", "call c,nn", "xxIXxx", "sbc a,n", "rst 18h",
+		"ret c", "enn", "jp c,nn", "in a,(n)", "call c,nn", "nop", "sbc a,n", "rst 18h",
 		"ret po", "pop ix", "jp po,nn", "ex (sp),ix", "call po,nn", "push ix", "and n", "rst 20h",
-		"ret pe", "jp (ix+d)", "jp pe,nn", "ex de,ix", "call pe,nn", "xx80xx", "xor n", "rst 28h",
+		"ret pe", "jp (ix+d)", "jp pe,nn", "ex de,ix", "call pe,nn", "nop", "xor n", "rst 28h",
 		"ret p", "pop af", "jp p,nn", "di", "call p,nn", "push af", "or n", "rst 30h",
-		"ret m", "ld sp,ix", "jp m,nn", "ei", "call m,nn", "xxIYxx", "cp n", "rst 38h",
+		"ret m", "ld sp,ix", "jp m,nn", "ei", "call m,nn", "nop", "cp n", "rst 38h",
 	},
 	xxIYxx: [256]string{
 		"nop", "ld bc,nn", "ld (bc),a", "inc bc", "inc b", "dec b", "ld b,n", "rlca",
@@ -153,13 +153,13 @@ var mnemonicsDebug = MnemonicsDebug{
 		"or b", "or c", "or d", "or e", "or iyh", "or iyl", "or (iy+d)", "or a",
 		"cp b", "cp c", "cp d", "cp e", "cp iyh", "cp iyl", "cp (iy+d)", "cp a",
 		"ret nz", "pop bc", "jp nz,nn", "jp nn", "call nz,nn", "push bc", "add a,n", "rst 00h",
-		"ret z", "ret", "jp z,nn", "nnBITnn", "call z,nn", "call nn", "adc a,n", "rst 08h",
+		"ret z", "ret", "jp z,nn", "xxIYBITxx", "call z,nn", "call nn", "adc a,n", "rst 08h",
 		"ret nc", "pop de", "jp nc,nn", "out (n),a", "call nc,nn", "push de", "sub n", "rst 10h",
-		"ret c", "enn", "jp c,nn", "in a,(n)", "call c,nn", "xxIXxx", "sbc a,n", "rst 18h",
+		"ret c", "enn", "jp c,nn", "in a,(n)", "call c,nn", "nop", "sbc a,n", "rst 18h",
 		"ret po", "pop iy", "jp po,nn", "ex (sp),iy", "call po,nn", "push iy", "and n", "rst 20h",
-		"ret pe", "jp (iy+d)", "jp pe,nn", "ex de,iy", "call pe,nn", "xx80xx", "xor n", "rst 28h",
+		"ret pe", "jp (iy+d)", "jp pe,nn", "ex de,iy", "call pe,nn", "nop", "xor n", "rst 28h",
 		"ret p", "pop af", "jp p,nn", "di", "call p,nn", "push af", "or n", "rst 30h",
-		"ret m", "ld sp,iy", "jp m,nn", "ei", "call m,nn", "xxIYxx", "cp n", "rst 38h",
+		"ret m", "ld sp,iy", "jp m,nn", "ei", "call m,nn", "nop", "cp n", "rst 38h",
 	},
 }
 
@@ -265,7 +265,7 @@ func (c *CPU) initializeMnemonics() {
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
-		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
+		c.ldi, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
@@ -2592,10 +2592,22 @@ func (c *CPU) rld() uint8 {
 	return 18
 }
 
+func (c *CPU) ldi() uint8 {
+	c.writeWord(c.DE, c.readWord(c.HL))
+	c.DE++
+	c.HL++
+	c.BC--
+
+	c.setH(false)
+	c.setPV(c.BC != 0)
+	c.setN(false)
+
+	c.PC += 2
+	return 16
+}
+
 func (c *CPU) die() uint8 {
 	panic("unimplemented mnemonic")
-
-	return 0
 }
 
 func (c *CPU) Step() uint8 {

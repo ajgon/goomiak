@@ -3645,3 +3645,29 @@ func TestDec_Iy_(t *testing.T) {
 		t.Errorf("got 0x%x, want 0x%x", got, want)
 	}
 }
+
+func TestLdi(t *testing.T) {
+	resetAll()
+	cpu.HL = 0x1111
+	cpu.DE = 0x2222
+	cpu.BC = 0x0007
+	cpu.setFlags(0b11010011)
+	dmaX.SetMemoryByte(0x1111, 0x88)
+	dmaX.SetMemoryByte(0x2222, 0x66)
+
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "HL": 0x1112, "DE": 0x2223, "BC": 0x0006, "Flags": 0b11000101}, cpu.ldi)
+
+	got := dmaX.GetMemory(0x1111)
+	want := uint8(0x88)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+
+	got = dmaX.GetMemory(0x2222)
+	want = uint8(0x88)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+}
