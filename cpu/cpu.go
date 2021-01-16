@@ -3632,6 +3632,33 @@ func (c *CPU) resBR(b uint8, r byte) func() uint8 {
 	}
 }
 
+func (c *CPU) resBSs(b uint8, ss string) func() uint8 {
+	switch ss {
+	case "HL":
+		return func() uint8 {
+			c.dma.SetMemoryByte(c.HL, c.dma.GetMemory(c.HL)&(uint8(1<<b)^0xff))
+			c.PC += 2
+			return 15
+		}
+	case "IX":
+		return func() uint8 {
+			address := c.IX + uint16(c.dma.GetMemory(c.PC+3))
+			c.dma.SetMemoryByte(address, c.dma.GetMemory(address)&(uint8(1<<b)^0xff))
+			c.PC += 4
+			return 23
+		}
+	case "IY":
+		return func() uint8 {
+			address := c.IY + uint16(c.dma.GetMemory(c.PC+3))
+			c.dma.SetMemoryByte(address, c.dma.GetMemory(address)&(uint8(1<<b)^0xff))
+			c.PC += 4
+			return 23
+		}
+	}
+
+	panic("Invalid `ss` type")
+}
+
 func (c *CPU) die() uint8 {
 	panic("unimplemented mnemonic")
 }
