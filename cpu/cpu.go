@@ -265,7 +265,7 @@ func (c *CPU) initializeMnemonics() {
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
 		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
-		c.ldi, c.cpi, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
+		c.ldi, c.cpi, c.ini, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
 		c.die, c.die, c.die, c.die, c.nop, c.nop, c.nop, c.nop,
@@ -2623,6 +2623,18 @@ func (c *CPU) cpi() uint8 {
 	c.PC += 2
 	return 16
 
+}
+
+func (c *CPU) ini() uint8 {
+	c.dma.SetMemoryByte(c.HL, c.getPort(c.extractRegister('C')))
+	c.HL++
+	c.BC -= 256
+
+	c.setZ(c.BC < 256)
+	c.setN(true)
+
+	c.PC += 2
+	return 16
 }
 
 func (c *CPU) die() uint8 {
