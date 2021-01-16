@@ -5339,3 +5339,59 @@ func TestSetBR(t *testing.T) {
 		}
 	}
 }
+
+func TestSetBHl(t *testing.T) {
+	for bit := uint8(0); bit < 8; bit++ {
+		mask := uint8(1 << bit)
+
+		resetAll()
+		cpu.HL = 0x1234
+		dmaX.SetMemoryByte(0x1234, 0x00)
+		checkCpu(t, 15, map[string]uint16{"PC": 2, "HL": 0x1234}, cpu.setBSs(bit, "HL"))
+
+		got := dmaX.GetMemory(0x1234)
+		want := mask
+
+		if got != want {
+			t.Errorf("got 0x%x, want 0x%x", got, want)
+		}
+	}
+}
+
+func TestSetBIx(t *testing.T) {
+	for bit := uint8(0); bit < 8; bit++ {
+		mask := uint8(1 << bit)
+
+		resetAll()
+		cpu.IX = 0x121b
+		dmaX.SetMemoryByte(0x1234, 0x00)
+		dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
+		checkCpu(t, 23, map[string]uint16{"PC": 4, "IX": 0x121b}, cpu.setBSs(bit, "IX"))
+
+		got := dmaX.GetMemory(0x1234)
+		want := mask
+
+		if got != want {
+			t.Errorf("got 0x%x, want 0x%x", got, want)
+		}
+	}
+}
+
+func TestSetBIy(t *testing.T) {
+	for bit := uint8(0); bit < 8; bit++ {
+		mask := uint8(1 << bit)
+
+		resetAll()
+		cpu.IY = 0x121b
+		dmaX.SetMemoryByte(0x1234, 0x00)
+		dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0xcb, 0x06, 0x19})
+		checkCpu(t, 23, map[string]uint16{"PC": 4, "IY": 0x121b}, cpu.setBSs(bit, "IY"))
+
+		got := dmaX.GetMemory(0x1234)
+		want := mask
+
+		if got != want {
+			t.Errorf("got 0x%x, want 0x%x", got, want)
+		}
+	}
+}
