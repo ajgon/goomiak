@@ -861,6 +861,55 @@ func (c *CPU) rlR(r byte) func() uint8 {
 	}
 }
 
+func (c *CPU) rlSs(ss string) func() uint8 {
+	if ss == "HL" {
+		return func() uint8 {
+			rvalue := c.dma.GetMemory(c.HL)
+
+			signed := rvalue&128 == 128
+			rvalue = rvalue << 1
+			c.PC += 2
+
+			if c.getC() {
+				rvalue = rvalue | 0b00000001
+			} else {
+				rvalue = rvalue & 0b11111110
+			}
+
+			c.dma.SetMemoryByte(c.HL, rvalue)
+
+			c.setC(signed)
+			c.setN(false)
+			c.setH(false)
+
+			return 15
+		}
+	}
+
+	return func() uint8 {
+		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3))
+		rvalue := c.dma.GetMemory(address)
+
+		signed := rvalue&128 == 128
+		rvalue = rvalue << 1
+		c.PC += 4
+
+		if c.getC() {
+			rvalue = rvalue | 0b00000001
+		} else {
+			rvalue = rvalue & 0b11111110
+		}
+
+		c.dma.SetMemoryByte(address, rvalue)
+
+		c.setC(signed)
+		c.setN(false)
+		c.setH(false)
+
+		return 23
+	}
+}
+
 func (c *CPU) jrN() uint8 {
 	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
 
