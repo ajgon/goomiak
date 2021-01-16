@@ -3834,7 +3834,7 @@ func TestInd(t *testing.T) {
 	resetAll()
 	cpu.BC = 0x1007
 	cpu.HL = 0x1000
-	cpu.States.Ports[0x07] = 0x7b
+	cpu.setPort(0x07, 0x7b)
 	cpu.setFlags(0b01000000)
 
 	checkCpu(t, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0f07, "Flags": 0b00000010}, cpu.ind)
@@ -3953,5 +3953,33 @@ func TestCpir(t *testing.T) {
 
 	if gotHLA != wantHLA || gotHLB != wantHLB || gotHLC != wantHLC {
 		t.Errorf("got %02x%02x%02x, want %02x%02x%02x", gotHLA, gotHLB, gotHLC, wantHLA, wantHLB, wantHLC)
+	}
+}
+
+func TestInir(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x0307
+	cpu.HL = 0x1000
+	ports := []uint8{0x51, 0xa9, 0x03}
+	cpu.setFlags(0b01000000)
+
+	for i := 0; cpu.BC > 512; i++ {
+		cpu.setPort(0x07, ports[i])
+		got := cpu.inir()
+		want := uint8(21)
+
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
+	}
+
+	cpu.setPort(0x07, ports[2])
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "HL": 0x1003, "BC": 0x0007, "Flags": 0b01000010}, cpu.inir)
+
+	gotA, gotB, gotC := dmaX.GetMemory(0x1000), dmaX.GetMemory(0x1001), dmaX.GetMemory(0x1002)
+	wantA, wantB, wantC := uint8(0x51), uint8(0xa9), uint8(0x03)
+
+	if gotA != wantA || gotB != wantB || gotC != wantC {
+		t.Errorf("got %02x/%02x/%02x, want %02x/%02x/%02x", gotA, gotB, gotC, wantA, wantB, wantC)
 	}
 }
