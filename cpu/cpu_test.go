@@ -446,12 +446,12 @@ func TestRrca(t *testing.T) {
 	resetAll()
 	cpu.setAcc(0x8d)
 	cpu.setFlags(0b11010110)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0xc6, "Flags": 0b11000101}, cpu.rrca)
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0xc6, "Flags": 0b11000101}, cpu.rrcR(' '))
 
 	resetAll()
 	cpu.setAcc(0x4c)
 	cpu.setFlags(0b11010111)
-	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x26, "Flags": 0b11000100}, cpu.rrca)
+	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x26, "Flags": 0b11000100}, cpu.rrcR(' '))
 }
 
 func TestDjnzN(t *testing.T) {
@@ -4254,5 +4254,48 @@ func TestRlcIy(t *testing.T) {
 
 	if got != want {
 		t.Errorf("got 0x%x, want 0x%x", got, want)
+	}
+}
+
+func TestRrcR(t *testing.T) {
+	expectedRegisterMap := map[byte]string{
+		'B': "BC", 'C': "BC", 'D': "DE", 'E': "DE", 'H': "HL", 'L': "HL", 'A': "A",
+	}
+	for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A'} {
+		expectedValueMap := map[byte]uint16{
+			'B': 0xc68d, 'C': 0x8dc6, 'D': 0xc68d, 'E': 0x8dc6, 'H': 0xc68d, 'L': 0x8dc6,
+		}
+
+		resetAll()
+		cpu.setAcc(0x8d)
+		cpu.BC = 0x8d8d
+		cpu.DE = 0x8d8d
+		cpu.HL = 0x8d8d
+		cpu.setFlags(0b11010110)
+
+		switch register {
+		case 'A':
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0xc6, "Flags": 0b11000101}, cpu.rrcR(register))
+		default:
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000101}, cpu.rrcR(register))
+		}
+
+		expectedValueMap = map[byte]uint16{
+			'B': 0x264c, 'C': 0x4c26, 'D': 0x264c, 'E': 0x4c26, 'H': 0x264c, 'L': 0x4c26,
+		}
+
+		resetAll()
+		cpu.setAcc(0x4c)
+		cpu.BC = 0x4c4c
+		cpu.DE = 0x4c4c
+		cpu.HL = 0x4c4c
+		cpu.setFlags(0b11010111)
+
+		switch register {
+		case 'A':
+			checkCpu(t, 8, map[string]uint16{"PC": 2, "A": 0x26, "Flags": 0b11000100}, cpu.rrcR(register))
+		default:
+			checkCpu(t, 8, map[string]uint16{"PC": 2, expectedRegisterMap[register]: expectedValueMap[register], "Flags": 0b11000100}, cpu.rrcR(register))
+		}
 	}
 }

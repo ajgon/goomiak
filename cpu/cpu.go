@@ -203,7 +203,7 @@ func (c *CPU) initializeMnemonics() {
 	for _, reg := range [3]string{"HL", "IX", "IY"} {
 		baseList := [256]func() uint8{
 			c.nop, c.ldBcNn, c.ld_Bc_A, c.incBc, c.incB, c.decB, c.ldBN, c.rlcR(' '),
-			c.exAfAf_, c.addSsRr(reg, "BC"), c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCN, c.rrca,
+			c.exAfAf_, c.addSsRr(reg, "BC"), c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCN, c.rrcR('A'),
 			c.djnzN, c.ldDeNn, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDN, c.rla,
 			c.jrN, c.addSsRr(reg, "DE"), c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEN, c.rra,
 			c.jrNzN, c.ldSsNn(reg), c.ld_Nn_Ss(reg), c.incSs(reg), c.incH, c.decH, c.ldHN, c.daa,
@@ -764,24 +764,6 @@ func (c *CPU) ldCN() uint8 {
 	c.PC += 2
 
 	return 7
-}
-
-func (c *CPU) rrca() uint8 {
-	a := c.getAcc()
-	signed := a&1 == 1
-	a = a >> 1
-	c.PC++
-
-	if signed {
-		a = a | 0x80
-		c.AF = c.AF | 0x8000
-	}
-	c.setAcc(a)
-	c.setC(signed)
-	c.setN(false)
-	c.setH(false)
-
-	return 4
 }
 
 func (c *CPU) djnzN() uint8 {
@@ -2889,6 +2871,54 @@ func (c *CPU) rlcSs(ss string) func() uint8 {
 		c.setH(false)
 
 		return 23
+	}
+}
+
+func (c *CPU) rrcR(r byte) func() uint8 {
+	return func() uint8 {
+		var size, rvalue uint8
+		var lhigh bool
+		var lvalue *uint16
+
+		switch r {
+		case 'A', ' ':
+			lhigh, lvalue = true, &c.AF
+		case 'B', 'C':
+			lhigh, lvalue = r == 'B', &c.BC
+		case 'D', 'E':
+			lhigh, lvalue = r == 'D', &c.DE
+		case 'H', 'L':
+			lhigh, lvalue = r == 'H', &c.HL
+		default:
+			panic("Invalid `r` part of the mnemonic")
+		}
+
+		if r != ' ' {
+			size = 1
+			rvalue = c.extractRegister(r)
+		} else {
+			rvalue = c.getAcc()
+		}
+
+		signed := rvalue&1 == 1
+		rvalue = rvalue >> 1
+		c.PC += uint16(1 + size)
+
+		if signed {
+			rvalue = rvalue | 0x80
+		}
+
+		if lhigh {
+			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+		} else {
+			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+		}
+
+		c.setC(signed)
+		c.setN(false)
+		c.setH(false)
+
+		return 4 + size*4
 	}
 }
 
