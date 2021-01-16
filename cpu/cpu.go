@@ -3337,6 +3337,47 @@ func (c *CPU) sraSs(ss string) func() uint8 {
 	}
 }
 
+func (c *CPU) sllR(r byte) func() uint8 {
+	return func() uint8 {
+		var rvalue uint8
+		var lhigh bool
+		var lvalue *uint16
+
+		switch r {
+		case 'A':
+			lhigh, lvalue = true, &c.AF
+		case 'B', 'C':
+			lhigh, lvalue = r == 'B', &c.BC
+		case 'D', 'E':
+			lhigh, lvalue = r == 'D', &c.DE
+		case 'H', 'L':
+			lhigh, lvalue = r == 'H', &c.HL
+		default:
+			panic("Invalid `r` part of the mnemonic")
+		}
+
+		rvalue = c.extractRegister(r)
+
+		c.setC(rvalue&128 == 128)
+		rvalue = (rvalue << 1) + 1
+		c.PC += 2
+
+		if lhigh {
+			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+		} else {
+			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+		}
+
+		c.setS(rvalue > 127)
+		c.setZ(rvalue == 0)
+		c.setN(false)
+		c.setPV(parityTable[rvalue])
+		c.setH(false)
+
+		return 8
+	}
+}
+
 func (c *CPU) die() uint8 {
 	panic("unimplemented mnemonic")
 }
