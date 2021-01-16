@@ -3671,3 +3671,37 @@ func TestLdi(t *testing.T) {
 		t.Errorf("got %02x, want %02x", got, want)
 	}
 }
+
+func TestCpi(t *testing.T) {
+	resetAll()
+	cpu.setAcc(0x3b)
+	cpu.HL = 0x1111
+	cpu.BC = 0x0001
+	cpu.setFlags(0b01010001)
+	dmaX.SetMemoryByte(0x1111, 0x3b)
+
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "A": 0x3b, "HL": 0x1112, "BC": 0x0000, "Flags": 0b01000011}, cpu.cpi)
+
+	got := dmaX.GetMemory(0x1111)
+	want := uint8(0x3b)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+
+	resetAll()
+	cpu.setAcc(0x00)
+	cpu.HL = 0x1111
+	cpu.BC = 0x8000
+	cpu.setFlags(0b01000000)
+	dmaX.SetMemoryByte(0x1111, 0x7f)
+
+	checkCpu(t, 16, map[string]uint16{"PC": 2, "A": 0x00, "HL": 0x1112, "BC": 0x7fff, "Flags": 0b10010110}, cpu.cpi)
+
+	got = dmaX.GetMemory(0x1111)
+	want = uint8(0x7f)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+}
