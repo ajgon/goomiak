@@ -3515,6 +3515,34 @@ func (c *CPU) bitBR(b uint8, r byte) func() uint8 {
 	}
 }
 
+func (c *CPU) bitBSs(b uint8, ss string) func() uint8 {
+	if ss == "HL" {
+		return func() uint8 {
+			rvalue := c.dma.GetMemory(c.extractRegisterPair(ss))
+			mask := uint8(1 << b)
+			c.setZ(rvalue&mask == 0)
+			c.PC += 2
+
+			c.setN(false)
+			c.setH(true)
+
+			return 12
+		}
+	}
+
+	return func() uint8 {
+		rvalue := c.dma.GetMemory(c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3)))
+		mask := uint8(1 << b)
+		c.setZ(rvalue&mask == 0)
+		c.PC += 4
+
+		c.setN(false)
+		c.setH(true)
+
+		return 20
+	}
+}
+
 func (c *CPU) die() uint8 {
 	panic("unimplemented mnemonic")
 }
