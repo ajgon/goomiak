@@ -29,16 +29,18 @@ func main() {
 	videoMemoryHandler := video.VideoMemoryHandlerNew()
 	dma := dma.DMANew(mem, videoMemoryHandler)
 	//video := video.VideoNew(dma)
-	loadFileToMemory(dma, 0x8000, "./roms/zexdoc.rom")
+	//loadFileToMemory(dma, 0x8000, "./roms/zexdoc.rom")
 	loadFileToMemory(dma, 0x0000, "./roms/48.rom")
 
 	cpu := cpu.CPUNew(dma)
-	cpu.PC = 0x8000
+	cpu.PC = 0x0000
 	tstates := uint64(0)
+	reader := bufio.NewReader(os.Stdin)
 
 	for {
 		//for i := 0; i < 32; i++ {
 		fmt.Printf("T: %d => ", tstates)
 		tstates += uint64(cpu.Step())
+		reader.ReadString('\n')
 	}
 }

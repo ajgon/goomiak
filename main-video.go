@@ -43,9 +43,9 @@ func main() {
 	video := video.VideoNew(dma)
 	//loadFileToMemory(dma, 0x4000, "./video/example.scr")
 	loadFileToMemory(dma, 0x0000, "./roms/48.rom")
-	loadFileToMemory(dma, 0x8000, "./roms/zexdoc.rom")
+	//loadFileToMemory(dma, 0x8000, "./roms/zexdoc.rom")
 	cpu := cpu.CPUNew(dma)
-	cpu.PC = 0x8000
+	cpu.PC = 0x0000
 	tstates := uint64(0)
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
@@ -73,7 +73,7 @@ func main() {
 	running := true
 	for running {
 		for {
-			fmt.Printf("T: %d => ", tstates)
+			//fmt.Printf("T: %d => ", tstates)
 			tstates += uint64(cpu.Step())
 			if tstates > 70908 {
 				tstates = 0

@@ -26,10 +26,13 @@ var parityTable [256]bool = [256]bool{
 }
 
 type MnemonicsDebug struct {
-	base   [256]string
-	xx80xx [256]string
-	xxIXxx [256]string
-	xxIYxx [256]string
+	base      [256]string
+	xx80xx    [256]string
+	xxIXxx    [256]string
+	xxIYxx    [256]string
+	xxBITxx   [256]string
+	xxIXBITxx [256]string
+	xxIYBITxx [256]string
 }
 
 var mnemonicsDebug = MnemonicsDebug{
@@ -161,6 +164,108 @@ var mnemonicsDebug = MnemonicsDebug{
 		"ret p", "pop af", "jp p,nn", "di", "call p,nn", "push af", "or n", "rst 30h",
 		"ret m", "ld sp,iy", "jp m,nn", "ei", "call m,nn", "nop", "cp n", "rst 38h",
 	},
+	xxBITxx: [256]string{
+		"rlc b", "rlc c", "rlc d", "rlc e", "rlc h", "rlc l", "rlc (hl)", "rlc a",
+		"rrc b", "rrc c", "rrc d", "rrc e", "rrc h", "rrc l", "rrc (hl)", "rrc a",
+		"rl b", "rl c", "rl d", "rl e", "rl h", "rl l", "rl (hl)", "rl a",
+		"rr b", "rr c", "rr d", "rr e", "rr h", "rr l", "rr (hl)", "rr a",
+		"sla b", "sla c", "sla d", "sla e", "sla h", "sla l", "sla (hl)", "sla a",
+		"sra b", "sra c", "sra d", "sra e", "sra h", "sra l", "sra (hl)", "sra a",
+		"sll b", "sll c", "sll d", "sll e", "sll h", "sll l", "sll (hl)", "sll a",
+		"srl b", "srl c", "srl d", "srl e", "srl h", "srl l", "srl (hl)", "srl a",
+		"bit 0,b", "bit 0,c", "bit 0,d", "bit 0,e", "bit 0,h", "bit 0,l", "bit 0,(hl)", "bit 0, a",
+		"bit 1,b", "bit 1,c", "bit 1,d", "bit 1,e", "bit 1,h", "bit 1,l", "bit 1,(hl)", "bit 1, a",
+		"bit 2,b", "bit 2,c", "bit 2,d", "bit 2,e", "bit 2,h", "bit 2,l", "bit 2,(hl)", "bit 2, a",
+		"bit 3,b", "bit 3,c", "bit 3,d", "bit 3,e", "bit 3,h", "bit 3,l", "bit 3,(hl)", "bit 3, a",
+		"bit 4,b", "bit 4,c", "bit 4,d", "bit 4,e", "bit 4,h", "bit 4,l", "bit 4,(hl)", "bit 4, a",
+		"bit 5,b", "bit 5,c", "bit 5,d", "bit 5,e", "bit 5,h", "bit 5,l", "bit 5,(hl)", "bit 5, a",
+		"bit 6,b", "bit 6,c", "bit 6,d", "bit 6,e", "bit 6,h", "bit 6,l", "bit 6,(hl)", "bit 6, a",
+		"bit 7,b", "bit 7,c", "bit 7,d", "bit 7,e", "bit 7,h", "bit 7,l", "bit 7,(hl)", "bit 7, a",
+		"res 0,b", "res 0,c", "res 0,d", "res 0,e", "res 0,h", "res 0,l", "res 0,(hl)", "res 0, a",
+		"res 1,b", "res 1,c", "res 1,d", "res 1,e", "res 1,h", "res 1,l", "res 1,(hl)", "res 1, a",
+		"res 2,b", "res 2,c", "res 2,d", "res 2,e", "res 2,h", "res 2,l", "res 2,(hl)", "res 2, a",
+		"res 3,b", "res 3,c", "res 3,d", "res 3,e", "res 3,h", "res 3,l", "res 3,(hl)", "res 3, a",
+		"res 4,b", "res 4,c", "res 4,d", "res 4,e", "res 4,h", "res 4,l", "res 4,(hl)", "res 4, a",
+		"res 5,b", "res 5,c", "res 5,d", "res 5,e", "res 5,h", "res 5,l", "res 5,(hl)", "res 5, a",
+		"res 6,b", "res 6,c", "res 6,d", "res 6,e", "res 6,h", "res 6,l", "res 6,(hl)", "res 6, a",
+		"res 7,b", "res 7,c", "res 7,d", "res 7,e", "res 7,h", "res 7,l", "res 7,(hl)", "res 7, a",
+		"set 0,b", "set 0,c", "set 0,d", "set 0,e", "set 0,h", "set 0,l", "set 0,(hl)", "set 0, a",
+		"set 1,b", "set 1,c", "set 1,d", "set 1,e", "set 1,h", "set 1,l", "set 1,(hl)", "set 1, a",
+		"set 2,b", "set 2,c", "set 2,d", "set 2,e", "set 2,h", "set 2,l", "set 2,(hl)", "set 2, a",
+		"set 3,b", "set 3,c", "set 3,d", "set 3,e", "set 3,h", "set 3,l", "set 3,(hl)", "set 3, a",
+		"set 4,b", "set 4,c", "set 4,d", "set 4,e", "set 4,h", "set 4,l", "set 4,(hl)", "set 4, a",
+		"set 5,b", "set 5,c", "set 5,d", "set 5,e", "set 5,h", "set 5,l", "set 5,(hl)", "set 5, a",
+		"set 6,b", "set 6,c", "set 6,d", "set 6,e", "set 6,h", "set 6,l", "set 6,(hl)", "set 6, a",
+		"set 7,b", "set 7,c", "set 7,d", "set 7,e", "set 7,h", "set 7,l", "set 7,(hl)", "set 7, a",
+	},
+	xxIXBITxx: [256]string{
+		"rlc b", "rlc c", "rlc d", "rlc e", "rlc h", "rlc l", "rlc (ix)", "rlc a",
+		"rrc b", "rrc c", "rrc d", "rrc e", "rrc h", "rrc l", "rrc (ix)", "rrc a",
+		"rl b", "rl c", "rl d", "rl e", "rl h", "rl l", "rl (ix)", "rl a",
+		"rr b", "rr c", "rr d", "rr e", "rr h", "rr l", "rr (ix)", "rr a",
+		"sla b", "sla c", "sla d", "sla e", "sla h", "sla l", "sla (ix)", "sla a",
+		"sra b", "sra c", "sra d", "sra e", "sra h", "sra l", "sra (ix)", "sra a",
+		"sll b", "sll c", "sll d", "sll e", "sll h", "sll l", "sll (ix)", "sll a",
+		"srl b", "srl c", "srl d", "srl e", "srl h", "srl l", "srl (ix)", "srl a",
+		"bit 0,b", "bit 0,c", "bit 0,d", "bit 0,e", "bit 0,h", "bit 0,l", "bit 0,(ix)", "bit 0, a",
+		"bit 1,b", "bit 1,c", "bit 1,d", "bit 1,e", "bit 1,h", "bit 1,l", "bit 1,(ix)", "bit 1, a",
+		"bit 2,b", "bit 2,c", "bit 2,d", "bit 2,e", "bit 2,h", "bit 2,l", "bit 2,(ix)", "bit 2, a",
+		"bit 3,b", "bit 3,c", "bit 3,d", "bit 3,e", "bit 3,h", "bit 3,l", "bit 3,(ix)", "bit 3, a",
+		"bit 4,b", "bit 4,c", "bit 4,d", "bit 4,e", "bit 4,h", "bit 4,l", "bit 4,(ix)", "bit 4, a",
+		"bit 5,b", "bit 5,c", "bit 5,d", "bit 5,e", "bit 5,h", "bit 5,l", "bit 5,(ix)", "bit 5, a",
+		"bit 6,b", "bit 6,c", "bit 6,d", "bit 6,e", "bit 6,h", "bit 6,l", "bit 6,(ix)", "bit 6, a",
+		"bit 7,b", "bit 7,c", "bit 7,d", "bit 7,e", "bit 7,h", "bit 7,l", "bit 7,(ix)", "bit 7, a",
+		"res 0,b", "res 0,c", "res 0,d", "res 0,e", "res 0,h", "res 0,l", "res 0,(ix)", "res 0, a",
+		"res 1,b", "res 1,c", "res 1,d", "res 1,e", "res 1,h", "res 1,l", "res 1,(ix)", "res 1, a",
+		"res 2,b", "res 2,c", "res 2,d", "res 2,e", "res 2,h", "res 2,l", "res 2,(ix)", "res 2, a",
+		"res 3,b", "res 3,c", "res 3,d", "res 3,e", "res 3,h", "res 3,l", "res 3,(ix)", "res 3, a",
+		"res 4,b", "res 4,c", "res 4,d", "res 4,e", "res 4,h", "res 4,l", "res 4,(ix)", "res 4, a",
+		"res 5,b", "res 5,c", "res 5,d", "res 5,e", "res 5,h", "res 5,l", "res 5,(ix)", "res 5, a",
+		"res 6,b", "res 6,c", "res 6,d", "res 6,e", "res 6,h", "res 6,l", "res 6,(ix)", "res 6, a",
+		"res 7,b", "res 7,c", "res 7,d", "res 7,e", "res 7,h", "res 7,l", "res 7,(ix)", "res 7, a",
+		"set 0,b", "set 0,c", "set 0,d", "set 0,e", "set 0,h", "set 0,l", "set 0,(ix)", "set 0, a",
+		"set 1,b", "set 1,c", "set 1,d", "set 1,e", "set 1,h", "set 1,l", "set 1,(ix)", "set 1, a",
+		"set 2,b", "set 2,c", "set 2,d", "set 2,e", "set 2,h", "set 2,l", "set 2,(ix)", "set 2, a",
+		"set 3,b", "set 3,c", "set 3,d", "set 3,e", "set 3,h", "set 3,l", "set 3,(ix)", "set 3, a",
+		"set 4,b", "set 4,c", "set 4,d", "set 4,e", "set 4,h", "set 4,l", "set 4,(ix)", "set 4, a",
+		"set 5,b", "set 5,c", "set 5,d", "set 5,e", "set 5,h", "set 5,l", "set 5,(ix)", "set 5, a",
+		"set 6,b", "set 6,c", "set 6,d", "set 6,e", "set 6,h", "set 6,l", "set 6,(ix)", "set 6, a",
+		"set 7,b", "set 7,c", "set 7,d", "set 7,e", "set 7,h", "set 7,l", "set 7,(ix)", "set 7, a",
+	},
+	xxIYBITxx: [256]string{
+		"rlc b", "rlc c", "rlc d", "rlc e", "rlc h", "rlc l", "rlc (iy)", "rlc a",
+		"rrc b", "rrc c", "rrc d", "rrc e", "rrc h", "rrc l", "rrc (iy)", "rrc a",
+		"rl b", "rl c", "rl d", "rl e", "rl h", "rl l", "rl (iy)", "rl a",
+		"rr b", "rr c", "rr d", "rr e", "rr h", "rr l", "rr (iy)", "rr a",
+		"sla b", "sla c", "sla d", "sla e", "sla h", "sla l", "sla (iy)", "sla a",
+		"sra b", "sra c", "sra d", "sra e", "sra h", "sra l", "sra (iy)", "sra a",
+		"sll b", "sll c", "sll d", "sll e", "sll h", "sll l", "sll (iy)", "sll a",
+		"srl b", "srl c", "srl d", "srl e", "srl h", "srl l", "srl (iy)", "srl a",
+		"bit 0,b", "bit 0,c", "bit 0,d", "bit 0,e", "bit 0,h", "bit 0,l", "bit 0,(iy)", "bit 0, a",
+		"bit 1,b", "bit 1,c", "bit 1,d", "bit 1,e", "bit 1,h", "bit 1,l", "bit 1,(iy)", "bit 1, a",
+		"bit 2,b", "bit 2,c", "bit 2,d", "bit 2,e", "bit 2,h", "bit 2,l", "bit 2,(iy)", "bit 2, a",
+		"bit 3,b", "bit 3,c", "bit 3,d", "bit 3,e", "bit 3,h", "bit 3,l", "bit 3,(iy)", "bit 3, a",
+		"bit 4,b", "bit 4,c", "bit 4,d", "bit 4,e", "bit 4,h", "bit 4,l", "bit 4,(iy)", "bit 4, a",
+		"bit 5,b", "bit 5,c", "bit 5,d", "bit 5,e", "bit 5,h", "bit 5,l", "bit 5,(iy)", "bit 5, a",
+		"bit 6,b", "bit 6,c", "bit 6,d", "bit 6,e", "bit 6,h", "bit 6,l", "bit 6,(iy)", "bit 6, a",
+		"bit 7,b", "bit 7,c", "bit 7,d", "bit 7,e", "bit 7,h", "bit 7,l", "bit 7,(iy)", "bit 7, a",
+		"res 0,b", "res 0,c", "res 0,d", "res 0,e", "res 0,h", "res 0,l", "res 0,(iy)", "res 0, a",
+		"res 1,b", "res 1,c", "res 1,d", "res 1,e", "res 1,h", "res 1,l", "res 1,(iy)", "res 1, a",
+		"res 2,b", "res 2,c", "res 2,d", "res 2,e", "res 2,h", "res 2,l", "res 2,(iy)", "res 2, a",
+		"res 3,b", "res 3,c", "res 3,d", "res 3,e", "res 3,h", "res 3,l", "res 3,(iy)", "res 3, a",
+		"res 4,b", "res 4,c", "res 4,d", "res 4,e", "res 4,h", "res 4,l", "res 4,(iy)", "res 4, a",
+		"res 5,b", "res 5,c", "res 5,d", "res 5,e", "res 5,h", "res 5,l", "res 5,(iy)", "res 5, a",
+		"res 6,b", "res 6,c", "res 6,d", "res 6,e", "res 6,h", "res 6,l", "res 6,(iy)", "res 6, a",
+		"res 7,b", "res 7,c", "res 7,d", "res 7,e", "res 7,h", "res 7,l", "res 7,(iy)", "res 7, a",
+		"set 0,b", "set 0,c", "set 0,d", "set 0,e", "set 0,h", "set 0,l", "set 0,(iy)", "set 0, a",
+		"set 1,b", "set 1,c", "set 1,d", "set 1,e", "set 1,h", "set 1,l", "set 1,(iy)", "set 1, a",
+		"set 2,b", "set 2,c", "set 2,d", "set 2,e", "set 2,h", "set 2,l", "set 2,(iy)", "set 2, a",
+		"set 3,b", "set 3,c", "set 3,d", "set 3,e", "set 3,h", "set 3,l", "set 3,(iy)", "set 3, a",
+		"set 4,b", "set 4,c", "set 4,d", "set 4,e", "set 4,h", "set 4,l", "set 4,(iy)", "set 4, a",
+		"set 5,b", "set 5,c", "set 5,d", "set 5,e", "set 5,h", "set 5,l", "set 5,(iy)", "set 5, a",
+		"set 6,b", "set 6,c", "set 6,d", "set 6,e", "set 6,h", "set 6,l", "set 6,(iy)", "set 6, a",
+		"set 7,b", "set 7,c", "set 7,d", "set 7,e", "set 7,h", "set 7,l", "set 7,(iy)", "set 7, a",
+	},
 }
 
 type CPUStates struct {
@@ -172,10 +277,13 @@ type CPUStates struct {
 }
 
 type CPUMnemonics struct {
-	base   [256]func() uint8
-	xx80xx [256]func() uint8
-	xxIXxx [256]func() uint8
-	xxIYxx [256]func() uint8
+	base      [256]func() uint8
+	xx80xx    [256]func() uint8
+	xxIXxx    [256]func() uint8
+	xxIYxx    [256]func() uint8
+	xxBITxx   [256]func() uint8
+	xxIXBITxx [256]func() uint8
+	xxIYBITxx [256]func() uint8
 }
 
 type CPU struct {
@@ -227,21 +335,58 @@ func (c *CPU) initializeMnemonics() {
 			c.orR('B'), c.orR('C'), c.orR('D'), c.orR('E'), c.orR('H'), c.orR('L'), c.or_Ss_(reg), c.orR('A'),
 			c.cpR('B'), c.cpR('C'), c.cpR('D'), c.cpR('E'), c.cpR('H'), c.cpR('L'), c.cp_Ss_(reg), c.cpR('A'),
 			c.retNz, c.popBc, c.jpNzNn, c.jpNn, c.callNzNn, c.pushBc, c.addAN, c.rst(0x00),
-			c.retZ, c.ret, c.jpZNn, c.die, c.callZNn, c.callNn, c.adcAN, c.rst(0x08),
+			c.retZ, c.ret, c.jpZNn, c.nop, c.callZNn, c.callNn, c.adcAN, c.rst(0x08),
 			c.retNc, c.popDe, c.jpNcNn, c.out_N_A, c.callNcNn, c.pushDe, c.subN, c.rst(0x10),
 			c.retC, c.exx, c.jpCNn, c.inA_N_, c.callCNn, c.nop, c.sbcAN, c.rst(0x18),
 			c.retPo, c.popSs(reg), c.jpPoNn, c.ex_Sp_Ss(reg), c.callPoNn, c.pushSs(reg), c.andN, c.rst(0x20),
-			c.retPe, c.jp_Ss_(reg), c.jpPeNn, c.exDeSs(reg), c.callPeNn, c.die, c.xorN, c.rst(0x28),
+			c.retPe, c.jp_Ss_(reg), c.jpPeNn, c.exDeSs(reg), c.callPeNn, c.nop, c.xorN, c.rst(0x28),
 			c.retP, c.popAf, c.jpPNn, c.di, c.callPNn, c.pushAf, c.orN, c.rst(0x30),
 			c.retM, c.ldSpSs(reg), c.jpMNn, c.ei, c.callMNn, c.nop, c.cpN, c.rst(0x38),
+		}
+		bitList := [256]func() uint8{
+			c.rlcR('B'), c.rlcR('C'), c.rlcR('D'), c.rlcR('E'), c.rlcR('H'), c.rlcR('L'), c.rlcSs(reg), c.rlcR('A'),
+			c.rrcR('B'), c.rrcR('C'), c.rrcR('D'), c.rrcR('E'), c.rrcR('H'), c.rrcR('L'), c.rrcSs(reg), c.rrcR('A'),
+			c.rlR('B'), c.rlR('C'), c.rlR('D'), c.rlR('E'), c.rlR('H'), c.rlR('L'), c.rlSs(reg), c.rlR('A'),
+			c.rrR('B'), c.rrR('C'), c.rrR('D'), c.rrR('E'), c.rrR('H'), c.rrR('L'), c.rrSs(reg), c.rrR('A'),
+			c.slaR('B'), c.slaR('C'), c.slaR('D'), c.slaR('E'), c.slaR('H'), c.slaR('L'), c.slaSs(reg), c.slaR('A'),
+			c.sraR('B'), c.sraR('C'), c.sraR('D'), c.sraR('E'), c.sraR('H'), c.sraR('L'), c.sraSs(reg), c.sraR('A'),
+			c.sllR('B'), c.sllR('C'), c.sllR('D'), c.sllR('E'), c.sllR('H'), c.sllR('L'), c.sllSs(reg), c.sllR('A'),
+			c.srlR('B'), c.srlR('C'), c.srlR('D'), c.srlR('E'), c.srlR('H'), c.srlR('L'), c.srlSs(reg), c.srlR('A'),
+			c.bitBR(0, 'B'), c.bitBR(0, 'C'), c.bitBR(0, 'D'), c.bitBR(0, 'E'), c.bitBR(0, 'H'), c.bitBR(0, 'L'), c.bitBSs(0, reg), c.bitBR(0, 'A'),
+			c.bitBR(1, 'B'), c.bitBR(1, 'C'), c.bitBR(1, 'D'), c.bitBR(1, 'E'), c.bitBR(1, 'H'), c.bitBR(1, 'L'), c.bitBSs(1, reg), c.bitBR(1, 'A'),
+			c.bitBR(2, 'B'), c.bitBR(2, 'C'), c.bitBR(2, 'D'), c.bitBR(2, 'E'), c.bitBR(2, 'H'), c.bitBR(2, 'L'), c.bitBSs(2, reg), c.bitBR(2, 'A'),
+			c.bitBR(3, 'B'), c.bitBR(3, 'C'), c.bitBR(3, 'D'), c.bitBR(3, 'E'), c.bitBR(3, 'H'), c.bitBR(3, 'L'), c.bitBSs(3, reg), c.bitBR(3, 'A'),
+			c.bitBR(4, 'B'), c.bitBR(4, 'C'), c.bitBR(4, 'D'), c.bitBR(4, 'E'), c.bitBR(4, 'H'), c.bitBR(4, 'L'), c.bitBSs(4, reg), c.bitBR(4, 'A'),
+			c.bitBR(5, 'B'), c.bitBR(5, 'C'), c.bitBR(5, 'D'), c.bitBR(5, 'E'), c.bitBR(5, 'H'), c.bitBR(5, 'L'), c.bitBSs(5, reg), c.bitBR(5, 'A'),
+			c.bitBR(6, 'B'), c.bitBR(6, 'C'), c.bitBR(6, 'D'), c.bitBR(6, 'E'), c.bitBR(6, 'H'), c.bitBR(6, 'L'), c.bitBSs(6, reg), c.bitBR(6, 'A'),
+			c.bitBR(7, 'B'), c.bitBR(7, 'C'), c.bitBR(7, 'D'), c.bitBR(7, 'E'), c.bitBR(7, 'H'), c.bitBR(7, 'L'), c.bitBSs(7, reg), c.bitBR(7, 'A'),
+			c.resBR(0, 'B'), c.resBR(0, 'C'), c.resBR(0, 'D'), c.resBR(0, 'E'), c.resBR(0, 'H'), c.resBR(0, 'L'), c.resBSs(0, reg), c.resBR(0, 'A'),
+			c.resBR(1, 'B'), c.resBR(1, 'C'), c.resBR(1, 'D'), c.resBR(1, 'E'), c.resBR(1, 'H'), c.resBR(1, 'L'), c.resBSs(1, reg), c.resBR(1, 'A'),
+			c.resBR(2, 'B'), c.resBR(2, 'C'), c.resBR(2, 'D'), c.resBR(2, 'E'), c.resBR(2, 'H'), c.resBR(2, 'L'), c.resBSs(2, reg), c.resBR(2, 'A'),
+			c.resBR(3, 'B'), c.resBR(3, 'C'), c.resBR(3, 'D'), c.resBR(3, 'E'), c.resBR(3, 'H'), c.resBR(3, 'L'), c.resBSs(3, reg), c.resBR(3, 'A'),
+			c.resBR(4, 'B'), c.resBR(4, 'C'), c.resBR(4, 'D'), c.resBR(4, 'E'), c.resBR(4, 'H'), c.resBR(4, 'L'), c.resBSs(4, reg), c.resBR(4, 'A'),
+			c.resBR(5, 'B'), c.resBR(5, 'C'), c.resBR(5, 'D'), c.resBR(5, 'E'), c.resBR(5, 'H'), c.resBR(5, 'L'), c.resBSs(5, reg), c.resBR(5, 'A'),
+			c.resBR(6, 'B'), c.resBR(6, 'C'), c.resBR(6, 'D'), c.resBR(6, 'E'), c.resBR(6, 'H'), c.resBR(6, 'L'), c.resBSs(6, reg), c.resBR(6, 'A'),
+			c.resBR(7, 'B'), c.resBR(7, 'C'), c.resBR(7, 'D'), c.resBR(7, 'E'), c.resBR(7, 'H'), c.resBR(7, 'L'), c.resBSs(7, reg), c.resBR(7, 'A'),
+			c.setBR(0, 'B'), c.setBR(0, 'C'), c.setBR(0, 'D'), c.setBR(0, 'E'), c.setBR(0, 'H'), c.setBR(0, 'L'), c.setBSs(0, reg), c.setBR(0, 'A'),
+			c.setBR(1, 'B'), c.setBR(1, 'C'), c.setBR(1, 'D'), c.setBR(1, 'E'), c.setBR(1, 'H'), c.setBR(1, 'L'), c.setBSs(1, reg), c.setBR(1, 'A'),
+			c.setBR(2, 'B'), c.setBR(2, 'C'), c.setBR(2, 'D'), c.setBR(2, 'E'), c.setBR(2, 'H'), c.setBR(2, 'L'), c.setBSs(2, reg), c.setBR(2, 'A'),
+			c.setBR(3, 'B'), c.setBR(3, 'C'), c.setBR(3, 'D'), c.setBR(3, 'E'), c.setBR(3, 'H'), c.setBR(3, 'L'), c.setBSs(3, reg), c.setBR(3, 'A'),
+			c.setBR(4, 'B'), c.setBR(4, 'C'), c.setBR(4, 'D'), c.setBR(4, 'E'), c.setBR(4, 'H'), c.setBR(4, 'L'), c.setBSs(4, reg), c.setBR(4, 'A'),
+			c.setBR(5, 'B'), c.setBR(5, 'C'), c.setBR(5, 'D'), c.setBR(5, 'E'), c.setBR(5, 'H'), c.setBR(5, 'L'), c.setBSs(5, reg), c.setBR(5, 'A'),
+			c.setBR(6, 'B'), c.setBR(6, 'C'), c.setBR(6, 'D'), c.setBR(6, 'E'), c.setBR(6, 'H'), c.setBR(6, 'L'), c.setBSs(6, reg), c.setBR(6, 'A'),
+			c.setBR(7, 'B'), c.setBR(7, 'C'), c.setBR(7, 'D'), c.setBR(7, 'E'), c.setBR(7, 'H'), c.setBR(7, 'L'), c.setBSs(7, reg), c.setBR(7, 'A'),
 		}
 		switch reg {
 		case "HL":
 			c.mnemonics.base = baseList
+			c.mnemonics.xxBITxx = bitList
 		case "IX":
 			c.mnemonics.xxIXxx = baseList
+			c.mnemonics.xxIXBITxx = bitList
 		case "IY":
 			c.mnemonics.xxIYxx = baseList
+			c.mnemonics.xxIYBITxx = bitList
 		}
 	}
 	c.mnemonics.xx80xx = [256]func() uint8{
@@ -3667,24 +3812,47 @@ func (c *CPU) Step() uint8 {
 	idx := c.dma.GetMemory(c.PC)
 	a, b := c.dma.GetMemory(c.PC+1), c.dma.GetMemory(c.PC+2)
 
-	if idx == 0xdd || idx == 0xed || idx == 0xfd {
+	if idx == 0xcb || idx == 0xdd || idx == 0xed || idx == 0xfd {
 		var cycles uint8
 		groupIdx := idx
 		idx = c.dma.GetMemory(c.PC + 1)
 		a, b = c.dma.GetMemory(c.PC+2), c.dma.GetMemory(c.PC+3)
+		if groupIdx == 0xcb {
+			fmt.Printf("%04x: %s [CB %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xxBITxx[idx], idx, a, b)
+			cycles = c.mnemonics.xxBITxx[idx]()
+			fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
+		}
 		if groupIdx == 0xdd {
+			subIdx := idx
+			idx = c.dma.GetMemory(c.PC + 2)
+			aa := c.dma.GetMemory(c.PC + 3)
+			if subIdx == 0xcb {
+				fmt.Printf("%04x: %s [DD CB %02x %02x] -> ", c.PC, mnemonicsDebug.xxIXBITxx[idx], idx, aa)
+				cycles = c.mnemonics.xxIXBITxx[idx]()
+				fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
+				return cycles
+			}
 			fmt.Printf("%04x: %s [DD %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xxIXxx[idx], idx, a, b)
-			cycles := c.mnemonics.xxIXxx[idx]()
+			cycles = c.mnemonics.xxIXxx[idx]()
 			fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
 		}
 		if groupIdx == 0xed {
 			fmt.Printf("%04x: %s [ED %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xx80xx[idx], idx, a, b)
-			cycles := c.mnemonics.xx80xx[idx]()
+			cycles = c.mnemonics.xx80xx[idx]()
 			fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
 		}
 		if groupIdx == 0xfd {
+			subIdx := idx
+			idx = c.dma.GetMemory(c.PC + 2)
+			aa := c.dma.GetMemory(c.PC + 3)
+			if subIdx == 0xcb {
+				fmt.Printf("%04x: %s [FD CB %02x %02x] -> ", c.PC, mnemonicsDebug.xxIYBITxx[idx], idx, aa)
+				cycles = c.mnemonics.xxIYBITxx[idx]()
+				fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
+				return cycles
+			}
 			fmt.Printf("%04x: %s [FD %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xxIYxx[idx], idx, a, b)
-			cycles := c.mnemonics.xxIYxx[idx]()
+			cycles = c.mnemonics.xxIYxx[idx]()
 			fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
 		}
 		return cycles
