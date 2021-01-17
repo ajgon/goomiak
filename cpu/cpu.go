@@ -3808,59 +3808,82 @@ func (c *CPU) die() uint8 {
 	panic("unimplemented mnemonic")
 }
 
-func (c *CPU) Step() uint8 {
-	idx := c.dma.GetMemory(c.PC)
-	a, b := c.dma.GetMemory(c.PC+1), c.dma.GetMemory(c.PC+2)
+func (c *CPU) DebugStep() (tstates uint8) {
+	var debugOpcode string
 
-	if idx == 0xcb || idx == 0xdd || idx == 0xed || idx == 0xfd {
-		var cycles uint8
-		groupIdx := idx
-		idx = c.dma.GetMemory(c.PC + 1)
-		a, b = c.dma.GetMemory(c.PC+2), c.dma.GetMemory(c.PC+3)
-		if groupIdx == 0xcb {
-			fmt.Printf("%04x: %s [CB %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xxBITxx[idx], idx, a, b)
-			cycles = c.mnemonics.xxBITxx[idx]()
-			fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
+	opcode := c.dma.GetMemory(c.PC)
+	switch opcode {
+	case 0xcb:
+		opcode = c.dma.GetMemory(c.PC + 1)
+		tstates = c.mnemonics.xxBITxx[opcode]()
+		debugOpcode = fmt.Sprintf("%s (CB %02x)", mnemonicsDebug.xxBITxx[opcode], opcode)
+	case 0xdd:
+		opcode = c.dma.GetMemory(c.PC + 1)
+		switch opcode {
+		case 0xcb:
+			opcode = c.dma.GetMemory(c.PC + 2)
+			tstates = c.mnemonics.xxIXBITxx[opcode]()
+			debugOpcode = fmt.Sprintf("%s (DD CB %02x)", mnemonicsDebug.xxIXBITxx[opcode], opcode)
+		default:
+			tstates = c.mnemonics.xxIXxx[opcode]()
+			debugOpcode = fmt.Sprintf("%s (DD %02x)", mnemonicsDebug.xxIXxx[opcode], opcode)
 		}
-		if groupIdx == 0xdd {
-			subIdx := idx
-			idx = c.dma.GetMemory(c.PC + 2)
-			aa := c.dma.GetMemory(c.PC + 3)
-			if subIdx == 0xcb {
-				fmt.Printf("%04x: %s [DD CB %02x %02x] -> ", c.PC, mnemonicsDebug.xxIXBITxx[idx], idx, aa)
-				cycles = c.mnemonics.xxIXBITxx[idx]()
-				fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
-				return cycles
-			}
-			fmt.Printf("%04x: %s [DD %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xxIXxx[idx], idx, a, b)
-			cycles = c.mnemonics.xxIXxx[idx]()
-			fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
+	case 0xed:
+		opcode = c.dma.GetMemory(c.PC + 1)
+		tstates = c.mnemonics.xx80xx[opcode]()
+		debugOpcode = fmt.Sprintf("%s (ED %02x)", mnemonicsDebug.xx80xx[opcode], opcode)
+	case 0xfd:
+		opcode = c.dma.GetMemory(c.PC + 1)
+		switch opcode {
+		case 0xcb:
+			opcode = c.dma.GetMemory(c.PC + 2)
+			tstates = c.mnemonics.xxIYBITxx[opcode]()
+			debugOpcode = fmt.Sprintf("%s (FD CB %02x)", mnemonicsDebug.xxIYBITxx[opcode], opcode)
+		default:
+			tstates = c.mnemonics.xxIYxx[opcode]()
+			debugOpcode = fmt.Sprintf("%s (FD %02x)", mnemonicsDebug.xxIYxx[opcode], opcode)
 		}
-		if groupIdx == 0xed {
-			fmt.Printf("%04x: %s [ED %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xx80xx[idx], idx, a, b)
-			cycles = c.mnemonics.xx80xx[idx]()
-			fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
-		}
-		if groupIdx == 0xfd {
-			subIdx := idx
-			idx = c.dma.GetMemory(c.PC + 2)
-			aa := c.dma.GetMemory(c.PC + 3)
-			if subIdx == 0xcb {
-				fmt.Printf("%04x: %s [FD CB %02x %02x] -> ", c.PC, mnemonicsDebug.xxIYBITxx[idx], idx, aa)
-				cycles = c.mnemonics.xxIYBITxx[idx]()
-				fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
-				return cycles
-			}
-			fmt.Printf("%04x: %s [FD %02x %02x %02x] -> ", c.PC, mnemonicsDebug.xxIYxx[idx], idx, a, b)
-			cycles = c.mnemonics.xxIYxx[idx]()
-			fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
-		}
-		return cycles
+	default:
+		tstates = c.mnemonics.base[opcode]()
+		debugOpcode = fmt.Sprintf("%s (%02x)", mnemonicsDebug.base[opcode], opcode)
 	}
-	fmt.Printf("%04x: %s [%02x %02x %02x] -> ", c.PC, mnemonicsDebug.base[idx], idx, a, b)
-	cycles := c.mnemonics.base[idx]()
-	fmt.Printf("(%d) => A: %02x, F: %08b, BC: %04x, DE: %04x, HL: %04x, SP: %04x\n", cycles, c.getAcc(), c.getFlags(), c.BC, c.DE, c.HL, c.SP)
-	return cycles
+
+	fmt.Printf("%04x: %s\n", c.PC, debugOpcode)
+	return
+}
+
+func (c *CPU) Step() (tstates uint8) {
+	opcode := c.dma.GetMemory(c.PC)
+	switch opcode {
+	case 0xcb:
+		opcode = c.dma.GetMemory(c.PC + 1)
+		tstates = c.mnemonics.xxBITxx[opcode]()
+	case 0xdd:
+		opcode = c.dma.GetMemory(c.PC + 1)
+		switch opcode {
+		case 0xcb:
+			opcode = c.dma.GetMemory(c.PC + 2)
+			tstates = c.mnemonics.xxIXBITxx[opcode]()
+		default:
+			tstates = c.mnemonics.xxIXxx[opcode]()
+		}
+	case 0xed:
+		opcode = c.dma.GetMemory(c.PC + 1)
+		tstates = c.mnemonics.xx80xx[opcode]()
+	case 0xfd:
+		opcode = c.dma.GetMemory(c.PC + 1)
+		switch opcode {
+		case 0xcb:
+			opcode = c.dma.GetMemory(c.PC + 2)
+			tstates = c.mnemonics.xxIYBITxx[opcode]()
+		default:
+			tstates = c.mnemonics.xxIYxx[opcode]()
+		}
+	default:
+		tstates = c.mnemonics.base[opcode]()
+	}
+
+	return
 }
 
 func (c *CPU) Reset() {
