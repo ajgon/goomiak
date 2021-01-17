@@ -553,6 +553,14 @@ func (c *CPU) checkInterrupts() (bool, bool) {
 	return c.States.IFF1, c.States.IFF2
 }
 
+func (c *CPU) shiftedAddress(base uint16, shift uint8) uint16 {
+	if shift > 127 {
+		return base + uint16(shift) - 256
+	}
+
+	return base + uint16(shift)
+}
+
 // reads word and maintains endianess
 // example:
 // 0040 34 21
@@ -840,11 +848,12 @@ func (c *CPU) rlcR(r byte) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
-		c.setPV(parityTable[rvalue])
 		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(rvalue > 127)
-
+		if r != ' ' {
+			c.setPV(parityTable[rvalue])
+			c.setZ(rvalue == 0)
+			c.setS(rvalue > 127)
+		}
 		return 4 + size*4
 	}
 }
@@ -1003,10 +1012,12 @@ func (c *CPU) rlR(r byte) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
-		c.setPV(parityTable[rvalue])
 		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(rvalue > 127)
+		if r != ' ' {
+			c.setPV(parityTable[rvalue])
+			c.setZ(rvalue == 0)
+			c.setS(rvalue > 127)
+		}
 
 		return 4 + size*4
 	}
@@ -1041,7 +1052,7 @@ func (c *CPU) rlSs(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3))
+		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		signed := rvalue&128 == 128
@@ -1147,10 +1158,12 @@ func (c *CPU) rrR(r byte) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
-		c.setPV(parityTable[rvalue])
 		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(rvalue > 127)
+		if r != ' ' {
+			c.setPV(parityTable[rvalue])
+			c.setZ(rvalue == 0)
+			c.setS(rvalue > 127)
+		}
 
 		return 4 + size*4
 	}
@@ -1185,7 +1198,7 @@ func (c *CPU) rrSs(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3))
+		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		signed := rvalue&1 == 1
@@ -1496,7 +1509,7 @@ func (c *CPU) inc_Ss_(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		addr := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
+		addr := c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))
 		result := c.dma.GetMemory(addr) + 1
 		c.dma.SetMemoryByte(addr, result)
 		c.PC += 3
@@ -1530,7 +1543,7 @@ func (c *CPU) dec_Ss_(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		addr := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
+		addr := c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))
 		result := c.dma.GetMemory(addr) - 1
 		c.dma.SetMemoryByte(addr, result)
 		c.PC += 3
@@ -1555,7 +1568,7 @@ func (c *CPU) ld_Ss_N(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		c.dma.SetMemoryByte(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2)), c.dma.GetMemory(c.PC+3))
+		c.dma.SetMemoryByte(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2)), c.dma.GetMemory(c.PC+3))
 		c.PC += 4
 		return 19
 	}
@@ -1703,7 +1716,7 @@ func (c *CPU) ldR_Ss_(r byte, ss string) func() uint8 {
 			panic("Invalid `r` part of the mnemonic")
 		}
 
-		right = c.dma.GetMemory(c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2)))
+		right = c.dma.GetMemory(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2)))
 
 		if lhigh {
 			*lvalue = (*lvalue & 0x00ff) | (uint16(right) << 8)
@@ -1728,7 +1741,7 @@ func (c *CPU) ld_Ss_R(ss string, r byte) func() uint8 {
 	}
 
 	return func() uint8 {
-		c.dma.SetMemoryByte(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2)), c.extractRegister(r))
+		c.dma.SetMemoryByte(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2)), c.extractRegister(r))
 		c.PC += 3
 		return 19
 	}
@@ -1764,7 +1777,7 @@ func (c *CPU) addA_Ss_(ss string) func() uint8 {
 
 	return func() uint8 {
 		c.setC(false)
-		c.adcValueToAcc(c.dma.GetMemory(c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))))
+		c.adcValueToAcc(c.dma.GetMemory(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))))
 		c.PC += 3
 		return 19
 	}
@@ -1789,7 +1802,7 @@ func (c *CPU) adcA_Ss_(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		c.adcValueToAcc(c.dma.GetMemory(c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))))
+		c.adcValueToAcc(c.dma.GetMemory(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))))
 		c.PC += 3
 		return 19
 	}
@@ -1826,7 +1839,7 @@ func (c *CPU) sub_Ss_(ss string) func() uint8 {
 
 	return func() uint8 {
 		c.setC(true)
-		c.adcValueToAcc(c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2))) ^ 0xff)
+		c.adcValueToAcc(c.dma.GetMemory(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))) ^ 0xff)
 
 		c.PC += 3
 		c.setN(true)
@@ -1868,7 +1881,7 @@ func (c *CPU) sbcA_Ss_(ss string) func() uint8 {
 
 	return func() uint8 {
 		c.setC(!c.getC())
-		c.adcValueToAcc(c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2))) ^ 0xff)
+		c.adcValueToAcc(c.dma.GetMemory(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))) ^ 0xff)
 
 		c.PC += 3
 		c.setN(true)
@@ -1916,7 +1929,7 @@ func (c *CPU) and_Ss_(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		result := c.getAcc() & c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2)))
+		result := c.getAcc() & c.dma.GetMemory(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2)))
 
 		c.PC += 3
 		c.setAcc(result)
@@ -1968,7 +1981,7 @@ func (c *CPU) xor_Ss_(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		result := c.getAcc() ^ c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2)))
+		result := c.getAcc() ^ c.dma.GetMemory(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2)))
 
 		c.PC += 3
 		c.setAcc(result)
@@ -2020,7 +2033,7 @@ func (c *CPU) or_Ss_(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		result := c.getAcc() | c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2)))
+		result := c.getAcc() | c.dma.GetMemory(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2)))
 
 		c.PC += 3
 		c.setAcc(result)
@@ -2071,7 +2084,7 @@ func (c *CPU) cp_Ss_(ss string) func() uint8 {
 	return func() uint8 {
 		acc := c.getAcc()
 		c.setC(true)
-		c.adcValueToAcc(c.dma.GetMemory(c.extractRegisterPair(ss)+uint16(c.dma.GetMemory(c.PC+2))) ^ 0xff)
+		c.adcValueToAcc(c.dma.GetMemory(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))) ^ 0xff)
 
 		c.PC += 3
 		c.setAcc(acc)
@@ -2449,7 +2462,7 @@ func (c *CPU) pushSs(ss string) func() uint8 {
 func (c *CPU) andN() uint8 {
 	result := c.getAcc() & c.dma.GetMemory(c.PC+1)
 
-	c.PC++
+	c.PC += 2
 	c.setAcc(result)
 	c.setS(result > 127)
 	c.setZ(result == 0)
@@ -2475,13 +2488,13 @@ func (c *CPU) retPe() uint8 {
 func (c *CPU) jp_Ss_(ss string) func() uint8 {
 	if ss == "HL" {
 		return func() uint8 {
-			c.PC = c.readWord(c.HL)
+			c.PC = c.HL
 			return 4
 		}
 	}
 
 	return func() uint8 {
-		c.PC = c.readWord(c.extractRegisterPair(ss))
+		c.PC = c.extractRegisterPair(ss)
 		return 8
 	}
 }
@@ -2784,7 +2797,7 @@ func (c *CPU) neg() uint8 {
 	a := c.getAcc()
 	c.setAcc(0)
 
-	c.setC(false)
+	c.setC(true)
 	c.adcValueToAcc(a ^ 0xff)
 
 	c.PC += 2
@@ -2927,7 +2940,7 @@ func (c *CPU) rld() uint8 {
 }
 
 func (c *CPU) ldi() uint8 {
-	c.writeWord(c.DE, c.readWord(c.HL))
+	c.dma.SetMemoryByte(c.DE, c.dma.GetMemory(c.HL))
 	c.DE++
 	c.HL++
 	c.BC--
@@ -2983,7 +2996,7 @@ func (c *CPU) outi() uint8 {
 }
 
 func (c *CPU) ldd() uint8 {
-	c.writeWord(c.DE, c.readWord(c.HL))
+	c.dma.SetMemoryByte(c.DE, c.dma.GetMemory(c.HL))
 	c.DE--
 	c.HL--
 	c.BC--
@@ -3177,7 +3190,7 @@ func (c *CPU) rlcSs(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3))
+		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		signed := rvalue&128 == 128
@@ -3243,10 +3256,12 @@ func (c *CPU) rrcR(r byte) func() uint8 {
 
 		c.setC(signed)
 		c.setN(false)
-		c.setPV(parityTable[rvalue])
 		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(rvalue > 127)
+		if r != ' ' {
+			c.setPV(parityTable[rvalue])
+			c.setZ(rvalue == 0)
+			c.setS(rvalue > 127)
+		}
 
 		return 4 + size*4
 	}
@@ -3279,7 +3294,7 @@ func (c *CPU) rrcSs(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3))
+		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		signed := rvalue&1 == 1
@@ -3366,7 +3381,7 @@ func (c *CPU) slaSs(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3))
+		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		c.setC(rvalue&128 == 128)
@@ -3458,7 +3473,7 @@ func (c *CPU) sraSs(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3))
+		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		c.setC(rvalue&1 == 1)
@@ -3545,7 +3560,7 @@ func (c *CPU) sllSs(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3))
+		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		c.setC(rvalue&128 == 128)
@@ -3627,7 +3642,7 @@ func (c *CPU) srlSs(ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3))
+		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		c.setC(rvalue&1 == 1)
@@ -3653,6 +3668,8 @@ func (c *CPU) bitBR(b uint8, r byte) func() uint8 {
 		c.setZ(rvalue&mask == 0)
 		c.PC += 2
 
+		c.setS(rvalue > 127)
+		c.setPV(rvalue&mask == 0)
 		c.setN(false)
 		c.setH(true)
 
@@ -3668,6 +3685,8 @@ func (c *CPU) bitBSs(b uint8, ss string) func() uint8 {
 			c.setZ(rvalue&mask == 0)
 			c.PC += 2
 
+			c.setS(rvalue > 127)
+			c.setPV(rvalue&mask == 0)
 			c.setN(false)
 			c.setH(true)
 
@@ -3676,11 +3695,13 @@ func (c *CPU) bitBSs(b uint8, ss string) func() uint8 {
 	}
 
 	return func() uint8 {
-		rvalue := c.dma.GetMemory(c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+3)))
+		rvalue := c.dma.GetMemory(c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2)))
 		mask := uint8(1 << b)
 		c.setZ(rvalue&mask == 0)
 		c.PC += 4
 
+		c.setS(rvalue > 127)
+		c.setPV(rvalue&mask == 0)
 		c.setN(false)
 		c.setH(true)
 
@@ -3729,14 +3750,14 @@ func (c *CPU) setBSs(b uint8, ss string) func() uint8 {
 		}
 	case "IX":
 		return func() uint8 {
-			address := c.IX + uint16(c.dma.GetMemory(c.PC+3))
+			address := c.IX + uint16(c.dma.GetMemory(c.PC+2))
 			c.dma.SetMemoryByte(address, c.dma.GetMemory(address)|uint8(1<<b))
 			c.PC += 4
 			return 23
 		}
 	case "IY":
 		return func() uint8 {
-			address := c.IY + uint16(c.dma.GetMemory(c.PC+3))
+			address := c.IY + uint16(c.dma.GetMemory(c.PC+2))
 			c.dma.SetMemoryByte(address, c.dma.GetMemory(address)|uint8(1<<b))
 			c.PC += 4
 			return 23
@@ -3787,14 +3808,14 @@ func (c *CPU) resBSs(b uint8, ss string) func() uint8 {
 		}
 	case "IX":
 		return func() uint8 {
-			address := c.IX + uint16(c.dma.GetMemory(c.PC+3))
+			address := c.IX + uint16(c.dma.GetMemory(c.PC+2))
 			c.dma.SetMemoryByte(address, c.dma.GetMemory(address)&(uint8(1<<b)^0xff))
 			c.PC += 4
 			return 23
 		}
 	case "IY":
 		return func() uint8 {
-			address := c.IY + uint16(c.dma.GetMemory(c.PC+3))
+			address := c.IY + uint16(c.dma.GetMemory(c.PC+2))
 			c.dma.SetMemoryByte(address, c.dma.GetMemory(address)&(uint8(1<<b)^0xff))
 			c.PC += 4
 			return 23
@@ -3821,7 +3842,7 @@ func (c *CPU) DebugStep() (tstates uint8) {
 		opcode = c.dma.GetMemory(c.PC + 1)
 		switch opcode {
 		case 0xcb:
-			opcode = c.dma.GetMemory(c.PC + 2)
+			opcode = c.dma.GetMemory(c.PC + 3)
 			tstates = c.mnemonics.xxIXBITxx[opcode]()
 			debugOpcode = fmt.Sprintf("%s (DD CB %02x)", mnemonicsDebug.xxIXBITxx[opcode], opcode)
 		default:
@@ -3836,7 +3857,7 @@ func (c *CPU) DebugStep() (tstates uint8) {
 		opcode = c.dma.GetMemory(c.PC + 1)
 		switch opcode {
 		case 0xcb:
-			opcode = c.dma.GetMemory(c.PC + 2)
+			opcode = c.dma.GetMemory(c.PC + 3)
 			tstates = c.mnemonics.xxIYBITxx[opcode]()
 			debugOpcode = fmt.Sprintf("%s (FD CB %02x)", mnemonicsDebug.xxIYBITxx[opcode], opcode)
 		default:
@@ -3862,7 +3883,7 @@ func (c *CPU) Step() (tstates uint8) {
 		opcode = c.dma.GetMemory(c.PC + 1)
 		switch opcode {
 		case 0xcb:
-			opcode = c.dma.GetMemory(c.PC + 2)
+			opcode = c.dma.GetMemory(c.PC + 3)
 			tstates = c.mnemonics.xxIXBITxx[opcode]()
 		default:
 			tstates = c.mnemonics.xxIXxx[opcode]()
@@ -3874,7 +3895,7 @@ func (c *CPU) Step() (tstates uint8) {
 		opcode = c.dma.GetMemory(c.PC + 1)
 		switch opcode {
 		case 0xcb:
-			opcode = c.dma.GetMemory(c.PC + 2)
+			opcode = c.dma.GetMemory(c.PC + 3)
 			tstates = c.mnemonics.xxIYBITxx[opcode]()
 		default:
 			tstates = c.mnemonics.xxIYxx[opcode]()
