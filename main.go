@@ -17,7 +17,9 @@ func loadFileToMemory(dma *dma.DMA, address uint16, filePath string) {
 		panic("error loading file!")
 	}
 
-	bytes := make([]byte, 6912)
+	stat, _ := file.Stat()
+
+	bytes := make([]byte, stat.Size())
 	buf := bufio.NewReader(file)
 	buf.Read(bytes)
 
@@ -29,18 +31,38 @@ func main() {
 	videoMemoryHandler := video.VideoMemoryHandlerNew()
 	dma := dma.DMANew(mem, videoMemoryHandler)
 	//video := video.VideoNew(dma)
+	//loadFileToMemory(dma, 0x0000, "./roms/48.rom")
 	//loadFileToMemory(dma, 0x8000, "./roms/zexdoc.rom")
-	loadFileToMemory(dma, 0x0000, "./roms/48.rom")
+	loadFileToMemory(dma, 0x0100, "./roms/zexdoc.cpm")
 
 	cpu := cpu.CPUNew(dma)
-	cpu.PC = 0x0000
-	tstates := uint64(0)
-	reader := bufio.NewReader(os.Stdin)
+	cpu.PC = 0x0100
+	cpu.SP = 0xf000
+	dma.SetMemoryByte(0x05, 0xc9) // RET
 
 	for {
-		//for i := 0; i < 32; i++ {
-		fmt.Printf("T: %d => ", tstates)
-		tstates += uint64(cpu.Step())
-		reader.ReadString('\n')
+		cpu.Step()
+		if cpu.PC == 0 {
+			break
+		}
+
+		if cpu.PC == 5 {
+			if uint8(cpu.BC) == 2 {
+				fmt.Printf("%c", uint8(cpu.DE))
+			}
+
+			if uint8(cpu.BC) == 9 {
+				i := cpu.DE
+				for {
+					char := dma.GetMemory(i)
+					if char != 36 {
+						fmt.Printf("%c", char)
+					} else {
+						break
+					}
+					i++
+				}
+			}
+		}
 	}
 }
