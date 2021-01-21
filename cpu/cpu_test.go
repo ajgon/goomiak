@@ -312,7 +312,7 @@ func TestLdBN(t *testing.T) {
 	resetAll()
 	dmaX.SetMemoryBulk(0x0000, []uint8{0x06, 0x64})
 
-	checkCpu(t, 7, map[string]uint16{"PC": 2, "BC": 0x6400}, cpu.ldBN)
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "BC": 0x6400}, cpu.ldRN('B'))
 }
 
 func TestRlca(t *testing.T) {
@@ -439,7 +439,7 @@ func TestLdCN(t *testing.T) {
 	resetAll()
 	dmaX.SetMemoryBulk(0x0000, []uint8{0x06, 0x64})
 
-	checkCpu(t, 7, map[string]uint16{"PC": 2, "BC": 0x0064}, cpu.ldCN)
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "BC": 0x0064}, cpu.ldRN('C'))
 }
 
 func TestRrca(t *testing.T) {
@@ -552,7 +552,7 @@ func TestLdDN(t *testing.T) {
 	resetAll()
 	dmaX.SetMemoryBulk(0x0000, []uint8{0x06, 0x64})
 
-	checkCpu(t, 7, map[string]uint16{"PC": 2, "DE": 0x6400}, cpu.ldDN)
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "DE": 0x6400}, cpu.ldRN('D'))
 }
 
 func TestRla(t *testing.T) {
@@ -691,7 +691,7 @@ func TestLdEN(t *testing.T) {
 	resetAll()
 	dmaX.SetMemoryBulk(0x0000, []uint8{0x06, 0x64})
 
-	checkCpu(t, 7, map[string]uint16{"PC": 2, "DE": 0x0064}, cpu.ldEN)
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "DE": 0x0064}, cpu.ldRN('E'))
 }
 
 func TestRra(t *testing.T) {
@@ -877,7 +877,21 @@ func TestLdHN(t *testing.T) {
 	resetAll()
 	dmaX.SetMemoryBulk(0x0000, []uint8{0x06, 0x64})
 
-	checkCpu(t, 7, map[string]uint16{"PC": 2, "HL": 0x6400}, cpu.ldHN)
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "HL": 0x6400}, cpu.ldRN('H'))
+}
+
+func TestLdIXHN(t *testing.T) {
+	resetAll()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0x06, 0x64})
+
+	checkCpu(t, 7, map[string]uint16{"PC": 3, "IX": 0x6400}, cpu.ldRN('X'))
+}
+
+func TestLdIYHN(t *testing.T) {
+	resetAll()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xfd, 0x06, 0x64})
+
+	checkCpu(t, 7, map[string]uint16{"PC": 3, "IY": 0x6400}, cpu.ldRN('Y'))
 }
 
 func TestJrZN(t *testing.T) {
@@ -1079,7 +1093,21 @@ func TestLdLN(t *testing.T) {
 	resetAll()
 	dmaX.SetMemoryBulk(0x0000, []uint8{0x06, 0x64})
 
-	checkCpu(t, 7, map[string]uint16{"PC": 2, "HL": 0x0064}, cpu.ldLN)
+	checkCpu(t, 7, map[string]uint16{"PC": 2, "HL": 0x0064}, cpu.ldRN('L'))
+}
+
+func TestLdIXLN(t *testing.T) {
+	resetAll()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xdd, 0x06, 0x64})
+
+	checkCpu(t, 7, map[string]uint16{"PC": 3, "IX": 0x0064}, cpu.ldRN('x'))
+}
+
+func TestLdIYLN(t *testing.T) {
+	resetAll()
+	dmaX.SetMemoryBulk(0x0000, []uint8{0xfd, 0x06, 0x64})
+
+	checkCpu(t, 7, map[string]uint16{"PC": 3, "IY": 0x0064}, cpu.ldRN('y'))
 }
 
 func TestCpl(t *testing.T) {
