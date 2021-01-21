@@ -1435,6 +1435,26 @@ func TestLdRR_(t *testing.T) {
 
 	resetAll()
 	cpu.BC = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "BC": 0x5634, "IX": 0x5678}, cpu.ldRR_('B', 'X'))
+
+	resetAll()
+	cpu.BC = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "BC": 0x7834, "IX": 0x5678}, cpu.ldRR_('B', 'x'))
+
+	resetAll()
+	cpu.BC = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "BC": 0x5634, "IY": 0x5678}, cpu.ldRR_('B', 'Y'))
+
+	resetAll()
+	cpu.BC = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "BC": 0x7834, "IY": 0x5678}, cpu.ldRR_('B', 'y'))
+
+	resetAll()
+	cpu.BC = 0x1234
 	cpu.setAcc(0x56)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x5634, "A": 0x56}, cpu.ldRR_('B', 'A'))
 
@@ -1465,6 +1485,26 @@ func TestLdRR_(t *testing.T) {
 	cpu.BC = 0x1234
 	cpu.HL = 0x5678
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "BC": 0x1278, "HL": 0x5678}, cpu.ldRR_('C', 'L'))
+
+	resetAll()
+	cpu.BC = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "BC": 0x1256, "IX": 0x5678}, cpu.ldRR_('C', 'X'))
+
+	resetAll()
+	cpu.BC = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "BC": 0x1278, "IX": 0x5678}, cpu.ldRR_('C', 'x'))
+
+	resetAll()
+	cpu.BC = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "BC": 0x1256, "IY": 0x5678}, cpu.ldRR_('C', 'Y'))
+
+	resetAll()
+	cpu.BC = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "BC": 0x1278, "IY": 0x5678}, cpu.ldRR_('C', 'y'))
 
 	resetAll()
 	cpu.BC = 0x1234
@@ -1501,6 +1541,26 @@ func TestLdRR_(t *testing.T) {
 
 	resetAll()
 	cpu.DE = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "DE": 0x5634, "IX": 0x5678}, cpu.ldRR_('D', 'X'))
+
+	resetAll()
+	cpu.DE = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "DE": 0x7834, "IX": 0x5678}, cpu.ldRR_('D', 'x'))
+
+	resetAll()
+	cpu.DE = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "DE": 0x5634, "IY": 0x5678}, cpu.ldRR_('D', 'Y'))
+
+	resetAll()
+	cpu.DE = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "DE": 0x7834, "IY": 0x5678}, cpu.ldRR_('D', 'y'))
+
+	resetAll()
+	cpu.DE = 0x1234
 	cpu.setAcc(0x56)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x5634, "A": 0x56}, cpu.ldRR_('D', 'A'))
 
@@ -1531,6 +1591,26 @@ func TestLdRR_(t *testing.T) {
 	cpu.DE = 0x1234
 	cpu.HL = 0x5678
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "DE": 0x1278, "HL": 0x5678}, cpu.ldRR_('E', 'L'))
+
+	resetAll()
+	cpu.DE = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "DE": 0x1256, "IX": 0x5678}, cpu.ldRR_('E', 'X'))
+
+	resetAll()
+	cpu.DE = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "DE": 0x1278, "IX": 0x5678}, cpu.ldRR_('E', 'x'))
+
+	resetAll()
+	cpu.DE = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "DE": 0x1256, "IY": 0x5678}, cpu.ldRR_('E', 'Y'))
+
+	resetAll()
+	cpu.DE = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "DE": 0x1278, "IY": 0x5678}, cpu.ldRR_('E', 'y'))
 
 	resetAll()
 	cpu.DE = 0x1234
@@ -1567,6 +1647,26 @@ func TestLdRR_(t *testing.T) {
 
 	resetAll()
 	cpu.HL = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "HL": 0x5634, "IX": 0x5678}, cpu.ldRR_('H', 'X'))
+
+	resetAll()
+	cpu.HL = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "HL": 0x7834, "IX": 0x5678}, cpu.ldRR_('H', 'x'))
+
+	resetAll()
+	cpu.HL = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "HL": 0x5634, "IY": 0x5678}, cpu.ldRR_('H', 'Y'))
+
+	resetAll()
+	cpu.HL = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "HL": 0x7834, "IY": 0x5678}, cpu.ldRR_('H', 'y'))
+
+	resetAll()
+	cpu.HL = 0x1234
 	cpu.setAcc(0x56)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x5634, "A": 0x56}, cpu.ldRR_('H', 'A'))
 
@@ -1597,6 +1697,26 @@ func TestLdRR_(t *testing.T) {
 	resetAll()
 	cpu.HL = 0x1234
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "HL": 0x1234}, cpu.ldRR_('L', 'L'))
+
+	resetAll()
+	cpu.HL = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "HL": 0x1256, "IX": 0x5678}, cpu.ldRR_('L', 'X'))
+
+	resetAll()
+	cpu.HL = 0x1234
+	cpu.IX = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "HL": 0x1278, "IX": 0x5678}, cpu.ldRR_('L', 'x'))
+
+	resetAll()
+	cpu.HL = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "HL": 0x1256, "IY": 0x5678}, cpu.ldRR_('L', 'Y'))
+
+	resetAll()
+	cpu.HL = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "HL": 0x1278, "IY": 0x5678}, cpu.ldRR_('L', 'y'))
 
 	resetAll()
 	cpu.HL = 0x1234
@@ -1634,8 +1754,240 @@ func TestLdRR_(t *testing.T) {
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x78, "HL": 0x5678}, cpu.ldRR_('A', 'L'))
 
 	resetAll()
+	cpu.IX = 0x5678
+	cpu.setAcc(0x12)
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "A": 0x56, "IX": 0x5678}, cpu.ldRR_('A', 'X'))
+
+	resetAll()
+	cpu.IX = 0x5678
+	cpu.setAcc(0x12)
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "A": 0x78, "IX": 0x5678}, cpu.ldRR_('A', 'x'))
+
+	resetAll()
+	cpu.IY = 0x5678
+	cpu.setAcc(0x12)
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "A": 0x56, "IY": 0x5678}, cpu.ldRR_('A', 'Y'))
+
+	resetAll()
+	cpu.IY = 0x5678
+	cpu.setAcc(0x12)
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "A": 0x78, "IY": 0x5678}, cpu.ldRR_('A', 'y'))
+
+	resetAll()
 	cpu.setAcc(0x12)
 	checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x12}, cpu.ldRR_('A', 'A'))
+
+	resetAll()
+	cpu.BC = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x5634, "BC": 0x5678}, cpu.ldRR_('X', 'B'))
+
+	resetAll()
+	cpu.BC = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x7834, "BC": 0x5678}, cpu.ldRR_('X', 'C'))
+
+	resetAll()
+	cpu.DE = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x5634, "DE": 0x5678}, cpu.ldRR_('X', 'D'))
+
+	resetAll()
+	cpu.DE = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x7834, "DE": 0x5678}, cpu.ldRR_('X', 'E'))
+
+	resetAll()
+	cpu.HL = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x5634, "HL": 0x5678}, cpu.ldRR_('X', 'H'))
+
+	resetAll()
+	cpu.HL = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x7834, "HL": 0x5678}, cpu.ldRR_('X', 'L'))
+
+	resetAll()
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1234}, cpu.ldRR_('X', 'X'))
+
+	resetAll()
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x3434}, cpu.ldRR_('X', 'x'))
+
+	resetAll()
+	cpu.IX = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x5634, "IY": 0x5678}, cpu.ldRR_('X', 'Y'))
+
+	resetAll()
+	cpu.IX = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x7834, "IY": 0x5678}, cpu.ldRR_('X', 'y'))
+
+	resetAll()
+	cpu.IX = 0x1234
+	cpu.setAcc(0x56)
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x5634, "A": 0x56}, cpu.ldRR_('X', 'A'))
+
+	resetAll()
+	cpu.BC = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1256, "BC": 0x5678}, cpu.ldRR_('x', 'B'))
+
+	resetAll()
+	cpu.BC = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1278, "BC": 0x5678}, cpu.ldRR_('x', 'C'))
+
+	resetAll()
+	cpu.DE = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1256, "DE": 0x5678}, cpu.ldRR_('x', 'D'))
+
+	resetAll()
+	cpu.DE = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1278, "DE": 0x5678}, cpu.ldRR_('x', 'E'))
+
+	resetAll()
+	cpu.HL = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1256, "HL": 0x5678}, cpu.ldRR_('x', 'H'))
+
+	resetAll()
+	cpu.HL = 0x5678
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1278, "HL": 0x5678}, cpu.ldRR_('x', 'L'))
+
+	resetAll()
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1212}, cpu.ldRR_('x', 'X'))
+
+	resetAll()
+	cpu.IX = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1234}, cpu.ldRR_('x', 'x'))
+
+	resetAll()
+	cpu.IX = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1256, "IY": 0x5678}, cpu.ldRR_('x', 'Y'))
+
+	resetAll()
+	cpu.IX = 0x1234
+	cpu.IY = 0x5678
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1278, "IY": 0x5678}, cpu.ldRR_('x', 'y'))
+
+	resetAll()
+	cpu.IX = 0x1234
+	cpu.setAcc(0x56)
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IX": 0x1256, "A": 0x56}, cpu.ldRR_('x', 'A'))
+
+	resetAll()
+	cpu.BC = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x5634, "BC": 0x5678}, cpu.ldRR_('Y', 'B'))
+
+	resetAll()
+	cpu.BC = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x7834, "BC": 0x5678}, cpu.ldRR_('Y', 'C'))
+
+	resetAll()
+	cpu.DE = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x5634, "DE": 0x5678}, cpu.ldRR_('Y', 'D'))
+
+	resetAll()
+	cpu.DE = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x7834, "DE": 0x5678}, cpu.ldRR_('Y', 'E'))
+
+	resetAll()
+	cpu.HL = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x5634, "HL": 0x5678}, cpu.ldRR_('Y', 'H'))
+
+	resetAll()
+	cpu.HL = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x7834, "HL": 0x5678}, cpu.ldRR_('Y', 'L'))
+
+	resetAll()
+	cpu.IX = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x5634, "IX": 0x5678}, cpu.ldRR_('Y', 'X'))
+
+	resetAll()
+	cpu.IX = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x7834, "IX": 0x5678}, cpu.ldRR_('Y', 'x'))
+
+	resetAll()
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1234}, cpu.ldRR_('Y', 'Y'))
+
+	resetAll()
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x3434}, cpu.ldRR_('Y', 'y'))
+
+	resetAll()
+	cpu.IY = 0x1234
+	cpu.setAcc(0x56)
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x5634, "A": 0x56}, cpu.ldRR_('Y', 'A'))
+
+	resetAll()
+	cpu.BC = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1256, "BC": 0x5678}, cpu.ldRR_('y', 'B'))
+
+	resetAll()
+	cpu.BC = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1278, "BC": 0x5678}, cpu.ldRR_('y', 'C'))
+
+	resetAll()
+	cpu.DE = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1256, "DE": 0x5678}, cpu.ldRR_('y', 'D'))
+
+	resetAll()
+	cpu.DE = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1278, "DE": 0x5678}, cpu.ldRR_('y', 'E'))
+
+	resetAll()
+	cpu.HL = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1256, "HL": 0x5678}, cpu.ldRR_('y', 'H'))
+
+	resetAll()
+	cpu.HL = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1278, "HL": 0x5678}, cpu.ldRR_('y', 'L'))
+
+	resetAll()
+	cpu.IX = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1256, "IX": 0x5678}, cpu.ldRR_('y', 'X'))
+
+	resetAll()
+	cpu.IX = 0x5678
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1278, "IX": 0x5678}, cpu.ldRR_('y', 'x'))
+
+	resetAll()
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1212}, cpu.ldRR_('y', 'Y'))
+
+	resetAll()
+	cpu.IY = 0x1234
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1234}, cpu.ldRR_('y', 'y'))
+
+	resetAll()
+	cpu.IY = 0x1234
+	cpu.setAcc(0x56)
+	checkCpu(t, 4, map[string]uint16{"PC": 2, "IY": 0x1256, "A": 0x56}, cpu.ldRR_('y', 'A'))
 }
 
 func TestLdR_Hl_(t *testing.T) {

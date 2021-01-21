@@ -328,14 +328,14 @@ func (c *CPU) initializeMnemonics() {
 			c.jrZN, c.addSsRr(reg, reg), c.ldSs_Nn_(reg), c.decSs(reg), c.incR(lowReg), c.decR(lowReg), c.ldRN(lowReg), c.cpl,
 			c.jrNcN, c.ldSpNn, c.ld_Nn_A, c.incSp, c.inc_Ss_(reg), c.dec_Ss_(reg), c.ld_Ss_N(reg), c.scf,
 			c.jrCN, c.addSsRr(reg, "SP"), c.ldA_Nn_, c.decSp, c.incR('A'), c.decA, c.ldRN('A'), c.ccf,
-			c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', 'H'), c.ldRR_('B', 'L'), c.ldR_Ss_('B', reg), c.ldRR_('B', 'A'),
-			c.ldRR_('C', 'B'), c.ldRR_('C', 'C'), c.ldRR_('C', 'D'), c.ldRR_('C', 'E'), c.ldRR_('C', 'H'), c.ldRR_('C', 'L'), c.ldR_Ss_('C', reg), c.ldRR_('C', 'A'),
-			c.ldRR_('D', 'B'), c.ldRR_('D', 'C'), c.ldRR_('D', 'D'), c.ldRR_('D', 'E'), c.ldRR_('D', 'H'), c.ldRR_('D', 'L'), c.ldR_Ss_('D', reg), c.ldRR_('D', 'A'),
-			c.ldRR_('E', 'B'), c.ldRR_('E', 'C'), c.ldRR_('E', 'D'), c.ldRR_('E', 'E'), c.ldRR_('E', 'H'), c.ldRR_('E', 'L'), c.ldR_Ss_('E', reg), c.ldRR_('E', 'A'),
-			c.ldRR_('H', 'B'), c.ldRR_('H', 'C'), c.ldRR_('H', 'D'), c.ldRR_('H', 'E'), c.ldRR_('H', 'H'), c.ldRR_('H', 'L'), c.ldR_Ss_('H', reg), c.ldRR_('H', 'A'),
-			c.ldRR_('L', 'B'), c.ldRR_('L', 'C'), c.ldRR_('L', 'D'), c.ldRR_('L', 'E'), c.ldRR_('L', 'H'), c.ldRR_('L', 'L'), c.ldR_Ss_('L', reg), c.ldRR_('L', 'A'),
+			c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', highReg), c.ldRR_('B', lowReg), c.ldR_Ss_('B', reg), c.ldRR_('B', 'A'),
+			c.ldRR_('C', 'B'), c.ldRR_('C', 'C'), c.ldRR_('C', 'D'), c.ldRR_('C', 'E'), c.ldRR_('C', highReg), c.ldRR_('C', lowReg), c.ldR_Ss_('C', reg), c.ldRR_('C', 'A'),
+			c.ldRR_('D', 'B'), c.ldRR_('D', 'C'), c.ldRR_('D', 'D'), c.ldRR_('D', 'E'), c.ldRR_('D', highReg), c.ldRR_('D', lowReg), c.ldR_Ss_('D', reg), c.ldRR_('D', 'A'),
+			c.ldRR_('E', 'B'), c.ldRR_('E', 'C'), c.ldRR_('E', 'D'), c.ldRR_('E', 'E'), c.ldRR_('E', highReg), c.ldRR_('E', lowReg), c.ldR_Ss_('E', reg), c.ldRR_('E', 'A'),
+			c.ldRR_(highReg, 'B'), c.ldRR_(highReg, 'C'), c.ldRR_(highReg, 'D'), c.ldRR_(highReg, 'E'), c.ldRR_(highReg, highReg), c.ldRR_(highReg, lowReg), c.ldR_Ss_('H', reg), c.ldRR_(highReg, 'A'),
+			c.ldRR_(lowReg, 'B'), c.ldRR_(lowReg, 'C'), c.ldRR_(lowReg, 'D'), c.ldRR_(lowReg, 'E'), c.ldRR_(lowReg, highReg), c.ldRR_(lowReg, lowReg), c.ldR_Ss_('L', reg), c.ldRR_(lowReg, 'A'),
 			c.ld_Ss_R(reg, 'B'), c.ld_Ss_R(reg, 'C'), c.ld_Ss_R(reg, 'D'), c.ld_Ss_R(reg, 'E'), c.ld_Ss_R(reg, 'H'), c.ld_Ss_R(reg, 'L'), c.halt, c.ld_Ss_R(reg, 'A'),
-			c.ldRR_('A', 'B'), c.ldRR_('A', 'C'), c.ldRR_('A', 'D'), c.ldRR_('A', 'E'), c.ldRR_('A', 'H'), c.ldRR_('A', 'L'), c.ldR_Ss_('A', reg), c.ldRR_('A', 'A'),
+			c.ldRR_('A', 'B'), c.ldRR_('A', 'C'), c.ldRR_('A', 'D'), c.ldRR_('A', 'E'), c.ldRR_('A', highReg), c.ldRR_('A', lowReg), c.ldR_Ss_('A', reg), c.ldRR_('A', 'A'),
 			c.addAR('B'), c.addAR('C'), c.addAR('D'), c.addAR('E'), c.addAR(highReg), c.addAR(lowReg), c.addA_Ss_(reg), c.addAR('A'),
 			c.adcAR('B'), c.adcAR('C'), c.adcAR('D'), c.adcAR('E'), c.adcAR(highReg), c.adcAR(lowReg), c.adcA_Ss_(reg), c.adcAR('A'),
 			c.subR('B'), c.subR('C'), c.subR('D'), c.subR('E'), c.subR(highReg), c.subR(lowReg), c.sub_Ss_(reg), c.subR('A'),
@@ -1666,6 +1666,10 @@ func (c *CPU) ldRR_(r, r_ byte) func() uint8 {
 			lhigh, lvalue = r == 'D', &c.DE
 		case 'H', 'L':
 			lhigh, lvalue = r == 'H', &c.HL
+		case 'X', 'x':
+			lhigh, lvalue = r == 'X', &c.IX
+		case 'Y', 'y':
+			lhigh, lvalue = r == 'Y', &c.IY
 		default:
 			panic("Invalid `r` part of the mnemonic")
 		}
@@ -1679,6 +1683,9 @@ func (c *CPU) ldRR_(r, r_ byte) func() uint8 {
 		}
 
 		c.PC++
+		if r == 'X' || r == 'x' || r == 'Y' || r == 'y' || r_ == 'X' || r_ == 'x' || r_ == 'Y' || r_ == 'y' {
+			c.PC++
+		}
 
 		return 4
 	}
