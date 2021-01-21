@@ -320,14 +320,14 @@ func (c *CPU) initializeMnemonics() {
 		}
 
 		baseList := [256]func() uint8{
-			c.nop, c.ldBcNn, c.ld_Bc_A, c.incBc, c.incB, c.decB, c.ldBN, c.rlcR(' '),
-			c.exAfAf_, c.addSsRr(reg, "BC"), c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCN, c.rrcR(' '),
-			c.djnzN, c.ldDeNn, c.ld_De_A, c.incDe, c.incD, c.decD, c.ldDN, c.rlR(' '),
-			c.jrN, c.addSsRr(reg, "DE"), c.ldA_De_, c.decDe, c.incE, c.decE, c.ldEN, c.rrR(' '),
-			c.jrNzN, c.ldSsNn(reg), c.ld_Nn_Ss(reg), c.incSs(reg), c.incH, c.decH, c.ldHN, c.daa,
-			c.jrZN, c.addSsRr(reg, reg), c.ldSs_Nn_(reg), c.decSs(reg), c.incL, c.decL, c.ldLN, c.cpl,
+			c.nop, c.ldBcNn, c.ld_Bc_A, c.incBc, c.incR('B'), c.decR('B'), c.ldBN, c.rlcR(' '),
+			c.exAfAf_, c.addSsRr(reg, "BC"), c.ldA_Bc_, c.decBc, c.incR('C'), c.decR('C'), c.ldCN, c.rrcR(' '),
+			c.djnzN, c.ldDeNn, c.ld_De_A, c.incDe, c.incR('D'), c.decR('D'), c.ldDN, c.rlR(' '),
+			c.jrN, c.addSsRr(reg, "DE"), c.ldA_De_, c.decDe, c.incR('E'), c.decR('E'), c.ldEN, c.rrR(' '),
+			c.jrNzN, c.ldSsNn(reg), c.ld_Nn_Ss(reg), c.incSs(reg), c.incR(highReg), c.decR(highReg), c.ldHN, c.daa,
+			c.jrZN, c.addSsRr(reg, reg), c.ldSs_Nn_(reg), c.decSs(reg), c.incR(lowReg), c.decR(lowReg), c.ldLN, c.cpl,
 			c.jrNcN, c.ldSpNn, c.ld_Nn_A, c.incSp, c.inc_Ss_(reg), c.dec_Ss_(reg), c.ld_Ss_N(reg), c.scf,
-			c.jrCN, c.addSsRr(reg, "SP"), c.ldA_Nn_, c.decSp, c.incA, c.decA, c.ldAN, c.ccf,
+			c.jrCN, c.addSsRr(reg, "SP"), c.ldA_Nn_, c.decSp, c.incR('A'), c.decA, c.ldAN, c.ccf,
 			c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', 'H'), c.ldRR_('B', 'L'), c.ldR_Ss_('B', reg), c.ldRR_('B', 'A'),
 			c.ldRR_('C', 'B'), c.ldRR_('C', 'C'), c.ldRR_('C', 'D'), c.ldRR_('C', 'E'), c.ldRR_('C', 'H'), c.ldRR_('C', 'L'), c.ldR_Ss_('C', reg), c.ldRR_('C', 'A'),
 			c.ldRR_('D', 'B'), c.ldRR_('D', 'C'), c.ldRR_('D', 'D'), c.ldRR_('D', 'E'), c.ldRR_('D', 'H'), c.ldRR_('D', 'L'), c.ldR_Ss_('D', reg), c.ldRR_('D', 'A'),
@@ -639,43 +639,6 @@ func (c *CPU) extractRegisterPair(rr string) (rvalue uint16) {
 	return
 }
 
-func (c *CPU) increaseRegister(name rune) uint8 {
-	var register uint8
-
-	switch name {
-	case 'A':
-		c.AF += 256
-		register = c.getAcc()
-	case 'B':
-		c.BC += 256
-		register = uint8(c.BC >> 8)
-	case 'C':
-		register = uint8(c.BC) + 1
-		c.BC = (c.BC & 0xff00) | uint16(register)
-	case 'D':
-		c.DE += 256
-		register = uint8(c.DE >> 8)
-	case 'E':
-		register = uint8(c.DE) + 1
-		c.DE = (c.DE & 0xff00) | uint16(register)
-	case 'H':
-		c.HL += 256
-		register = uint8(c.HL >> 8)
-	case 'L':
-		register = uint8(c.HL) + 1
-		c.HL = (c.HL & 0xff00) | uint16(register)
-	}
-
-	c.setN(false)
-	c.setPV(register == 0x80)
-	c.setH(register&0x0f == 0)
-	c.setZ(register == 0)
-	c.setS(register > 127)
-	c.PC++
-
-	return 4
-}
-
 func (c *CPU) decreaseRegister(name rune) uint8 {
 	var register uint8
 
@@ -809,12 +772,96 @@ func (c *CPU) incBc() uint8 {
 	return 6
 }
 
-func (c *CPU) incB() uint8 {
-	return c.increaseRegister('B')
+func (c *CPU) incR(r byte) func() uint8 {
+	return func() uint8 {
+		var lhigh bool
+		var lvalue *uint16
+
+		switch r {
+		case 'A':
+			lhigh, lvalue = true, &c.AF
+			c.PC++
+		case 'B', 'C':
+			lhigh, lvalue = r == 'B', &c.BC
+			c.PC++
+		case 'D', 'E':
+			lhigh, lvalue = r == 'D', &c.DE
+			c.PC++
+		case 'H', 'L':
+			lhigh, lvalue = r == 'H', &c.HL
+			c.PC++
+		case 'X', 'x':
+			lhigh, lvalue = r == 'X', &c.IX
+			c.PC += 2
+		case 'Y', 'y':
+			lhigh, lvalue = r == 'Y', &c.IY
+			c.PC += 2
+		default:
+			panic("Invalid `r` part of the mnemonic")
+		}
+
+		rvalue := c.extractRegister(r) + 1
+
+		if lhigh {
+			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+		} else {
+			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+		}
+
+		c.setN(false)
+		c.setPV(rvalue == 0x80)
+		c.setH(rvalue&0x0f == 0)
+		c.setZ(rvalue == 0)
+		c.setS(rvalue > 127)
+
+		return 4
+	}
 }
 
-func (c *CPU) decB() uint8 {
-	return c.decreaseRegister('B')
+func (c *CPU) decR(r byte) func() uint8 {
+	return func() uint8 {
+		var lhigh bool
+		var lvalue *uint16
+
+		switch r {
+		case 'A':
+			lhigh, lvalue = true, &c.AF
+			c.PC++
+		case 'B', 'C':
+			lhigh, lvalue = r == 'B', &c.BC
+			c.PC++
+		case 'D', 'E':
+			lhigh, lvalue = r == 'D', &c.DE
+			c.PC++
+		case 'H', 'L':
+			lhigh, lvalue = r == 'H', &c.HL
+			c.PC++
+		case 'X', 'x':
+			lhigh, lvalue = r == 'X', &c.IX
+			c.PC += 2
+		case 'Y', 'y':
+			lhigh, lvalue = r == 'Y', &c.IY
+			c.PC += 2
+		default:
+			panic("Invalid `r` part of the mnemonic")
+		}
+
+		rvalue := c.extractRegister(r) - 1
+
+		if lhigh {
+			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+		} else {
+			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+		}
+
+		c.setN(true)
+		c.setPV(rvalue == 0x7f)
+		c.setH(rvalue&0x0f == 0x0f)
+		c.setZ(rvalue == 0)
+		c.setS(rvalue > 127)
+
+		return 4
+	}
 }
 
 func (c *CPU) ldBN() uint8 {
@@ -926,14 +973,6 @@ func (c *CPU) decBc() uint8 {
 	return 6
 }
 
-func (c *CPU) incC() uint8 {
-	return c.increaseRegister('C')
-}
-
-func (c *CPU) decC() uint8 {
-	return c.decreaseRegister('C')
-}
-
 func (c *CPU) ldCN() uint8 {
 	c.BC = (c.BC & 0xff00) | uint16(c.dma.GetMemory(c.PC+1))
 	c.PC += 2
@@ -969,14 +1008,6 @@ func (c *CPU) incDe() uint8 {
 	c.DE++
 	c.PC++
 	return 6
-}
-
-func (c *CPU) incD() uint8 {
-	return c.increaseRegister('D')
-}
-
-func (c *CPU) decD() uint8 {
-	return c.decreaseRegister('D')
 }
 
 func (c *CPU) ldDN() uint8 {
@@ -1115,14 +1146,6 @@ func (c *CPU) decDe() uint8 {
 	c.PC++
 
 	return 6
-}
-
-func (c *CPU) incE() uint8 {
-	return c.increaseRegister('E')
-}
-
-func (c *CPU) decE() uint8 {
-	return c.decreaseRegister('E')
 }
 
 func (c *CPU) ldEN() uint8 {
@@ -1321,14 +1344,6 @@ func (c *CPU) incSs(ss string) func() uint8 {
 	panic("Invalid `ss` type")
 }
 
-func (c *CPU) incH() uint8 {
-	return c.increaseRegister('H')
-}
-
-func (c *CPU) decH() uint8 {
-	return c.decreaseRegister('H')
-}
-
 func (c *CPU) ldHN() uint8 {
 	c.HL = (c.HL & 0x00ff) | (uint16(c.dma.GetMemory(c.PC+1)) << 8)
 	c.PC += 2
@@ -1453,14 +1468,6 @@ func (c *CPU) decSs(ss string) func() uint8 {
 	}
 
 	panic("Invalid `ss` type")
-}
-
-func (c *CPU) incL() uint8 {
-	return c.increaseRegister('L')
-}
-
-func (c *CPU) decL() uint8 {
-	return c.decreaseRegister('L')
 }
 
 func (c *CPU) ldLN() uint8 {
@@ -1624,10 +1631,6 @@ func (c *CPU) decSp() uint8 {
 	c.PC++
 
 	return 6
-}
-
-func (c *CPU) incA() uint8 {
-	return c.increaseRegister('A')
 }
 
 func (c *CPU) decA() uint8 {
