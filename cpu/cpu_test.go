@@ -1611,7 +1611,9 @@ func TestHalt(t *testing.T) {
 }
 
 func TestAndR(t *testing.T) {
-	for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A'} {
+	for _, register := range [11]byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', 'X', 'x', 'Y', 'y'} {
+		adjustPC := uint16(0)
+
 		resetAll()
 		if register == 'A' {
 			cpu.setAcc(0x00)
@@ -1619,11 +1621,18 @@ func TestAndR(t *testing.T) {
 			cpu.setAcc(0x56)
 
 		}
+
+		if register == 'X' || register == 'x' || register == 'Y' || register == 'y' {
+			adjustPC = 1
+		}
+
 		cpu.BC = 0xa9a9
 		cpu.DE = 0xa9a9
 		cpu.HL = 0xa9a9
+		cpu.IX = 0xa9a9
+		cpu.IY = 0xa9a9
 
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x00, "BC": 0xa9a9, "DE": 0xa9a9, "HL": 0xa9a9, "Flags": 0b01010100}, cpu.andR(register))
+		checkCpu(t, 4, map[string]uint16{"PC": 1 + adjustPC, "A": 0x00, "BC": 0xa9a9, "DE": 0xa9a9, "HL": 0xa9a9, "IX": 0xa9a9, "IY": 0xa9a9, "Flags": 0b01010100}, cpu.andR(register))
 
 		resetAll()
 		if register == 'A' {
@@ -1631,11 +1640,17 @@ func TestAndR(t *testing.T) {
 		} else {
 			cpu.setAcc(0xdf)
 		}
+
+		if register == 'X' || register == 'x' || register == 'Y' || register == 'y' {
+			adjustPC = 1
+		}
+
 		cpu.BC = 0xb7b7
 		cpu.DE = 0xb7b7
 		cpu.HL = 0xb7b7
-
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "BC": 0xb7b7, "DE": 0xb7b7, "HL": 0xb7b7, "Flags": 0b10010000}, cpu.andR(register))
+		cpu.IX = 0xb7b7
+		cpu.IY = 0xb7b7
+		checkCpu(t, 4, map[string]uint16{"PC": 1 + adjustPC, "A": 0x97, "BC": 0xb7b7, "DE": 0xb7b7, "HL": 0xb7b7, "IX": 0xb7b7, "IY": 0xb7b7, "Flags": 0b10010000}, cpu.andR(register))
 	}
 }
 
@@ -1692,7 +1707,9 @@ func TestAnd_Iy_(t *testing.T) {
 }
 
 func TestXorR(t *testing.T) {
-	for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A'} {
+	for _, register := range [11]byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', 'X', 'x', 'Y', 'y'} {
+		adjustPC := uint16(0)
+
 		resetAll()
 		if register == 'A' {
 			cpu.setAcc(0x00)
@@ -1700,14 +1717,25 @@ func TestXorR(t *testing.T) {
 			cpu.setAcc(0x56)
 
 		}
+
+		if register == 'X' || register == 'x' || register == 'Y' || register == 'y' {
+			adjustPC = 1
+		}
+
 		cpu.BC = 0x5656
 		cpu.DE = 0x5656
 		cpu.HL = 0x5656
+		cpu.IX = 0x5656
+		cpu.IY = 0x5656
 
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x00, "BC": 0x5656, "DE": 0x5656, "HL": 0x5656, "Flags": 0b01000100}, cpu.xorR(register))
+		checkCpu(t, 4, map[string]uint16{"PC": 1 + adjustPC, "A": 0x00, "BC": 0x5656, "DE": 0x5656, "HL": 0x5656, "IX": 0x5656, "IY": 0x5656, "Flags": 0b01000100}, cpu.xorR(register))
 
 		if register == 'A' {
 			continue
+		}
+
+		if register == 'X' || register == 'x' || register == 'Y' || register == 'y' {
+			adjustPC = 1
 		}
 
 		resetAll()
@@ -1715,8 +1743,10 @@ func TestXorR(t *testing.T) {
 		cpu.BC = 0xb7b7
 		cpu.DE = 0xb7b7
 		cpu.HL = 0xb7b7
+		cpu.IX = 0xb7b7
+		cpu.IY = 0xb7b7
 
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "BC": 0xb7b7, "DE": 0xb7b7, "HL": 0xb7b7, "Flags": 0b10000000}, cpu.xorR(register))
+		checkCpu(t, 4, map[string]uint16{"PC": 1 + adjustPC, "A": 0x97, "BC": 0xb7b7, "DE": 0xb7b7, "HL": 0xb7b7, "IX": 0xb7b7, "IY": 0xb7b7, "Flags": 0b10000000}, cpu.xorR(register))
 	}
 }
 
@@ -1773,14 +1803,22 @@ func TestXor_Iy_(t *testing.T) {
 }
 
 func TestOrR(t *testing.T) {
-	for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A'} {
+	for _, register := range [11]byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', 'X', 'x', 'Y', 'y'} {
+		adjustPC := uint16(0)
+
+		if register == 'X' || register == 'x' || register == 'Y' || register == 'y' {
+			adjustPC = 1
+		}
+
 		resetAll()
 		cpu.setAcc(0x00)
 		cpu.BC = 0x0000
 		cpu.DE = 0x0000
 		cpu.HL = 0x0000
+		cpu.IX = 0x0000
+		cpu.IY = 0x0000
 
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x00, "BC": 0x0000, "DE": 0x0000, "HL": 0x0000, "Flags": 0b01000100}, cpu.orR(register))
+		checkCpu(t, 4, map[string]uint16{"PC": 1 + adjustPC, "A": 0x00, "BC": 0x0000, "DE": 0x0000, "HL": 0x0000, "IX": 0x0000, "IY": 0x0000, "Flags": 0b01000100}, cpu.orR(register))
 
 		resetAll()
 		if register == 'A' {
@@ -1789,11 +1827,17 @@ func TestOrR(t *testing.T) {
 			cpu.setAcc(0x84)
 		}
 
+		if register == 'X' || register == 'x' || register == 'Y' || register == 'y' {
+			adjustPC = 1
+		}
+
 		cpu.BC = 0x1313
 		cpu.DE = 0x1313
 		cpu.HL = 0x1313
+		cpu.IX = 0x1313
+		cpu.IY = 0x1313
 
-		checkCpu(t, 4, map[string]uint16{"PC": 1, "A": 0x97, "BC": 0x1313, "DE": 0x1313, "HL": 0x1313, "Flags": 0b10000000}, cpu.orR(register))
+		checkCpu(t, 4, map[string]uint16{"PC": 1 + adjustPC, "A": 0x97, "BC": 0x1313, "DE": 0x1313, "HL": 0x1313, "IX": 0x1313, "IY": 0x1313, "Flags": 0b10000000}, cpu.orR(register))
 	}
 }
 

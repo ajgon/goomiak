@@ -309,6 +309,16 @@ type CPU struct {
 
 func (c *CPU) initializeMnemonics() {
 	for _, reg := range [3]string{"HL", "IX", "IY"} {
+		var highReg, lowReg byte
+		switch reg {
+		case "HL":
+			highReg, lowReg = 'H', 'L'
+		case "IX":
+			highReg, lowReg = 'X', 'x'
+		case "IY":
+			highReg, lowReg = 'Y', 'y'
+		}
+
 		baseList := [256]func() uint8{
 			c.nop, c.ldBcNn, c.ld_Bc_A, c.incBc, c.incB, c.decB, c.ldBN, c.rlcR(' '),
 			c.exAfAf_, c.addSsRr(reg, "BC"), c.ldA_Bc_, c.decBc, c.incC, c.decC, c.ldCN, c.rrcR(' '),
@@ -326,14 +336,14 @@ func (c *CPU) initializeMnemonics() {
 			c.ldRR_('L', 'B'), c.ldRR_('L', 'C'), c.ldRR_('L', 'D'), c.ldRR_('L', 'E'), c.ldRR_('L', 'H'), c.ldRR_('L', 'L'), c.ldR_Ss_('L', reg), c.ldRR_('L', 'A'),
 			c.ld_Ss_R(reg, 'B'), c.ld_Ss_R(reg, 'C'), c.ld_Ss_R(reg, 'D'), c.ld_Ss_R(reg, 'E'), c.ld_Ss_R(reg, 'H'), c.ld_Ss_R(reg, 'L'), c.halt, c.ld_Ss_R(reg, 'A'),
 			c.ldRR_('A', 'B'), c.ldRR_('A', 'C'), c.ldRR_('A', 'D'), c.ldRR_('A', 'E'), c.ldRR_('A', 'H'), c.ldRR_('A', 'L'), c.ldR_Ss_('A', reg), c.ldRR_('A', 'A'),
-			c.addAR('B'), c.addAR('C'), c.addAR('D'), c.addAR('E'), c.addAR('H'), c.addAR('L'), c.addA_Ss_(reg), c.addAR('A'),
-			c.adcAR('B'), c.adcAR('C'), c.adcAR('D'), c.adcAR('E'), c.adcAR('H'), c.adcAR('L'), c.adcA_Ss_(reg), c.adcAR('A'),
-			c.subR('B'), c.subR('C'), c.subR('D'), c.subR('E'), c.subR('H'), c.subR('L'), c.sub_Ss_(reg), c.subR('A'),
-			c.sbcAR('B'), c.sbcAR('C'), c.sbcAR('D'), c.sbcAR('E'), c.sbcAR('H'), c.sbcAR('L'), c.sbcA_Ss_(reg), c.sbcAR('A'),
-			c.andR('B'), c.andR('C'), c.andR('D'), c.andR('E'), c.andR('H'), c.andR('L'), c.and_Ss_(reg), c.andR('A'),
-			c.xorR('B'), c.xorR('C'), c.xorR('D'), c.xorR('E'), c.xorR('H'), c.xorR('L'), c.xor_Ss_(reg), c.xorR('A'),
-			c.orR('B'), c.orR('C'), c.orR('D'), c.orR('E'), c.orR('H'), c.orR('L'), c.or_Ss_(reg), c.orR('A'),
-			c.cpR('B'), c.cpR('C'), c.cpR('D'), c.cpR('E'), c.cpR('H'), c.cpR('L'), c.cp_Ss_(reg), c.cpR('A'),
+			c.addAR('B'), c.addAR('C'), c.addAR('D'), c.addAR('E'), c.addAR(highReg), c.addAR(lowReg), c.addA_Ss_(reg), c.addAR('A'),
+			c.adcAR('B'), c.adcAR('C'), c.adcAR('D'), c.adcAR('E'), c.adcAR(highReg), c.adcAR(lowReg), c.adcA_Ss_(reg), c.adcAR('A'),
+			c.subR('B'), c.subR('C'), c.subR('D'), c.subR('E'), c.subR(highReg), c.subR(lowReg), c.sub_Ss_(reg), c.subR('A'),
+			c.sbcAR('B'), c.sbcAR('C'), c.sbcAR('D'), c.sbcAR('E'), c.sbcAR(highReg), c.sbcAR(lowReg), c.sbcA_Ss_(reg), c.sbcAR('A'),
+			c.andR('B'), c.andR('C'), c.andR('D'), c.andR('E'), c.andR(highReg), c.andR(lowReg), c.and_Ss_(reg), c.andR('A'),
+			c.xorR('B'), c.xorR('C'), c.xorR('D'), c.xorR('E'), c.xorR(highReg), c.xorR(lowReg), c.xor_Ss_(reg), c.xorR('A'),
+			c.orR('B'), c.orR('C'), c.orR('D'), c.orR('E'), c.orR(highReg), c.orR(lowReg), c.or_Ss_(reg), c.orR('A'),
+			c.cpR('B'), c.cpR('C'), c.cpR('D'), c.cpR('E'), c.cpR(highReg), c.cpR(lowReg), c.cp_Ss_(reg), c.cpR('A'),
 			c.retNz, c.popBc, c.jpNzNn, c.jpNn, c.callNzNn, c.pushBc, c.addAN, c.rst(0x00),
 			c.retZ, c.ret, c.jpZNn, c.nop, c.callZNn, c.callNn, c.adcAN, c.rst(0x08),
 			c.retNc, c.popDe, c.jpNcNn, c.out_N_A, c.callNcNn, c.pushDe, c.subN, c.rst(0x10),
@@ -593,6 +603,14 @@ func (c *CPU) extractRegister(r byte) uint8 {
 		return uint8(c.HL >> 8)
 	case 'L':
 		return uint8(c.HL)
+	case 'X':
+		return uint8(c.IX >> 8)
+	case 'x':
+		return uint8(c.IX)
+	case 'Y':
+		return uint8(c.IY >> 8)
+	case 'y':
+		return uint8(c.IY)
 	}
 
 	panic("Invalid `r` part of the mnemonic")
@@ -1759,6 +1777,9 @@ func (c *CPU) addAR(r byte) func() uint8 {
 		c.setC(false)
 		c.adcValueToAcc(c.extractRegister(r))
 
+		if r == 'X' || r == 'x' || r == 'Y' || r == 'y' {
+			c.PC++
+		}
 		c.PC++
 
 		return 4
@@ -1786,6 +1807,10 @@ func (c *CPU) addA_Ss_(ss string) func() uint8 {
 func (c *CPU) adcAR(r byte) func() uint8 {
 	return func() uint8 {
 		c.adcValueToAcc(c.extractRegister(r))
+
+		if r == 'X' || r == 'x' || r == 'Y' || r == 'y' {
+			c.PC++
+		}
 		c.PC++
 
 		return 4
@@ -1813,7 +1838,11 @@ func (c *CPU) subR(r byte) func() uint8 {
 		c.setC(true)
 		c.adcValueToAcc(c.extractRegister(r) ^ 0xff)
 
+		if r == 'X' || r == 'x' || r == 'Y' || r == 'y' {
+			c.PC++
+		}
 		c.PC++
+
 		c.setN(true)
 		c.setC(!c.getC())
 		c.setH(!c.getH())
@@ -1855,7 +1884,11 @@ func (c *CPU) sbcAR(r byte) func() uint8 {
 		c.setC(!c.getC())
 		c.adcValueToAcc(c.extractRegister(r) ^ 0xff)
 
+		if r == 'X' || r == 'x' || r == 'Y' || r == 'y' {
+			c.PC++
+		}
 		c.PC++
+
 		c.setN(true)
 		c.setC(!c.getC())
 		c.setH(!c.getH())
@@ -1897,7 +1930,11 @@ func (c *CPU) andR(r byte) func() uint8 {
 		var result uint8
 		result = c.getAcc() & c.extractRegister(r)
 
+		if r == 'X' || r == 'x' || r == 'Y' || r == 'y' {
+			c.PC++
+		}
 		c.PC++
+
 		c.setAcc(result)
 		c.setS(result > 127)
 		c.setZ(result == 0)
@@ -1949,7 +1986,11 @@ func (c *CPU) xorR(r byte) func() uint8 {
 		var result uint8
 		result = c.getAcc() ^ c.extractRegister(r)
 
+		if r == 'X' || r == 'x' || r == 'Y' || r == 'y' {
+			c.PC++
+		}
 		c.PC++
+
 		c.setAcc(result)
 		c.setS(result > 127)
 		c.setZ(result == 0)
@@ -2001,7 +2042,11 @@ func (c *CPU) orR(r byte) func() uint8 {
 		var result uint8
 		result = c.getAcc() | c.extractRegister(r)
 
+		if r == 'X' || r == 'x' || r == 'Y' || r == 'y' {
+			c.PC++
+		}
 		c.PC++
+
 		c.setAcc(result)
 		c.setS(result > 127)
 		c.setZ(result == 0)
@@ -2054,7 +2099,11 @@ func (c *CPU) cpR(r byte) func() uint8 {
 		c.setC(true)
 		c.adcValueToAcc(c.extractRegister(r) ^ 0xff)
 
+		if r == 'X' || r == 'x' || r == 'Y' || r == 'y' {
+			c.PC++
+		}
 		c.PC++
+
 		c.setAcc(acc)
 		c.setN(true)
 		c.setC(!c.getC())

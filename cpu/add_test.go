@@ -52,11 +52,17 @@ func TestAddRegister(t *testing.T) {
 	var cpu = CPUNew(dmaX)
 
 	for _, row := range addTruthTable {
-		for _, register := range [7]byte{'B', 'C', 'D', 'E', 'H', 'L', 'A'} {
+		for _, register := range [11]byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', 'X', 'x', 'Y', 'y'} {
+			adjustPC := uint16(0)
+
 			if register == 'A' {
 				if row[0] != row[1] {
 					continue
 				}
+			}
+
+			if register == 'X' || register == 'x' || register == 'Y' || register == 'y' {
+				adjustPC = 1
 			}
 
 			cpu.PC = 0
@@ -64,6 +70,8 @@ func TestAddRegister(t *testing.T) {
 			cpu.BC = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.DE = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.HL = (uint16(row[1]) << 8) | uint16(row[1])
+			cpu.IX = (uint16(row[1]) << 8) | uint16(row[1])
+			cpu.IY = (uint16(row[1]) << 8) | uint16(row[1])
 			tstates := cpu.addAR(register)()
 
 			if cpu.getAcc() != row[2] || cpu.getC() != (row[3] == 1) || cpu.getN() != (row[4] == 1) || cpu.getPV() != (row[5] == 1) || cpu.getH() != (row[6] == 1) || cpu.getZ() != (row[7] == 1) || cpu.getS() != (row[8] == 1) {
@@ -74,8 +82,8 @@ func TestAddRegister(t *testing.T) {
 				)
 			}
 
-			if cpu.PC != 1 || tstates != 4 {
-				t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 1, 4)
+			if cpu.PC != 1+adjustPC || tstates != 4 {
+				t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 1+adjustPC, 4)
 			}
 		}
 	}
