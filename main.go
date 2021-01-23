@@ -33,11 +33,11 @@ func main() {
 	//video := video.VideoNew(dma)
 	//loadFileToMemory(dma, 0x0000, "./roms/48.rom")
 	//loadFileToMemory(dma, 0x8000, "./roms/zexdoc.rom")
-	loadFileToMemory(dma, 0x0100, "./roms/zexdoc.cpm")
+	loadFileToMemory(dma, 0x0100, "./roms/zexall.cpm")
 
 	cpu := cpu.CPUNew(dma)
 	cpu.PC = 0x0100
-	cpu.SP = 0xf000
+	cpu.SP = 0x0000
 	dma.SetMemoryByte(0x05, 0xc9) // RET
 
 	for {

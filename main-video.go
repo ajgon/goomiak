@@ -69,12 +69,14 @@ func main() {
 	start := sdl.GetPerformanceCounter()
 
 	texture, _ := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, -1, 256, 192)
+	opCount := 0
 
 	running := true
 	for running {
 		for {
 			//fmt.Printf("T: %d => ", tstates)
 			tstates += uint64(cpu.Step())
+			opCount++
 			if tstates > 70908 {
 				tstates = 0
 				break
@@ -87,9 +89,10 @@ func main() {
 		seconds := float64(end-start) / float64(freq)
 
 		if seconds > 1 {
-			fmt.Printf("%d frames in %.1f seconds = %.1f FPS (%.3f ms/frame)\n", frames, seconds, float64(frames)/seconds, (seconds*1000)/float64(frames))
+			fmt.Printf("%d frames in %.1f seconds = %.1f FPS (%.3f ms/frame, %d opcodes/s)\n", frames, seconds, float64(frames)/seconds, (seconds*1000)/float64(frames), opCount)
 			start = end
 			frames = 0
+			opCount = 0
 		}
 
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
