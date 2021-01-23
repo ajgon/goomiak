@@ -289,6 +289,7 @@ type CPUMnemonics struct {
 type CPU struct {
 	PC     uint16
 	SP     uint16
+	WZ     uint16
 	AF     uint16
 	AF_    uint16
 	BC     uint16
@@ -565,10 +566,12 @@ func (c *CPU) checkInterrupts() (bool, bool) {
 
 func (c *CPU) shiftedAddress(base uint16, shift uint8) uint16 {
 	if shift > 127 {
-		return base + uint16(shift) - 256
+		c.WZ = base + uint16(shift) - 256
+	} else {
+		c.WZ = base + uint16(shift)
 	}
 
-	return base + uint16(shift)
+	return c.WZ
 }
 
 // reads word and maintains endianess
@@ -762,6 +765,7 @@ func (c *CPU) ldBcNn() uint8 {
 
 func (c *CPU) ld_Bc_A() uint8 {
 	c.dma.SetMemoryByte(c.BC, c.getAcc())
+	c.WZ = ((c.BC + 1) & 0x00ff) | ((uint16(c.getAcc()) << 8) & 0xff00)
 	c.PC++
 	return 7
 }
@@ -967,6 +971,7 @@ func (c *CPU) addSsRr(ss, rr string) func() uint8 {
 	switch ss {
 	case "HL":
 		return func() uint8 {
+			c.WZ = c.HL + 1
 			c.addRegisters(&c.HL, c.extractRegisterPair(rr))
 			c.PC++
 
@@ -974,6 +979,7 @@ func (c *CPU) addSsRr(ss, rr string) func() uint8 {
 		}
 	case "IX":
 		return func() uint8 {
+			c.WZ = c.IX + 1
 			c.addRegisters(&c.IX, c.extractRegisterPair(rr))
 			c.PC += 2
 
@@ -981,6 +987,7 @@ func (c *CPU) addSsRr(ss, rr string) func() uint8 {
 		}
 	case "IY":
 		return func() uint8 {
+			c.WZ = c.IY + 1
 			c.addRegisters(&c.IY, c.extractRegisterPair(rr))
 			c.PC += 2
 
@@ -993,6 +1000,7 @@ func (c *CPU) addSsRr(ss, rr string) func() uint8 {
 
 func (c *CPU) ldA_Bc_() uint8 {
 	value := c.dma.GetMemory(c.BC)
+	c.WZ = c.BC + 1
 	c.setAcc(value)
 	c.PC++
 
@@ -1008,12 +1016,14 @@ func (c *CPU) decBc() uint8 {
 
 func (c *CPU) djnzN() uint8 {
 	c.BC -= 256
+
 	if c.BC < 256 {
 		c.PC += 2
 		return 8
 	}
 
-	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.PC = c.WZ
 	return 13
 }
 
@@ -1026,6 +1036,7 @@ func (c *CPU) ldDeNn() uint8 {
 
 func (c *CPU) ld_De_A() uint8 {
 	c.dma.SetMemoryByte(c.DE, c.getAcc())
+	c.WZ = ((c.DE + 1) & 0x00ff) | ((uint16(c.getAcc()) << 8) & 0xff00)
 	c.PC++
 	return 7
 }
@@ -1147,14 +1158,15 @@ func (c *CPU) rlSs(ss string) func() uint8 {
 }
 
 func (c *CPU) jrN() uint8 {
-	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.PC = c.WZ
 
 	return 12
 }
 
 func (c *CPU) ldA_De_() uint8 {
-	value := c.dma.GetMemory(c.DE)
-	c.setAcc(value)
+	c.setAcc(c.dma.GetMemory(c.DE))
+	c.WZ = c.DE + 1
 	c.PC++
 
 	return 7
@@ -1283,7 +1295,8 @@ func (c *CPU) jrNzN() uint8 {
 		return 7
 	}
 
-	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.PC = c.WZ
 	return 12
 }
 
@@ -1318,15 +1331,19 @@ func (c *CPU) ldSsNn(ss string) func() uint8 {
 func (c *CPU) ld_Nn_Ss(ss string) func() uint8 {
 	if ss == "HL" {
 		return func() uint8 {
-			c.writeWord(c.readWord(c.PC+1), c.HL)
+			address := c.readWord(c.PC + 1)
+			c.writeWord(address, c.HL)
 			c.PC += 3
+			c.WZ = address + 1
 			return 5
 		}
 	}
 
 	return func() uint8 {
-		c.writeWord(c.readWord(c.PC+2), c.extractRegisterPair(ss))
+		address := c.readWord(c.PC + 2)
+		c.writeWord(address, c.extractRegisterPair(ss))
 		c.PC += 4
+		c.WZ = address + 1
 		return 20
 	}
 }
@@ -1417,7 +1434,8 @@ func (c *CPU) jrZN() uint8 {
 		return 7
 	}
 
-	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.PC = c.WZ
 	return 12
 }
 
@@ -1425,20 +1443,26 @@ func (c *CPU) ldSs_Nn_(ss string) func() uint8 {
 	switch ss {
 	case "HL":
 		return func() uint8 {
-			c.HL = c.readWord(c.readWord(c.PC + 1))
+			address := c.readWord(c.PC + 1)
+			c.HL = c.readWord(address)
+			c.WZ = address + 1
 			c.PC += 3
 
 			return 16
 		}
 	case "IX":
 		return func() uint8 {
-			c.IX = c.readWord(c.readWord(c.PC + 2))
+			address := c.readWord(c.PC + 2)
+			c.IX = c.readWord(address)
+			c.WZ = address + 1
 			c.PC += 4
 			return 20
 		}
 	case "IY":
 		return func() uint8 {
-			c.IY = c.readWord(c.readWord(c.PC + 2))
+			address := c.readWord(c.PC + 2)
+			c.IY = c.readWord(address)
+			c.WZ = address + 1
 			c.PC += 4
 			return 20
 		}
@@ -1490,7 +1514,8 @@ func (c *CPU) jrNcN() uint8 {
 		return 7
 	}
 
-	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.PC = c.WZ
 	return 12
 }
 
@@ -1502,8 +1527,10 @@ func (c *CPU) ldSpNn() uint8 {
 }
 
 func (c *CPU) ld_Nn_A() uint8 {
-	c.dma.SetMemoryByte(c.readWord(c.PC+1), c.getAcc())
+	address := c.readWord(c.PC + 1)
+	c.dma.SetMemoryByte(address, c.getAcc())
 	c.PC += 3
+	c.WZ = ((address + 1) & 0x00ff) | ((uint16(c.getAcc()) << 8) & 0xff00)
 	return 13
 }
 
@@ -1613,13 +1640,16 @@ func (c *CPU) jrCN() uint8 {
 		return 7
 	}
 
-	c.PC = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(c.dma.GetMemory(c.PC+1))))
+	c.PC = c.WZ
 	return 12
 }
 
 func (c *CPU) ldA_Nn_() uint8 {
-	c.setAcc(c.dma.GetMemory(c.readWord(c.PC + 1)))
+	address := c.readWord(c.PC + 1)
+	c.setAcc(c.dma.GetMemory(address))
 	c.PC += 3
+	c.WZ = address + 1
 
 	return 13
 }
@@ -2172,27 +2202,32 @@ func (c *CPU) popBc() uint8 {
 }
 
 func (c *CPU) jpNzNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	if c.getZ() {
 		c.PC += 3
 		return 10
 	}
 
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 	return 10
 }
 
 func (c *CPU) jpNn() uint8 {
 	c.PC = c.readWord(c.PC + 1)
+	c.WZ = c.PC
 	return 10
 }
 
 func (c *CPU) callNzNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	if c.getZ() {
 		c.PC += 3
 		return 10
 	}
 	c.pushStack(c.PC + 3)
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 
 	return 17
 }
@@ -2221,6 +2256,7 @@ func (c *CPU) rst(p uint8) func() uint8 {
 	return func() uint8 {
 		c.pushStack(c.PC + 1)
 		c.PC = uint16(p)
+		c.WZ = c.PC
 
 		return 11
 	}
@@ -2239,34 +2275,41 @@ func (c *CPU) retZ() uint8 {
 
 func (c *CPU) ret() uint8 {
 	c.PC = c.popStack()
+	c.WZ = c.PC
 
 	return 10
 }
 
 func (c *CPU) jpZNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	if !c.getZ() {
 		c.PC += 3
 		return 10
 	}
 
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 	return 10
 }
 
 func (c *CPU) callZNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	if !c.getZ() {
 		c.PC += 3
 		return 10
 	}
 	c.pushStack(c.PC + 3)
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 
 	return 17
 }
 
 func (c *CPU) callNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	c.pushStack(c.PC + 3)
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 
 	return 17
 }
@@ -2297,29 +2340,35 @@ func (c *CPU) popDe() uint8 {
 }
 
 func (c *CPU) jpNcNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	if c.getC() {
 		c.PC += 3
 		return 10
 	}
 
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 	return 10
 }
 
 func (c *CPU) out_N_A() uint8 {
-	c.setPort(c.dma.GetMemory(c.PC+1), c.getAcc())
+	portAddress := c.dma.GetMemory(c.PC + 1)
+	c.setPort(portAddress, c.getAcc())
+	c.WZ = uint16(portAddress+1) | (uint16(c.getAcc()) << 8)
 
 	c.PC += 2
 	return 11
 }
 
 func (c *CPU) callNcNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	if c.getC() {
 		c.PC += 3
 		return 10
 	}
 	c.pushStack(c.PC + 3)
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 
 	return 17
 }
@@ -2364,29 +2413,34 @@ func (c *CPU) exx() uint8 {
 }
 
 func (c *CPU) jpCNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
 	if !c.getC() {
 		c.PC += 3
 		return 10
 	}
 
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 	return 10
 }
 
 func (c *CPU) inA_N_() uint8 {
-	c.setAcc(c.getPort(c.dma.GetMemory(c.PC + 1)))
+	portAddress := c.dma.GetMemory(c.PC + 1)
+	c.WZ = (uint16(c.getAcc()) << 8) + uint16(portAddress) + 1
+	c.setAcc(c.getPort(portAddress))
 
 	c.PC += 2
 	return 11
 }
 
 func (c *CPU) callCNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	if !c.getC() {
 		c.PC += 3
 		return 10
 	}
 	c.pushStack(c.PC + 3)
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 
 	return 17
 }
@@ -2443,12 +2497,13 @@ func (c *CPU) popSs(ss string) func() uint8 {
 }
 
 func (c *CPU) jpPoNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
 	if c.getPV() {
 		c.PC += 3
 		return 10
 	}
 
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 	return 10
 }
 
@@ -2459,6 +2514,7 @@ func (c *CPU) ex_Sp_Ss(ss string) func() uint8 {
 			value := c.readWord(c.SP)
 			c.writeWord(c.SP, c.HL)
 			c.HL = value
+			c.WZ = value
 
 			c.PC++
 			return 19
@@ -2468,6 +2524,7 @@ func (c *CPU) ex_Sp_Ss(ss string) func() uint8 {
 			value := c.readWord(c.SP)
 			c.writeWord(c.SP, c.IX)
 			c.IX = value
+			c.WZ = value
 
 			c.PC += 2
 			return 23
@@ -2477,6 +2534,7 @@ func (c *CPU) ex_Sp_Ss(ss string) func() uint8 {
 			value := c.readWord(c.SP)
 			c.writeWord(c.SP, c.IY)
 			c.IY = value
+			c.WZ = value
 
 			c.PC += 2
 			return 23
@@ -2487,12 +2545,14 @@ func (c *CPU) ex_Sp_Ss(ss string) func() uint8 {
 }
 
 func (c *CPU) callPoNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	if c.getPV() {
 		c.PC += 3
 		return 10
 	}
 	c.pushStack(c.PC + 3)
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 
 	return 17
 }
@@ -2557,12 +2617,13 @@ func (c *CPU) jp_Ss_(ss string) func() uint8 {
 }
 
 func (c *CPU) jpPeNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
 	if !c.getPV() {
 		c.PC += 3
 		return 10
 	}
 
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 	return 10
 }
 
@@ -2595,12 +2656,14 @@ func (c *CPU) exDeSs(ss string) func() uint8 {
 }
 
 func (c *CPU) callPeNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	if !c.getPV() {
 		c.PC += 3
 		return 10
 	}
 	c.pushStack(c.PC + 3)
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 
 	return 17
 }
@@ -2639,12 +2702,13 @@ func (c *CPU) popAf() uint8 {
 }
 
 func (c *CPU) jpPNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
 	if c.getS() {
 		c.PC += 3
 		return 10
 	}
 
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 	return 10
 }
 
@@ -2656,12 +2720,14 @@ func (c *CPU) di() uint8 {
 }
 
 func (c *CPU) callPNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	if c.getS() {
 		c.PC += 3
 		return 10
 	}
 	c.pushStack(c.PC + 3)
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 
 	return 17
 }
@@ -2718,12 +2784,13 @@ func (c *CPU) ldSpSs(ss string) func() uint8 {
 }
 
 func (c *CPU) jpMNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
 	if !c.getS() {
 		c.PC += 3
 		return 10
 	}
 
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 	return 10
 }
 
@@ -2735,12 +2802,14 @@ func (c *CPU) ei() uint8 {
 }
 
 func (c *CPU) callMNn() uint8 {
+	c.WZ = c.readWord(c.PC + 1)
+
 	if !c.getS() {
 		c.PC += 3
 		return 10
 	}
 	c.pushStack(c.PC + 3)
-	c.PC = c.readWord(c.PC + 1)
+	c.PC = c.WZ
 
 	return 17
 }
@@ -2788,6 +2857,8 @@ func (c *CPU) inR_C_(r byte) func() uint8 {
 			}
 		}
 
+		c.WZ = c.BC + 1
+
 		c.setS(result > 127)
 		c.setZ(result == 0)
 		c.setH(false)
@@ -2811,6 +2882,10 @@ func (c *CPU) out_C_R(r byte) func() uint8 {
 			right = c.extractRegister(r)
 		}
 
+		if r == 'A' {
+			c.WZ = c.BC + 1
+		}
+
 		c.setPort(uint8(c.BC), right)
 
 		c.PC += 2
@@ -2821,6 +2896,7 @@ func (c *CPU) out_C_R(r byte) func() uint8 {
 func (c *CPU) sbcHlRr(rr string) func() uint8 {
 	return func() uint8 {
 		c.setC(!c.getC())
+		c.WZ = c.HL + 1
 		c.HL = c.adc16bit(c.HL, c.extractRegisterPair(rr)^0xffff)
 
 		c.PC += 2
@@ -2834,6 +2910,7 @@ func (c *CPU) sbcHlRr(rr string) func() uint8 {
 
 func (c *CPU) adcHlRr(rr string) func() uint8 {
 	return func() uint8 {
+		c.WZ = c.HL + 1
 		c.HL = c.adc16bit(c.HL, c.extractRegisterPair(rr))
 
 		c.PC += 2
@@ -2843,7 +2920,9 @@ func (c *CPU) adcHlRr(rr string) func() uint8 {
 
 func (c *CPU) ld_Nn_Rr(rr string) func() uint8 {
 	return func() uint8 {
-		c.writeWord(c.readWord(c.PC+2), c.extractRegisterPair(rr))
+		address := c.readWord(c.PC + 2)
+		c.writeWord(address, c.extractRegisterPair(rr))
+		c.WZ = address + 1
 
 		c.PC += 4
 		return 20
@@ -2874,6 +2953,7 @@ func (c *CPU) retn() uint8 {
 
 func (c *CPU) reti() uint8 {
 	c.PC = c.popStack()
+	c.WZ = c.PC
 	c.States.IFF1 = c.States.IFF2
 
 	return 14
@@ -2927,9 +3007,11 @@ func (c *CPU) ldRr_Nn_(rr string) func() uint8 {
 			panic("Invalid `rr` part of the mnemonic")
 		}
 
-		*lvalue = c.readWord(c.readWord(c.PC + 2))
+		address := c.readWord(c.PC + 2)
+		*lvalue = c.readWord(address)
 
 		c.PC += 4
+		c.WZ = address + 1
 		return 20
 	}
 }
@@ -2964,6 +3046,7 @@ func (c *CPU) rrd() uint8 {
 
 	c.dma.SetMemoryByte(c.HL, value)
 	a = c.getAcc()
+	c.WZ = c.HL + 1
 
 	c.setS(a > 127)
 	c.setZ(a == 0)
@@ -2985,6 +3068,7 @@ func (c *CPU) rld() uint8 {
 
 	c.dma.SetMemoryByte(c.HL, value)
 	a = c.getAcc()
+	c.WZ = c.HL + 1
 
 	c.setS(a > 127)
 	c.setZ(a == 0)
@@ -3025,11 +3109,13 @@ func (c *CPU) cpi() uint8 {
 	c.setH(!c.getH())
 
 	c.PC += 2
+	c.WZ++
 	return 16
 }
 
 func (c *CPU) ini() uint8 {
 	c.dma.SetMemoryByte(c.HL, c.getPort(c.extractRegister('C')))
+	c.WZ = c.BC + 1
 	c.HL++
 	c.BC -= 256
 
@@ -3044,6 +3130,7 @@ func (c *CPU) outi() uint8 {
 	c.setPort(c.extractRegister('C'), c.dma.GetMemory(c.HL))
 	c.HL++
 	c.BC -= 256
+	c.WZ = c.BC + 1
 
 	c.setZ(c.BC < 256)
 	c.setN(true)
@@ -3081,11 +3168,13 @@ func (c *CPU) cpd() uint8 {
 	c.setH(!c.getH())
 
 	c.PC += 2
+	c.WZ--
 	return 16
 }
 
 func (c *CPU) ind() uint8 {
 	c.dma.SetMemoryByte(c.HL, c.getPort(c.extractRegister('C')))
+	c.WZ = c.BC - 1
 	c.HL--
 	c.BC -= 256
 
@@ -3100,6 +3189,7 @@ func (c *CPU) outd() uint8 {
 	c.setPort(c.extractRegister('C'), c.dma.GetMemory(c.HL))
 	c.HL--
 	c.BC -= 256
+	c.WZ = c.BC - 1
 
 	c.setZ(c.BC < 256)
 	c.setN(true)
@@ -3116,6 +3206,7 @@ func (c *CPU) ldir() uint8 {
 	}
 
 	c.PC -= 2
+	c.WZ = c.PC + 1
 	return 21
 }
 
@@ -3133,8 +3224,10 @@ func (c *CPU) cpir() uint8 {
 	c.setN(true)
 	c.setPV(c.BC != 0)
 	c.setH(!c.getH())
+	c.WZ = c.PC + 1
 
 	if c.BC == 0 || result == 0 {
+		c.WZ++
 		c.PC += 2
 		return 16
 	}
@@ -3172,6 +3265,7 @@ func (c *CPU) lddr() uint8 {
 	}
 
 	c.PC -= 2
+	c.WZ = c.PC + 1
 	return 21
 }
 
@@ -3189,8 +3283,10 @@ func (c *CPU) cpdr() uint8 {
 	c.setN(true)
 	c.setPV(c.BC != 0)
 	c.setH(!c.getH())
+	c.WZ = c.PC + 1
 
 	if c.BC == 0 || result == 0 {
+		c.WZ--
 		c.PC += 2
 		return 16
 	}

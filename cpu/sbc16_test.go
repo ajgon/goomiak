@@ -320,11 +320,11 @@ func TestSbc16bit(t *testing.T) {
 			cpu.SP = row[1]
 			tstates := cpu.sbcHlRr(registerPair)()
 
-			if cpu.HL != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
+			if cpu.WZ != row[0]+1 || cpu.HL != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
 				t.Errorf(
-					"\ngot:  HL=0x%04x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t\nwant: HL=0x%04x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t for (%d - %d - %d)",
-					cpu.HL, cpu.getC(), cpu.getN(), cpu.getPV(), cpu.getH(), cpu.getZ(), cpu.getS(),
-					row[3], row[4] == 1, row[5] == 1, row[6] == 1, row[7] == 1, row[8] == 1, row[9] == 1, row[0], row[1], row[2],
+					"\ngot:  WZ=0x%04x, HL=0x%04x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t\nwant: WZ=0x%04x, HL=0x%04x, C=%t, N=%t, PV=%t, H=%t, Z=%t, S=%t for (%d - %d - %d)",
+					cpu.WZ, cpu.HL, cpu.getC(), cpu.getN(), cpu.getPV(), cpu.getH(), cpu.getZ(), cpu.getS(),
+					row[0]+1, row[3], row[4] == 1, row[5] == 1, row[6] == 1, row[7] == 1, row[8] == 1, row[9] == 1, row[0], row[1], row[2],
 				)
 				return
 			}
