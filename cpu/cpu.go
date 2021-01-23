@@ -328,7 +328,7 @@ func (c *CPU) initializeMnemonics() {
 			c.jrNzN, c.ldSsNn(reg), c.ld_Nn_Ss(reg), c.incSs(reg), c.incR(highReg), c.decR(highReg), c.ldRN(highReg), c.daa,
 			c.jrZN, c.addSsRr(reg, reg), c.ldSs_Nn_(reg), c.decSs(reg), c.incR(lowReg), c.decR(lowReg), c.ldRN(lowReg), c.cpl,
 			c.jrNcN, c.ldSpNn, c.ld_Nn_A, c.incSp, c.inc_Ss_(reg), c.dec_Ss_(reg), c.ld_Ss_N(reg), c.scf,
-			c.jrCN, c.addSsRr(reg, "SP"), c.ldA_Nn_, c.decSp, c.incR('A'), c.decA, c.ldRN('A'), c.ccf,
+			c.jrCN, c.addSsRr(reg, "SP"), c.ldA_Nn_, c.decSp, c.incR('A'), c.decR('A'), c.ldRN('A'), c.ccf,
 			c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', highReg), c.ldRR_('B', lowReg), c.ldR_Ss_('B', reg), c.ldRR_('B', 'A'),
 			c.ldRR_('C', 'B'), c.ldRR_('C', 'C'), c.ldRR_('C', 'D'), c.ldRR_('C', 'E'), c.ldRR_('C', highReg), c.ldRR_('C', lowReg), c.ldR_Ss_('C', reg), c.ldRR_('C', 'A'),
 			c.ldRR_('D', 'B'), c.ldRR_('D', 'C'), c.ldRR_('D', 'D'), c.ldRR_('D', 'E'), c.ldRR_('D', highReg), c.ldRR_('D', lowReg), c.ldR_Ss_('D', reg), c.ldRR_('D', 'A'),
@@ -363,14 +363,14 @@ func (c *CPU) initializeMnemonics() {
 			c.sraR('B'), c.sraR('C'), c.sraR('D'), c.sraR('E'), c.sraR('H'), c.sraR('L'), c.sraSs(reg), c.sraR('A'),
 			c.sllR('B'), c.sllR('C'), c.sllR('D'), c.sllR('E'), c.sllR('H'), c.sllR('L'), c.sllSs(reg), c.sllR('A'),
 			c.srlR('B'), c.srlR('C'), c.srlR('D'), c.srlR('E'), c.srlR('H'), c.srlR('L'), c.srlSs(reg), c.srlR('A'),
-			c.bitBR(0, 'B'), c.bitBR(0, 'C'), c.bitBR(0, 'D'), c.bitBR(0, 'E'), c.bitBR(0, 'H'), c.bitBR(0, 'L'), c.bitBSs(0, reg), c.bitBR(0, 'A'),
-			c.bitBR(1, 'B'), c.bitBR(1, 'C'), c.bitBR(1, 'D'), c.bitBR(1, 'E'), c.bitBR(1, 'H'), c.bitBR(1, 'L'), c.bitBSs(1, reg), c.bitBR(1, 'A'),
-			c.bitBR(2, 'B'), c.bitBR(2, 'C'), c.bitBR(2, 'D'), c.bitBR(2, 'E'), c.bitBR(2, 'H'), c.bitBR(2, 'L'), c.bitBSs(2, reg), c.bitBR(2, 'A'),
-			c.bitBR(3, 'B'), c.bitBR(3, 'C'), c.bitBR(3, 'D'), c.bitBR(3, 'E'), c.bitBR(3, 'H'), c.bitBR(3, 'L'), c.bitBSs(3, reg), c.bitBR(3, 'A'),
-			c.bitBR(4, 'B'), c.bitBR(4, 'C'), c.bitBR(4, 'D'), c.bitBR(4, 'E'), c.bitBR(4, 'H'), c.bitBR(4, 'L'), c.bitBSs(4, reg), c.bitBR(4, 'A'),
-			c.bitBR(5, 'B'), c.bitBR(5, 'C'), c.bitBR(5, 'D'), c.bitBR(5, 'E'), c.bitBR(5, 'H'), c.bitBR(5, 'L'), c.bitBSs(5, reg), c.bitBR(5, 'A'),
-			c.bitBR(6, 'B'), c.bitBR(6, 'C'), c.bitBR(6, 'D'), c.bitBR(6, 'E'), c.bitBR(6, 'H'), c.bitBR(6, 'L'), c.bitBSs(6, reg), c.bitBR(6, 'A'),
-			c.bitBR(7, 'B'), c.bitBR(7, 'C'), c.bitBR(7, 'D'), c.bitBR(7, 'E'), c.bitBR(7, 'H'), c.bitBR(7, 'L'), c.bitBSs(7, reg), c.bitBR(7, 'A'),
+			c.bitBR(0, 'B'), c.bitBR(0, 'C'), c.bitBR(0, 'D'), c.bitBR(0, 'E'), c.bitBR(0, highReg), c.bitBR(0, lowReg), c.bitBSs(0, reg), c.bitBR(0, 'A'),
+			c.bitBR(1, 'B'), c.bitBR(1, 'C'), c.bitBR(1, 'D'), c.bitBR(1, 'E'), c.bitBR(1, highReg), c.bitBR(1, lowReg), c.bitBSs(1, reg), c.bitBR(1, 'A'),
+			c.bitBR(2, 'B'), c.bitBR(2, 'C'), c.bitBR(2, 'D'), c.bitBR(2, 'E'), c.bitBR(2, highReg), c.bitBR(2, lowReg), c.bitBSs(2, reg), c.bitBR(2, 'A'),
+			c.bitBR(3, 'B'), c.bitBR(3, 'C'), c.bitBR(3, 'D'), c.bitBR(3, 'E'), c.bitBR(3, highReg), c.bitBR(3, lowReg), c.bitBSs(3, reg), c.bitBR(3, 'A'),
+			c.bitBR(4, 'B'), c.bitBR(4, 'C'), c.bitBR(4, 'D'), c.bitBR(4, 'E'), c.bitBR(4, highReg), c.bitBR(4, lowReg), c.bitBSs(4, reg), c.bitBR(4, 'A'),
+			c.bitBR(5, 'B'), c.bitBR(5, 'C'), c.bitBR(5, 'D'), c.bitBR(5, 'E'), c.bitBR(5, highReg), c.bitBR(5, lowReg), c.bitBSs(5, reg), c.bitBR(5, 'A'),
+			c.bitBR(6, 'B'), c.bitBR(6, 'C'), c.bitBR(6, 'D'), c.bitBR(6, 'E'), c.bitBR(6, highReg), c.bitBR(6, lowReg), c.bitBSs(6, reg), c.bitBR(6, 'A'),
+			c.bitBR(7, 'B'), c.bitBR(7, 'C'), c.bitBR(7, 'D'), c.bitBR(7, 'E'), c.bitBR(7, highReg), c.bitBR(7, lowReg), c.bitBSs(7, reg), c.bitBR(7, 'A'),
 			c.resBR(0, 'B'), c.resBR(0, 'C'), c.resBR(0, 'D'), c.resBR(0, 'E'), c.resBR(0, 'H'), c.resBR(0, 'L'), c.resBSs(0, reg), c.resBR(0, 'A'),
 			c.resBR(1, 'B'), c.resBR(1, 'C'), c.resBR(1, 'D'), c.resBR(1, 'E'), c.resBR(1, 'H'), c.resBR(1, 'L'), c.resBSs(1, reg), c.resBR(1, 'A'),
 			c.resBR(2, 'B'), c.resBR(2, 'C'), c.resBR(2, 'D'), c.resBR(2, 'E'), c.resBR(2, 'H'), c.resBR(2, 'L'), c.resBSs(2, reg), c.resBR(2, 'A'),
@@ -473,7 +473,6 @@ func (c *CPU) getFlags() uint8 {
 }
 
 func (c *CPU) setS(value bool) {
-
 	if value {
 		c.AF = c.AF | 0x0080
 	} else {
@@ -482,7 +481,6 @@ func (c *CPU) setS(value bool) {
 }
 
 func (c *CPU) setZ(value bool) {
-
 	if value {
 		c.AF = c.AF | 0x0040
 	} else {
@@ -490,8 +488,15 @@ func (c *CPU) setZ(value bool) {
 	}
 }
 
-func (c *CPU) setH(value bool) {
+func (c *CPU) setF5(value bool) {
+	if value {
+		c.AF = c.AF | 0x0020
+	} else {
+		c.AF = c.AF & 0xffdf
+	}
+}
 
+func (c *CPU) setH(value bool) {
 	if value {
 		c.AF = c.AF | 0x0010
 	} else {
@@ -499,8 +504,15 @@ func (c *CPU) setH(value bool) {
 	}
 }
 
-func (c *CPU) setPV(value bool) {
+func (c *CPU) setF3(value bool) {
+	if value {
+		c.AF = c.AF | 0x0008
+	} else {
+		c.AF = c.AF & 0xfff7
+	}
+}
 
+func (c *CPU) setPV(value bool) {
 	if value {
 		c.AF = c.AF | 0x0004
 	} else {
@@ -509,7 +521,6 @@ func (c *CPU) setPV(value bool) {
 }
 
 func (c *CPU) setN(value bool) {
-
 	if value {
 		c.AF = c.AF | 0x0002
 	} else {
@@ -518,7 +529,6 @@ func (c *CPU) setN(value bool) {
 }
 
 func (c *CPU) setC(value bool) {
-
 	if value {
 		c.AF = c.AF | 0x0001
 	} else {
@@ -642,43 +652,6 @@ func (c *CPU) extractRegisterPair(rr string) (rvalue uint16) {
 	return
 }
 
-func (c *CPU) decreaseRegister(name rune) uint8 {
-	var register uint8
-
-	switch name {
-	case 'A':
-		c.AF -= 256
-		register = c.getAcc()
-	case 'B':
-		c.BC -= 256
-		register = uint8(c.BC >> 8)
-	case 'C':
-		register = uint8(c.BC) - 1
-		c.BC = (c.BC & 0xff00) | uint16(register)
-	case 'D':
-		c.DE -= 256
-		register = uint8(c.DE >> 8)
-	case 'E':
-		register = uint8(c.DE) - 1
-		c.DE = (c.DE & 0xff00) | uint16(register)
-	case 'H':
-		c.HL -= 256
-		register = uint8(c.HL >> 8)
-	case 'L':
-		register = uint8(c.HL) - 1
-		c.HL = (c.HL & 0xff00) | uint16(register)
-	}
-
-	c.setN(true)
-	c.setPV(register == 0x7f)
-	c.setH(register&0x0f == 0x0f)
-	c.setZ(register == 0)
-	c.setS(register > 127)
-
-	c.PC++
-	return 4
-}
-
 // left stores the result
 func (c *CPU) addRegisters(left *uint16, right uint16) {
 	sum := *left + right
@@ -686,6 +659,8 @@ func (c *CPU) addRegisters(left *uint16, right uint16) {
 	c.setC(sum < *left || sum < right)
 	c.setN(false)
 	c.setH((*left^right^sum)&0x1000 == 0x1000)
+	c.setF5(sum&0x2000 == 0x2000)
+	c.setF3(sum&0x0800 == 0x0800)
 
 	*left = sum
 }
@@ -718,6 +693,8 @@ func (c *CPU) adcValueToAcc(value uint8) {
 	c.setH((a^value^result)&0x10 == 0x10)
 	c.setZ(result == 0)
 	c.setS(result > 127)
+	c.setF5(result&0x20 == 0x20)
+	c.setF3(result&0x08 == 0x08)
 }
 
 func (c *CPU) adc16bit(addendLeft, addendRight uint16) (result uint16) {
@@ -746,6 +723,8 @@ func (c *CPU) adc16bit(addendLeft, addendRight uint16) (result uint16) {
 	c.setH((addendLeft^addendRight^result)&0x1000 == 0x1000)
 	c.setZ(result == 0)
 	c.setS(result > 0x7fff)
+	c.setF5(result&0x2000 == 0x2000)
+	c.setF3(result&0x0800 == 0x0800)
 
 	return
 }
@@ -817,6 +796,8 @@ func (c *CPU) incR(r byte) func() uint8 {
 		c.setH(rvalue&0x0f == 0)
 		c.setZ(rvalue == 0)
 		c.setS(rvalue > 127)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 4
 	}
@@ -863,6 +844,8 @@ func (c *CPU) decR(r byte) func() uint8 {
 		c.setH(rvalue&0x0f == 0x0f)
 		c.setZ(rvalue == 0)
 		c.setS(rvalue > 127)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 4
 	}
@@ -951,6 +934,8 @@ func (c *CPU) rlcR(r byte) func() uint8 {
 		c.setC(signed)
 		c.setN(false)
 		c.setH(false)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 		if r != ' ' {
 			c.setPV(parityTable[rvalue])
 			c.setZ(rvalue == 0)
@@ -1092,6 +1077,8 @@ func (c *CPU) rlR(r byte) func() uint8 {
 		c.setC(signed)
 		c.setN(false)
 		c.setH(false)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 		if r != ' ' {
 			c.setPV(parityTable[rvalue])
 			c.setZ(rvalue == 0)
@@ -1125,13 +1112,15 @@ func (c *CPU) rlSs(ss string) func() uint8 {
 			c.setH(false)
 			c.setZ(rvalue == 0)
 			c.setS(rvalue > 127)
+			c.setF5(rvalue&0x20 == 0x20)
+			c.setF3(rvalue&0x08 == 0x08)
 
 			return 15
 		}
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
+		address := c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		signed := rvalue&128 == 128
@@ -1152,6 +1141,8 @@ func (c *CPU) rlSs(ss string) func() uint8 {
 		c.setH(false)
 		c.setZ(rvalue == 0)
 		c.setS(rvalue > 127)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 23
 	}
@@ -1201,6 +1192,7 @@ func (c *CPU) rrR(r byte) func() uint8 {
 		if r != ' ' {
 			size = 1
 			rvalue = c.extractRegister(r)
+
 		} else {
 			rvalue = c.getAcc()
 		}
@@ -1224,6 +1216,8 @@ func (c *CPU) rrR(r byte) func() uint8 {
 		c.setC(signed)
 		c.setN(false)
 		c.setH(false)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 		if r != ' ' {
 			c.setPV(parityTable[rvalue])
 			c.setZ(rvalue == 0)
@@ -1257,13 +1251,15 @@ func (c *CPU) rrSs(ss string) func() uint8 {
 			c.setH(false)
 			c.setZ(rvalue == 0)
 			c.setS(rvalue > 127)
+			c.setF5(rvalue&0x20 == 0x20)
+			c.setF3(rvalue&0x08 == 0x08)
 
 			return 15
 		}
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
+		address := c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		signed := rvalue&1 == 1
@@ -1284,6 +1280,8 @@ func (c *CPU) rrSs(ss string) func() uint8 {
 		c.setH(false)
 		c.setZ(rvalue == 0)
 		c.setS(rvalue > 127)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 23
 	}
@@ -1420,6 +1418,8 @@ func (c *CPU) daa() uint8 {
 	c.setS(a > 127)
 	c.setZ(a == 0)
 	c.setPV(parityTable[a])
+	c.setF5(a&0x20 == 0x20)
+	c.setF3(a&0x08 == 0x08)
 
 	c.setAcc(a)
 
@@ -1500,10 +1500,14 @@ func (c *CPU) decSs(ss string) func() uint8 {
 }
 
 func (c *CPU) cpl() uint8 {
-	c.setAcc(c.getAcc() ^ 0xff)
+	a := c.getAcc() ^ 0xff
+	c.setAcc(a)
+
 	c.PC++
 	c.setH(true)
 	c.setN(true)
+	c.setF5(a&0x20 == 0x20)
+	c.setF3(a&0x08 == 0x08)
 
 	return 4
 }
@@ -1552,7 +1556,8 @@ func (c *CPU) inc_Ss_(ss string) func() uint8 {
 			c.setH(result&0x0f == 0)
 			c.setZ(result == 0)
 			c.setS(result > 127)
-
+			c.setF5(result&0x20 == 0x20)
+			c.setF3(result&0x08 == 0x08)
 			return 11
 
 		}
@@ -1569,6 +1574,8 @@ func (c *CPU) inc_Ss_(ss string) func() uint8 {
 		c.setH(result&0x0f == 0)
 		c.setZ(result == 0)
 		c.setS(result > 127)
+		c.setF5(result&0x20 == 0x20)
+		c.setF3(result&0x08 == 0x08)
 
 		return 23
 	}
@@ -1586,6 +1593,8 @@ func (c *CPU) dec_Ss_(ss string) func() uint8 {
 			c.setH(result&0x0f == 0x0f)
 			c.setZ(result == 0)
 			c.setS(result > 127)
+			c.setF5(result&0x20 == 0x20)
+			c.setF3(result&0x08 == 0x08)
 
 			return 11
 
@@ -1603,6 +1612,8 @@ func (c *CPU) dec_Ss_(ss string) func() uint8 {
 		c.setH(result&0x0f == 0x0f)
 		c.setZ(result == 0)
 		c.setS(result > 127)
+		c.setF5(result&0x20 == 0x20)
+		c.setF3(result&0x08 == 0x08)
 
 		return 23
 	}
@@ -1627,9 +1638,13 @@ func (c *CPU) ld_Ss_N(ss string) func() uint8 {
 func (c *CPU) scf() uint8 {
 	c.PC++
 
+	a := c.getAcc()
+
 	c.setC(true)
 	c.setN(false)
 	c.setH(false)
+	c.setF5(a&0x20 == 0x20)
+	c.setF3(a&0x08 == 0x08)
 
 	return 4
 }
@@ -1661,10 +1676,6 @@ func (c *CPU) decSp() uint8 {
 	return 6
 }
 
-func (c *CPU) decA() uint8 {
-	return c.decreaseRegister('A')
-}
-
 func (c *CPU) ldAN() uint8 {
 	c.setAcc(c.dma.GetMemory(c.PC + 1))
 	c.PC += 2
@@ -1675,9 +1686,13 @@ func (c *CPU) ldAN() uint8 {
 func (c *CPU) ccf() uint8 {
 	c.PC++
 
+	a := c.getAcc()
+
 	c.setH(c.getC())
 	c.setN(false)
 	c.setC(!c.getC())
+	c.setF5(a&0x20 == 0x20)
+	c.setF3(a&0x08 == 0x08)
 
 	return 4
 }
@@ -1980,6 +1995,8 @@ func (c *CPU) andR(r byte) func() uint8 {
 		c.setPV(parityTable[result])
 		c.setN(false)
 		c.setC(false)
+		c.setF5(result&0x20 == 0x20)
+		c.setF3(result&0x08 == 0x08)
 
 		return 4
 	}
@@ -1998,6 +2015,8 @@ func (c *CPU) and_Ss_(ss string) func() uint8 {
 			c.setPV(parityTable[result])
 			c.setN(false)
 			c.setC(false)
+			c.setF5(result&0x20 == 0x20)
+			c.setF3(result&0x08 == 0x08)
 
 			return 7
 		}
@@ -2014,6 +2033,8 @@ func (c *CPU) and_Ss_(ss string) func() uint8 {
 		c.setPV(parityTable[result])
 		c.setN(false)
 		c.setC(false)
+		c.setF5(result&0x20 == 0x20)
+		c.setF3(result&0x08 == 0x08)
 
 		return 19
 	}
@@ -2036,6 +2057,8 @@ func (c *CPU) xorR(r byte) func() uint8 {
 		c.setPV(parityTable[result])
 		c.setN(false)
 		c.setC(false)
+		c.setF5(result&0x20 == 0x20)
+		c.setF3(result&0x08 == 0x08)
 
 		return 4
 	}
@@ -2054,6 +2077,8 @@ func (c *CPU) xor_Ss_(ss string) func() uint8 {
 			c.setPV(parityTable[result])
 			c.setN(false)
 			c.setC(false)
+			c.setF5(result&0x20 == 0x20)
+			c.setF3(result&0x08 == 0x08)
 
 			return 7
 		}
@@ -2070,6 +2095,8 @@ func (c *CPU) xor_Ss_(ss string) func() uint8 {
 		c.setPV(parityTable[result])
 		c.setN(false)
 		c.setC(false)
+		c.setF5(result&0x20 == 0x20)
+		c.setF3(result&0x08 == 0x08)
 
 		return 19
 	}
@@ -2092,6 +2119,8 @@ func (c *CPU) orR(r byte) func() uint8 {
 		c.setPV(parityTable[result])
 		c.setN(false)
 		c.setC(false)
+		c.setF5(result&0x20 == 0x20)
+		c.setF3(result&0x08 == 0x08)
 
 		return 4
 	}
@@ -2110,6 +2139,8 @@ func (c *CPU) or_Ss_(ss string) func() uint8 {
 			c.setPV(parityTable[result])
 			c.setN(false)
 			c.setC(false)
+			c.setF5(result&0x20 == 0x20)
+			c.setF3(result&0x08 == 0x08)
 
 			return 7
 		}
@@ -2126,6 +2157,8 @@ func (c *CPU) or_Ss_(ss string) func() uint8 {
 		c.setPV(parityTable[result])
 		c.setN(false)
 		c.setC(false)
+		c.setF5(result&0x20 == 0x20)
+		c.setF3(result&0x08 == 0x08)
 
 		return 19
 	}
@@ -2134,8 +2167,9 @@ func (c *CPU) or_Ss_(ss string) func() uint8 {
 func (c *CPU) cpR(r byte) func() uint8 {
 	return func() uint8 {
 		acc := c.getAcc()
+		register := c.extractRegister(r)
 		c.setC(true)
-		c.adcValueToAcc(c.extractRegister(r) ^ 0xff)
+		c.adcValueToAcc(register ^ 0xff)
 
 		if r == 'X' || r == 'x' || r == 'Y' || r == 'y' {
 			c.PC++
@@ -2146,6 +2180,8 @@ func (c *CPU) cpR(r byte) func() uint8 {
 		c.setN(true)
 		c.setC(!c.getC())
 		c.setH(!c.getH())
+		c.setF5(register&0x20 == 0x20)
+		c.setF3(register&0x08 == 0x08)
 
 		return 4
 	}
@@ -2155,14 +2191,17 @@ func (c *CPU) cp_Ss_(ss string) func() uint8 {
 	if ss == "HL" {
 		return func() uint8 {
 			acc := c.getAcc()
+			operand := c.dma.GetMemory(c.HL)
 			c.setC(true)
-			c.adcValueToAcc(c.dma.GetMemory(c.HL) ^ 0xff)
+			c.adcValueToAcc(operand ^ 0xff)
 
 			c.PC++
 			c.setAcc(acc)
 			c.setN(true)
 			c.setC(!c.getC())
 			c.setH(!c.getH())
+			c.setF5(operand&0x20 == 0x20)
+			c.setF3(operand&0x08 == 0x08)
 
 			return 7
 		}
@@ -2170,14 +2209,17 @@ func (c *CPU) cp_Ss_(ss string) func() uint8 {
 
 	return func() uint8 {
 		acc := c.getAcc()
+		operand := c.dma.GetMemory(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2)))
 		c.setC(true)
-		c.adcValueToAcc(c.dma.GetMemory(c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))) ^ 0xff)
+		c.adcValueToAcc(operand ^ 0xff)
 
 		c.PC += 3
 		c.setAcc(acc)
 		c.setN(true)
 		c.setC(!c.getC())
 		c.setH(!c.getH())
+		c.setF5(operand&0x20 == 0x20)
+		c.setF3(operand&0x08 == 0x08)
 
 		return 19
 	}
@@ -2587,6 +2629,8 @@ func (c *CPU) andN() uint8 {
 	c.setPV(parityTable[result])
 	c.setN(false)
 	c.setC(false)
+	c.setF5(result&0x20 == 0x20)
+	c.setF3(result&0x08 == 0x08)
 
 	return 7
 }
@@ -2679,6 +2723,8 @@ func (c *CPU) xorN() uint8 {
 	c.setPV(parityTable[result])
 	c.setN(false)
 	c.setC(false)
+	c.setF5(result&0x20 == 0x20)
+	c.setF3(result&0x08 == 0x08)
 
 	return 7
 }
@@ -2750,6 +2796,8 @@ func (c *CPU) orN() uint8 {
 	c.setPV(parityTable[result])
 	c.setN(false)
 	c.setC(false)
+	c.setF5(result&0x20 == 0x20)
+	c.setF3(result&0x08 == 0x08)
 
 	return 7
 }
@@ -2816,14 +2864,17 @@ func (c *CPU) callMNn() uint8 {
 
 func (c *CPU) cpN() uint8 {
 	acc := c.getAcc()
+	operand := c.dma.GetMemory(c.PC + 1)
 	c.setC(true)
-	c.adcValueToAcc(c.dma.GetMemory(c.PC+1) ^ 0xff)
+	c.adcValueToAcc(operand ^ 0xff)
 
 	c.PC += 2
 	c.setAcc(acc)
 	c.setN(true)
 	c.setC(!c.getC())
 	c.setH(!c.getH())
+	c.setF5(operand&0x20 == 0x20)
+	c.setF3(operand&0x08 == 0x08)
 
 	return 7
 }
@@ -2940,6 +2991,8 @@ func (c *CPU) neg() uint8 {
 	c.setN(true)
 	c.setC(!c.getC())
 	c.setH(!c.getH())
+	c.setF5(c.getAcc()&0x20 == 0x20)
+	c.setF3(c.getAcc()&0x08 == 0x08)
 
 	return 8
 }
@@ -3053,6 +3106,8 @@ func (c *CPU) rrd() uint8 {
 	c.setH(false)
 	c.setPV(parityTable[a])
 	c.setN(false)
+	c.setF5(a&0x20 == 0x20)
+	c.setF3(a&0x08 == 0x08)
 
 	c.PC += 2
 	return 18
@@ -3075,20 +3130,27 @@ func (c *CPU) rld() uint8 {
 	c.setH(false)
 	c.setPV(parityTable[a])
 	c.setN(false)
+	c.setF5(a&0x20 == 0x20)
+	c.setF3(a&0x08 == 0x08)
 
 	c.PC += 2
 	return 18
 }
 
 func (c *CPU) ldi() uint8 {
-	c.dma.SetMemoryByte(c.DE, c.dma.GetMemory(c.HL))
+	rvalue := c.dma.GetMemory(c.HL)
+	c.dma.SetMemoryByte(c.DE, rvalue)
 	c.DE++
 	c.HL++
 	c.BC--
 
+	result := rvalue + c.getAcc()
+
 	c.setH(false)
 	c.setPV(c.BC != 0)
 	c.setN(false)
+	c.setF3(result&0x08 == 0x08)
+	c.setF5(result&0x02 == 0x02) // 0x02 not 0x20 - this is intended
 
 	c.PC += 2
 	return 16
@@ -3099,6 +3161,7 @@ func (c *CPU) cpi() uint8 {
 	flagC := c.getC()
 	c.setC(true)
 	c.adcValueToAcc(c.dma.GetMemory(c.HL) ^ 0xff)
+	result := c.getAcc()
 	c.HL++
 	c.BC--
 
@@ -3107,6 +3170,14 @@ func (c *CPU) cpi() uint8 {
 	c.setN(true)
 	c.setPV(c.BC != 0)
 	c.setH(!c.getH())
+
+	if c.getH() {
+		c.setF3((result-1)&0x08 == 0x08)
+		c.setF5((result-1)&0x02 == 0x02) // 0x02 not 0x20 - this is intended
+	} else {
+		c.setF3(result&0x08 == 0x08)
+		c.setF5(result&0x02 == 0x02) // 0x02 not 0x20 - this is intended
+	}
 
 	c.PC += 2
 	c.WZ++
@@ -3121,6 +3192,8 @@ func (c *CPU) ini() uint8 {
 
 	c.setZ(c.BC < 256)
 	c.setN(true)
+	c.setF5(c.BC&0x2000 == 0x2000)
+	c.setF3(c.BC&0x0800 == 0x0800)
 
 	c.PC += 2
 	return 16
@@ -3134,20 +3207,27 @@ func (c *CPU) outi() uint8 {
 
 	c.setZ(c.BC < 256)
 	c.setN(true)
+	c.setF5(c.BC&0x2000 == 0x2000)
+	c.setF3(c.BC&0x0800 == 0x0800)
 
 	c.PC += 2
 	return 16
 }
 
 func (c *CPU) ldd() uint8 {
-	c.dma.SetMemoryByte(c.DE, c.dma.GetMemory(c.HL))
+	rvalue := c.dma.GetMemory(c.HL)
+	c.dma.SetMemoryByte(c.DE, rvalue)
 	c.DE--
 	c.HL--
 	c.BC--
 
+	result := rvalue + c.getAcc()
+
 	c.setH(false)
 	c.setPV(c.BC != 0)
 	c.setN(false)
+	c.setF3(result&0x08 == 0x08)
+	c.setF5(result&0x02 == 0x02) // 0x02 not 0x20 - this is intended
 
 	c.PC += 2
 	return 16
@@ -3158,6 +3238,8 @@ func (c *CPU) cpd() uint8 {
 	flagC := c.getC()
 	c.setC(true)
 	c.adcValueToAcc(c.dma.GetMemory(c.HL) ^ 0xff)
+	result := c.getAcc()
+
 	c.HL--
 	c.BC--
 
@@ -3166,6 +3248,12 @@ func (c *CPU) cpd() uint8 {
 	c.setN(true)
 	c.setPV(c.BC != 0)
 	c.setH(!c.getH())
+
+	if c.getH() {
+		result--
+	}
+	c.setF3(result&0x08 == 0x08)
+	c.setF5(result&0x02 == 0x02) // 0x02 not 0x20 - this is intended
 
 	c.PC += 2
 	c.WZ--
@@ -3180,6 +3268,8 @@ func (c *CPU) ind() uint8 {
 
 	c.setZ(c.BC < 256)
 	c.setN(true)
+	c.setF5(c.BC&0x2000 == 0x2000)
+	c.setF3(c.BC&0x0800 == 0x0800)
 
 	c.PC += 2
 	return 16
@@ -3193,6 +3283,8 @@ func (c *CPU) outd() uint8 {
 
 	c.setZ(c.BC < 256)
 	c.setN(true)
+	c.setF5(c.BC&0x2000 == 0x2000)
+	c.setF3(c.BC&0x0800 == 0x0800)
 
 	c.PC += 2
 	return 16
@@ -3225,6 +3317,14 @@ func (c *CPU) cpir() uint8 {
 	c.setPV(c.BC != 0)
 	c.setH(!c.getH())
 	c.WZ = c.PC + 1
+
+	if c.getH() {
+		c.setF3((result-1)&0x08 == 0x08)
+		c.setF5((result-1)&0x02 == 0x02) // 0x02 not 0x20 - this is intended
+	} else {
+		c.setF3(result&0x08 == 0x08)
+		c.setF5(result&0x02 == 0x02) // 0x02 not 0x20 - this is intended
+	}
 
 	if c.BC == 0 || result == 0 {
 		c.WZ++
@@ -3285,6 +3385,12 @@ func (c *CPU) cpdr() uint8 {
 	c.setH(!c.getH())
 	c.WZ = c.PC + 1
 
+	if c.getH() {
+		result--
+	}
+	c.setF3(result&0x08 == 0x08)
+	c.setF5(result&0x02 == 0x02) // 0x02 not 0x20 - this is intended
+
 	if c.BC == 0 || result == 0 {
 		c.WZ--
 		c.PC += 2
@@ -3337,13 +3443,15 @@ func (c *CPU) rlcSs(ss string) func() uint8 {
 			c.setH(false)
 			c.setZ(rvalue == 0)
 			c.setS(rvalue > 127)
+			c.setF5(rvalue&0x20 == 0x20)
+			c.setF3(rvalue&0x08 == 0x08)
 
 			return 15
 		}
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
+		address := c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		signed := rvalue&128 == 128
@@ -3362,6 +3470,8 @@ func (c *CPU) rlcSs(ss string) func() uint8 {
 		c.setH(false)
 		c.setZ(rvalue == 0)
 		c.setS(rvalue > 127)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 23
 	}
@@ -3410,6 +3520,8 @@ func (c *CPU) rrcR(r byte) func() uint8 {
 		c.setC(signed)
 		c.setN(false)
 		c.setH(false)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 		if r != ' ' {
 			c.setPV(parityTable[rvalue])
 			c.setZ(rvalue == 0)
@@ -3441,13 +3553,15 @@ func (c *CPU) rrcSs(ss string) func() uint8 {
 			c.setH(false)
 			c.setZ(rvalue == 0)
 			c.setS(rvalue > 127)
+			c.setF5(rvalue&0x20 == 0x20)
+			c.setF3(rvalue&0x08 == 0x08)
 
 			return 15
 		}
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
+		address := c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		signed := rvalue&1 == 1
@@ -3466,6 +3580,8 @@ func (c *CPU) rrcSs(ss string) func() uint8 {
 		c.setH(false)
 		c.setZ(rvalue == 0)
 		c.setS(rvalue > 127)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 23
 	}
@@ -3507,6 +3623,8 @@ func (c *CPU) slaR(r byte) func() uint8 {
 		c.setN(false)
 		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 8
 	}
@@ -3528,13 +3646,15 @@ func (c *CPU) slaSs(ss string) func() uint8 {
 			c.setH(false)
 			c.setZ(rvalue == 0)
 			c.setS(rvalue > 127)
+			c.setF5(rvalue&0x20 == 0x20)
+			c.setF3(rvalue&0x08 == 0x08)
 
 			return 15
 		}
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
+		address := c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		c.setC(rvalue&128 == 128)
@@ -3548,6 +3668,8 @@ func (c *CPU) slaSs(ss string) func() uint8 {
 		c.setH(false)
 		c.setZ(rvalue == 0)
 		c.setS(rvalue > 127)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 23
 	}
@@ -3594,6 +3716,8 @@ func (c *CPU) sraR(r byte) func() uint8 {
 		c.setN(false)
 		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 8
 	}
@@ -3620,13 +3744,15 @@ func (c *CPU) sraSs(ss string) func() uint8 {
 			c.setH(false)
 			c.setZ(rvalue == 0)
 			c.setS(rvalue > 127)
+			c.setF5(rvalue&0x20 == 0x20)
+			c.setF3(rvalue&0x08 == 0x08)
 
 			return 15
 		}
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
+		address := c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		c.setC(rvalue&1 == 1)
@@ -3645,6 +3771,8 @@ func (c *CPU) sraSs(ss string) func() uint8 {
 		c.setH(false)
 		c.setZ(rvalue == 0)
 		c.setS(rvalue > 127)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 23
 	}
@@ -3686,6 +3814,8 @@ func (c *CPU) sllR(r byte) func() uint8 {
 		c.setN(false)
 		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 8
 	}
@@ -3707,13 +3837,15 @@ func (c *CPU) sllSs(ss string) func() uint8 {
 			c.setH(false)
 			c.setZ(rvalue == 0)
 			c.setS(rvalue > 127)
+			c.setF5(rvalue&0x20 == 0x20)
+			c.setF3(rvalue&0x08 == 0x08)
 
 			return 15
 		}
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
+		address := c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		c.setC(rvalue&128 == 128)
@@ -3727,6 +3859,8 @@ func (c *CPU) sllSs(ss string) func() uint8 {
 		c.setH(false)
 		c.setZ(rvalue == 0)
 		c.setS(rvalue > 127)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 23
 	}
@@ -3768,6 +3902,8 @@ func (c *CPU) srlR(r byte) func() uint8 {
 		c.setN(false)
 		c.setPV(parityTable[rvalue])
 		c.setH(false)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 8
 	}
@@ -3789,13 +3925,15 @@ func (c *CPU) srlSs(ss string) func() uint8 {
 			c.setH(false)
 			c.setZ(rvalue == 0)
 			c.setS(false)
+			c.setF5(rvalue&0x20 == 0x20)
+			c.setF3(rvalue&0x08 == 0x08)
 
 			return 15
 		}
 	}
 
 	return func() uint8 {
-		address := c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2))
+		address := c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))
 		rvalue := c.dma.GetMemory(address)
 
 		c.setC(rvalue&1 == 1)
@@ -3809,6 +3947,8 @@ func (c *CPU) srlSs(ss string) func() uint8 {
 		c.setH(false)
 		c.setZ(rvalue == 0)
 		c.setS(false)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setF3(rvalue&0x08 == 0x08)
 
 		return 23
 	}
@@ -3818,13 +3958,16 @@ func (c *CPU) bitBR(b uint8, r byte) func() uint8 {
 	return func() uint8 {
 		rvalue := c.extractRegister(r)
 		mask := uint8(1 << b)
-		c.setZ(rvalue&mask == 0)
+
 		c.PC += 2
 
-		c.setS(rvalue > 127)
+		c.setS(b == 7 && rvalue > 127)
+		c.setZ(rvalue&mask == 0)
+		c.setF5(rvalue&0x20 == 0x20)
+		c.setH(true)
+		c.setF3(rvalue&0x08 == 0x08)
 		c.setPV(rvalue&mask == 0)
 		c.setN(false)
-		c.setH(true)
 
 		return 8
 	}
@@ -3833,30 +3976,37 @@ func (c *CPU) bitBR(b uint8, r byte) func() uint8 {
 func (c *CPU) bitBSs(b uint8, ss string) func() uint8 {
 	if ss == "HL" {
 		return func() uint8 {
-			rvalue := c.dma.GetMemory(c.extractRegisterPair(ss))
+			rvalue := c.dma.GetMemory(c.HL)
 			mask := uint8(1 << b)
-			c.setZ(rvalue&mask == 0)
+
 			c.PC += 2
 
-			c.setS(rvalue > 127)
+			c.setS(b == 7 && rvalue > 127)
+			c.setZ(rvalue&mask == 0)
+			c.setF5(c.WZ&0x2000 == 0x2000)
+			c.setH(true)
+			c.setF3(c.WZ&0x0800 == 0x0800)
 			c.setPV(rvalue&mask == 0)
 			c.setN(false)
-			c.setH(true)
 
 			return 12
 		}
 	}
 
 	return func() uint8 {
-		rvalue := c.dma.GetMemory(c.extractRegisterPair(ss) + uint16(c.dma.GetMemory(c.PC+2)))
+		address := c.shiftedAddress(c.extractRegisterPair(ss), c.dma.GetMemory(c.PC+2))
+		rvalue := c.dma.GetMemory(address)
 		mask := uint8(1 << b)
-		c.setZ(rvalue&mask == 0)
+
 		c.PC += 4
 
-		c.setS(rvalue > 127)
+		c.setS(b == 7 && rvalue > 127)
+		c.setZ(rvalue&mask == 0)
+		c.setF5(address&0x2000 == 0x2000)
+		c.setH(true)
+		c.setF3(address&0x0800 == 0x0800)
 		c.setPV(rvalue&mask == 0)
 		c.setN(false)
-		c.setH(true)
 
 		return 20
 	}
@@ -3903,14 +4053,14 @@ func (c *CPU) setBSs(b uint8, ss string) func() uint8 {
 		}
 	case "IX":
 		return func() uint8 {
-			address := c.IX + uint16(c.dma.GetMemory(c.PC+2))
+			address := c.shiftedAddress(c.IX, c.dma.GetMemory(c.PC+2))
 			c.dma.SetMemoryByte(address, c.dma.GetMemory(address)|uint8(1<<b))
 			c.PC += 4
 			return 23
 		}
 	case "IY":
 		return func() uint8 {
-			address := c.IY + uint16(c.dma.GetMemory(c.PC+2))
+			address := c.shiftedAddress(c.IY, c.dma.GetMemory(c.PC+2))
 			c.dma.SetMemoryByte(address, c.dma.GetMemory(address)|uint8(1<<b))
 			c.PC += 4
 			return 23
@@ -3961,14 +4111,14 @@ func (c *CPU) resBSs(b uint8, ss string) func() uint8 {
 		}
 	case "IX":
 		return func() uint8 {
-			address := c.IX + uint16(c.dma.GetMemory(c.PC+2))
+			address := c.shiftedAddress(c.IX, c.dma.GetMemory(c.PC+2))
 			c.dma.SetMemoryByte(address, c.dma.GetMemory(address)&(uint8(1<<b)^0xff))
 			c.PC += 4
 			return 23
 		}
 	case "IY":
 		return func() uint8 {
-			address := c.IY + uint16(c.dma.GetMemory(c.PC+2))
+			address := c.shiftedAddress(c.IY, c.dma.GetMemory(c.PC+2))
 			c.dma.SetMemoryByte(address, c.dma.GetMemory(address)&(uint8(1<<b)^0xff))
 			c.PC += 4
 			return 23
