@@ -103,6 +103,7 @@ func TestAdcRegister(t *testing.T) {
 			}
 
 			cpu.PC = 0
+			cpu.tstates = 4
 			cpu.setAcc(row[0])
 			cpu.BC = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.DE = (uint16(row[1]) << 8) | uint16(row[1])
@@ -110,7 +111,7 @@ func TestAdcRegister(t *testing.T) {
 			cpu.IX = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.IY = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.setC(row[2] == 1)
-			tstates := cpu.adcAR(register)()
+			cpu.adcAR(register)()
 
 			if cpu.getAcc() != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
 				t.Errorf(
@@ -120,8 +121,8 @@ func TestAdcRegister(t *testing.T) {
 				)
 			}
 
-			if cpu.PC != 1+adjustPC || tstates != 4 {
-				t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 1+adjustPC, 4)
+			if cpu.PC != 1+adjustPC || cpu.tstates != 4 {
+				t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 1+adjustPC, 4)
 			}
 		}
 	}
@@ -135,10 +136,11 @@ func TestAdc_Hl_(t *testing.T) {
 
 	for _, row := range adcTruthTable {
 		cpu.PC = 0
+		cpu.tstates = 4
 		cpu.setAcc(row[0])
 		cpu.setC(row[2] == 1)
 		dmaX.SetMemoryByte(cpu.HL, row[1])
-		tstates := cpu.adcA_Ss_("HL")()
+		cpu.adcA_Ss_("HL")()
 
 		if cpu.getAcc() != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
 			t.Errorf(
@@ -148,8 +150,8 @@ func TestAdc_Hl_(t *testing.T) {
 			)
 		}
 
-		if cpu.PC != 1 || tstates != 7 {
-			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 1, 7)
+		if cpu.PC != 1 || cpu.tstates != 7 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 1, 7)
 		}
 	}
 }
@@ -162,11 +164,12 @@ func TestAdc_Ix_(t *testing.T) {
 
 	for _, row := range adcTruthTable {
 		cpu.PC = 0
+		cpu.tstates = 8
 		cpu.setAcc(row[0])
 		cpu.setC(row[2] == 1)
 		dmaX.SetMemoryByte(0x1234, row[1])
 		dmaX.SetMemoryByte(0x0002, 0x19)
-		tstates := cpu.adcA_Ss_("IX")()
+		cpu.adcA_Ss_("IX")()
 
 		if cpu.getAcc() != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
 			t.Errorf(
@@ -176,8 +179,8 @@ func TestAdc_Ix_(t *testing.T) {
 			)
 		}
 
-		if cpu.PC != 3 || tstates != 19 {
-			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 3, 19)
+		if cpu.PC != 3 || cpu.tstates != 19 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 3, 19)
 		}
 	}
 }
@@ -190,11 +193,12 @@ func TestAdc_Iy_(t *testing.T) {
 
 	for _, row := range adcTruthTable {
 		cpu.PC = 0
+		cpu.tstates = 8
 		cpu.setAcc(row[0])
 		cpu.setC(row[2] == 1)
 		dmaX.SetMemoryByte(0x1234, row[1])
 		dmaX.SetMemoryByte(0x0002, 0x19)
-		tstates := cpu.adcA_Ss_("IY")()
+		cpu.adcA_Ss_("IY")()
 
 		if cpu.getAcc() != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
 			t.Errorf(
@@ -204,8 +208,8 @@ func TestAdc_Iy_(t *testing.T) {
 			)
 		}
 
-		if cpu.PC != 3 || tstates != 19 {
-			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 3, 19)
+		if cpu.PC != 3 || cpu.tstates != 19 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 3, 19)
 		}
 	}
 }
@@ -217,10 +221,11 @@ func TestAdcX(t *testing.T) {
 
 	for _, row := range adcTruthTable {
 		cpu.PC = 0
+		cpu.tstates = 4
 		cpu.setAcc(row[0])
 		cpu.setC(row[2] == 1)
 		dmaX.SetMemoryByte(0x0001, row[1])
-		tstates := cpu.adcAN()
+		cpu.adcAN()
 
 		if cpu.getAcc() != row[3] || cpu.getC() != (row[4] == 1) || cpu.getN() != (row[5] == 1) || cpu.getPV() != (row[6] == 1) || cpu.getH() != (row[7] == 1) || cpu.getZ() != (row[8] == 1) || cpu.getS() != (row[9] == 1) {
 			t.Errorf(
@@ -230,8 +235,8 @@ func TestAdcX(t *testing.T) {
 			)
 		}
 
-		if cpu.PC != 2 || tstates != 7 {
-			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 2, 7)
+		if cpu.PC != 2 || cpu.tstates != 7 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 2, 7)
 		}
 	}
 }

@@ -6,12 +6,15 @@ type Memory struct {
 	activeBanks [4]*MemoryBank
 }
 
-func (m *Memory) GetByte(address uint16) uint8 {
-	return m.activeBanks[uint8(address>>14)].GetByte(address & 0x3fff)
+func (m *Memory) GetByte(address uint16) (uint8, bool) {
+	bankNumber := uint8(address >> 14)
+	return m.activeBanks[bankNumber].GetByte(address & 0x3fff), m.activeBanks[bankNumber].contended
 }
 
-func (m *Memory) SetByte(address uint16, value uint8) {
-	m.activeBanks[address>>14].SetByte(address&0x3fff, value)
+func (m *Memory) SetByte(address uint16, value uint8) bool {
+	bankNumber := uint8(address >> 14)
+	m.activeBanks[bankNumber].SetByte(address&0x3fff, value)
+	return m.activeBanks[bankNumber].contended
 }
 
 func (m *Memory) Clear() {

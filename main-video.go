@@ -48,7 +48,6 @@ func main() {
 	//loadFileToMemory(dma, 0x8000, "./roms/zexdoc.rom")
 	cpu := cpu.CPUNew(dma)
 	cpu.PC = 0x0000
-	tstates := uint64(0)
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
@@ -75,14 +74,18 @@ func main() {
 
 	running := true
 	for running {
+		tstatesBef, tstatesAft := uint64(0), uint64(0)
 		for {
 			//fmt.Printf("T: %d => ", tstates)
-			tstates += uint64(cpu.Step())
+			cpu.Step()
 			opCount++
-			if tstates > 70908 {
-				tstates = 0
+			tstatesBef = cpu.Tstates() % 69888
+
+			if tstatesBef < tstatesAft {
 				break
 			}
+
+			tstatesAft = cpu.Tstates() % 69888
 		}
 		drawScreen(renderer, texture, video)
 		frames += 1

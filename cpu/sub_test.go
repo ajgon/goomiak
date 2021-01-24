@@ -66,13 +66,14 @@ func TestSubRegister(t *testing.T) {
 			}
 
 			cpu.PC = 0
+			cpu.tstates = 4
 			cpu.setAcc(row[0])
 			cpu.BC = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.DE = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.HL = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.IX = (uint16(row[1]) << 8) | uint16(row[1])
 			cpu.IY = (uint16(row[1]) << 8) | uint16(row[1])
-			tstates := cpu.subR(register)()
+			cpu.subR(register)()
 
 			if cpu.getAcc() != row[2] || cpu.getC() != (row[3] == 1) || cpu.getN() != (row[4] == 1) || cpu.getPV() != (row[5] == 1) || cpu.getH() != (row[6] == 1) || cpu.getZ() != (row[7] == 1) || cpu.getS() != (row[8] == 1) {
 				t.Errorf(
@@ -82,8 +83,8 @@ func TestSubRegister(t *testing.T) {
 				)
 			}
 
-			if cpu.PC != 1+adjustPC || tstates != 4 {
-				t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 1+adjustPC, 4)
+			if cpu.PC != 1+adjustPC || cpu.tstates != 4 {
+				t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 1+adjustPC, 4)
 			}
 		}
 	}
@@ -97,9 +98,10 @@ func TestSub_Hl_(t *testing.T) {
 
 	for _, row := range subTruthTable {
 		cpu.PC = 0
+		cpu.tstates = 4
 		cpu.setAcc(row[0])
 		dmaX.SetMemoryByte(cpu.HL, row[1])
-		tstates := cpu.sub_Ss_("HL")()
+		cpu.sub_Ss_("HL")()
 
 		if cpu.getAcc() != row[2] || cpu.getC() != (row[3] == 1) || cpu.getN() != (row[4] == 1) || cpu.getPV() != (row[5] == 1) || cpu.getH() != (row[6] == 1) || cpu.getZ() != (row[7] == 1) || cpu.getS() != (row[8] == 1) {
 			t.Errorf(
@@ -109,8 +111,8 @@ func TestSub_Hl_(t *testing.T) {
 			)
 		}
 
-		if cpu.PC != 1 || tstates != 7 {
-			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 1, 7)
+		if cpu.PC != 1 || cpu.tstates != 7 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 1, 7)
 		}
 	}
 }
@@ -123,10 +125,11 @@ func TestSub_Ix_(t *testing.T) {
 
 	for _, row := range subTruthTable {
 		cpu.PC = 0
+		cpu.tstates = 8
 		cpu.setAcc(row[0])
 		dmaX.SetMemoryByte(0x1234, row[1])
 		dmaX.SetMemoryByte(0x0002, 0x19)
-		tstates := cpu.sub_Ss_("IX")()
+		cpu.sub_Ss_("IX")()
 
 		if cpu.getAcc() != row[2] || cpu.getC() != (row[3] == 1) || cpu.getN() != (row[4] == 1) || cpu.getPV() != (row[5] == 1) || cpu.getH() != (row[6] == 1) || cpu.getZ() != (row[7] == 1) || cpu.getS() != (row[8] == 1) {
 			t.Errorf(
@@ -136,8 +139,8 @@ func TestSub_Ix_(t *testing.T) {
 			)
 		}
 
-		if cpu.PC != 3 || tstates != 19 {
-			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 3, 19)
+		if cpu.PC != 3 || cpu.tstates != 19 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 3, 19)
 		}
 	}
 }
@@ -150,10 +153,11 @@ func TestSub_Iy_(t *testing.T) {
 
 	for _, row := range subTruthTable {
 		cpu.PC = 0
+		cpu.tstates = 8
 		cpu.setAcc(row[0])
 		dmaX.SetMemoryByte(0x1234, row[1])
 		dmaX.SetMemoryByte(0x0002, 0x19)
-		tstates := cpu.sub_Ss_("IY")()
+		cpu.sub_Ss_("IY")()
 
 		if cpu.getAcc() != row[2] || cpu.getC() != (row[3] == 1) || cpu.getN() != (row[4] == 1) || cpu.getPV() != (row[5] == 1) || cpu.getH() != (row[6] == 1) || cpu.getZ() != (row[7] == 1) || cpu.getS() != (row[8] == 1) {
 			t.Errorf(
@@ -163,8 +167,8 @@ func TestSub_Iy_(t *testing.T) {
 			)
 		}
 
-		if cpu.PC != 3 || tstates != 19 {
-			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 3, 19)
+		if cpu.PC != 3 || cpu.tstates != 19 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 3, 19)
 		}
 	}
 }
@@ -176,9 +180,10 @@ func TestSubX(t *testing.T) {
 
 	for _, row := range subTruthTable {
 		cpu.PC = 0
+		cpu.tstates = 4
 		cpu.setAcc(row[0])
 		dmaX.SetMemoryByte(0x0001, row[1])
-		tstates := cpu.subN()
+		cpu.subN()
 
 		if cpu.getAcc() != row[2] || cpu.getC() != (row[3] == 1) || cpu.getN() != (row[4] == 1) || cpu.getPV() != (row[5] == 1) || cpu.getH() != (row[6] == 1) || cpu.getZ() != (row[7] == 1) || cpu.getS() != (row[8] == 1) {
 			t.Errorf(
@@ -188,8 +193,8 @@ func TestSubX(t *testing.T) {
 			)
 		}
 
-		if cpu.PC != 2 || tstates != 7 {
-			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 2, 7)
+		if cpu.PC != 2 || cpu.tstates != 7 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 2, 7)
 		}
 	}
 }

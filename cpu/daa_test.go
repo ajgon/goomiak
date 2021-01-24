@@ -2068,18 +2068,19 @@ func TestDaa(t *testing.T) {
 		after := row[1]
 
 		cpu.PC = 0
+		cpu.tstates = 4
 		cpu.setN(before[0] == 1)
 		cpu.setC(before[1] == 1)
 		cpu.setH(before[2] == 1)
 		cpu.setAcc(before[3])
-		tstates := cpu.daa()
+		cpu.daa()
 
 		if cpu.getN() != (after[0] == 1) || cpu.getC() != (after[1] == 1) || cpu.getH() != (after[2] == 1) || cpu.getAcc() != after[3] {
 			t.Errorf("\ngot:  N=%t, C=%t, H=%t, A=0x%x\nwant: N=%t, C=%t, H=%t, A=0x%x", cpu.getN(), cpu.getC(), cpu.getH(), cpu.getAcc(), after[0] == 1, after[1] == 1, after[2] == 1, after[3])
 		}
 
-		if cpu.PC != 1 || tstates != 4 {
-			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, tstates, 1, 4)
+		if cpu.PC != 1 || cpu.tstates != 4 {
+			t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 1, 4)
 		}
 	}
 }

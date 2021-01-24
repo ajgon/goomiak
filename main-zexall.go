@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"z80/cpu"
 	"z80/dma"
@@ -30,13 +31,38 @@ func main() {
 	videoMemoryHandler := video.VideoMemoryHandlerNew()
 	dma := dma.DMANew(mem, videoMemoryHandler)
 	//video := video.VideoNew(dma)
-	loadFileToMemory(dma, 0x0000, "./roms/48.rom")
+	//loadFileToMemory(dma, 0x0000, "./roms/48.rom")
+	//loadFileToMemory(dma, 0x8000, "./roms/zexdoc.rom")
+	loadFileToMemory(dma, 0x0100, "./roms/zexall.cpm")
 
 	cpu := cpu.CPUNew(dma)
-	//reader := bufio.NewReader(os.Stdin)
+	cpu.PC = 0x0100
+	cpu.SP = 0x0000
+	dma.SetMemoryByte(0x05, 0xc9) // RET
 
 	for {
-		cpu.DebugStep()
-		//reader.ReadString('\n')
+		cpu.Step()
+		if cpu.PC == 0 {
+			break
+		}
+
+		if cpu.PC == 5 {
+			if uint8(cpu.BC) == 2 {
+				fmt.Printf("%c", uint8(cpu.DE))
+			}
+
+			if uint8(cpu.BC) == 9 {
+				i := cpu.DE
+				for {
+					char, _ := dma.GetMemoryByte(i)
+					if char != 36 {
+						fmt.Printf("%c", char)
+					} else {
+						break
+					}
+					i++
+				}
+			}
+		}
 	}
 }

@@ -22,15 +22,18 @@ func (dma *DMA) GetHandler(name string) MemoryHandler {
 	return dma.handlers[name]
 }
 
-func (dma *DMA) GetMemoryByte(address uint16) uint8 {
+func (dma *DMA) GetMemoryByte(address uint16) (uint8, bool) {
 	return dma.memory.GetByte(address)
 }
 
-func (dma *DMA) SetMemoryByte(address uint16, value uint8) {
-	dma.memory.SetByte(address, value)
+func (dma *DMA) SetMemoryByte(address uint16, value uint8) (contended bool) {
+	contended = dma.memory.SetByte(address, value)
+
 	for _, handler := range dma.handlers {
 		handler.MarkAsDirty(address)
 	}
+
+	return
 }
 
 // this function is used for testing only, shouldn't be used in production code
