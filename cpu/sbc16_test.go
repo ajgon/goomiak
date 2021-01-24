@@ -300,7 +300,7 @@ var sbc16TruthTable [288][10]uint16 = [288][10]uint16{
 }
 
 func TestSbc16bit(t *testing.T) {
-	var mem = memory.MemoryNew()
+	var mem = memory.NewWritableMemory()
 	var dmaX = dma.DMANew(mem)
 	var cpu = CPUNew(dmaX)
 

@@ -35,7 +35,7 @@ func (dh *DummyHandler) Name() string {
 	return "dummy"
 }
 
-var mem = memory.MemoryNew()
+var mem = memory.NewMemory()
 var dummyHandler = new(DummyHandler)
 var dma = DMANew(mem, dummyHandler)
 
@@ -51,9 +51,9 @@ func TestGetHandler(t *testing.T) {
 
 func TestGetMemory(t *testing.T) {
 	mem.Clear()
-	mem.SetBulk(0x1234, []uint8{42})
+	mem.SetByte(0x4444, 42)
 
-	got := dma.GetMemory(0x1234)
+	got := dma.GetMemoryByte(0x4444)
 	want := uint8(42)
 
 	if got != want {
@@ -65,7 +65,7 @@ func TestSetMemoryByte(t *testing.T) {
 	mem.Clear()
 	dma.SetMemoryByte(0x4321, 25)
 
-	got1 := mem.Get(0x4321)
+	got1 := mem.GetByte(0x4321)
 	want1 := uint8(25)
 
 	if got1 != want1 {
@@ -84,7 +84,7 @@ func TestSetMemoryBulk(t *testing.T) {
 	mem.Clear()
 	dma.SetMemoryBulk(0x4321, []uint8{15, 19, 23})
 
-	got1 := []uint8{mem.Get(0x4321), mem.Get(0x4322), mem.Get(0x4323)}
+	got1 := []uint8{mem.GetByte(0x4321), mem.GetByte(0x4322), mem.GetByte(0x4323)}
 	want1 := []uint8{15, 19, 23}
 
 	if !reflect.DeepEqual(got1, want1) {

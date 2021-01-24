@@ -19,11 +19,13 @@ func loadFileToMemory(dma *dma.DMA, address uint16, filePath string) {
 		panic("error loading file!")
 	}
 
-	bytes := make([]byte, 6912)
+	stat, _ := file.Stat()
+
+	bytes := make([]byte, stat.Size())
 	buf := bufio.NewReader(file)
 	buf.Read(bytes)
 
-	dma.SetMemoryBulk(address, bytes)
+	dma.LoadData(address, bytes)
 }
 
 func drawScreen(renderer *sdl.Renderer, texture *sdl.Texture, video *video.Video) {
@@ -36,7 +38,7 @@ func drawScreen(renderer *sdl.Renderer, texture *sdl.Texture, video *video.Video
 }
 
 func main() {
-	mem := memory.MemoryNew()
+	mem := memory.NewMemory()
 	videoMemoryHandler := video.VideoMemoryHandlerNew()
 
 	dma := dma.DMANew(mem, videoMemoryHandler)

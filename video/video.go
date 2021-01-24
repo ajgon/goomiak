@@ -64,8 +64,8 @@ func (v *Video) Pixels() []byte {
 			if !v.memoryHandler.CheckAddressDirtiness(address+x) && !v.memoryHandler.CheckAddressDirtiness(colorAddress) {
 				continue
 			}
-			value := v.dma.GetMemory(address + x)
-			colorValue := v.dma.GetMemory(colorAddress)
+			value := v.dma.GetMemoryByte(address + x)
+			colorValue := v.dma.GetMemoryByte(colorAddress)
 			ink := uint8(((colorValue >> 3) & 0b00001000) | (colorValue & 0b00000111))
 			paper := uint8((colorValue >> 3) & 0b00001111)
 

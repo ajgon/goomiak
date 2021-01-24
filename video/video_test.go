@@ -11,7 +11,7 @@ import (
 	"z80/memory"
 )
 
-var mem = memory.MemoryNew()
+var mem = memory.NewMemory()
 var videoMemoryHandler = VideoMemoryHandlerNew()
 var dmaAddresser = dma.DMANew(mem, videoMemoryHandler)
 var video = VideoNew(dmaAddresser)

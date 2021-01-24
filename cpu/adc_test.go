@@ -84,7 +84,7 @@ var adcTruthTable [72][10]uint8 = [72][10]uint8{
 }
 
 func TestAdcRegister(t *testing.T) {
-	var mem = memory.MemoryNew()
+	var mem = memory.NewWritableMemory()
 	var dmaX = dma.DMANew(mem)
 	var cpu = CPUNew(dmaX)
 
@@ -128,7 +128,7 @@ func TestAdcRegister(t *testing.T) {
 }
 
 func TestAdc_Hl_(t *testing.T) {
-	var mem = memory.MemoryNew()
+	var mem = memory.NewWritableMemory()
 	var dmaX = dma.DMANew(mem)
 	var cpu = CPUNew(dmaX)
 	cpu.HL = 0x1234
@@ -155,7 +155,7 @@ func TestAdc_Hl_(t *testing.T) {
 }
 
 func TestAdc_Ix_(t *testing.T) {
-	var mem = memory.MemoryNew()
+	var mem = memory.NewWritableMemory()
 	var dmaX = dma.DMANew(mem)
 	var cpu = CPUNew(dmaX)
 	cpu.IX = 0x121b
@@ -183,7 +183,7 @@ func TestAdc_Ix_(t *testing.T) {
 }
 
 func TestAdc_Iy_(t *testing.T) {
-	var mem = memory.MemoryNew()
+	var mem = memory.NewWritableMemory()
 	var dmaX = dma.DMANew(mem)
 	var cpu = CPUNew(dmaX)
 	cpu.IY = 0x121b
@@ -211,7 +211,7 @@ func TestAdc_Iy_(t *testing.T) {
 }
 
 func TestAdcX(t *testing.T) {
-	var mem = memory.MemoryNew()
+	var mem = memory.NewWritableMemory()
 	var dmaX = dma.DMANew(mem)
 	var cpu = CPUNew(dmaX)
 

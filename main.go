@@ -23,11 +23,11 @@ func loadFileToMemory(dma *dma.DMA, address uint16, filePath string) {
 	buf := bufio.NewReader(file)
 	buf.Read(bytes)
 
-	dma.SetMemoryBulk(address, bytes)
+	dma.LoadData(address, bytes)
 }
 
 func main() {
-	mem := memory.MemoryNew()
+	mem := memory.NewWritableMemory()
 	videoMemoryHandler := video.VideoMemoryHandlerNew()
 	dma := dma.DMANew(mem, videoMemoryHandler)
 	//video := video.VideoNew(dma)
@@ -54,7 +54,7 @@ func main() {
 			if uint8(cpu.BC) == 9 {
 				i := cpu.DE
 				for {
-					char := dma.GetMemory(i)
+					char := dma.GetMemoryByte(i)
 					if char != 36 {
 						fmt.Printf("%c", char)
 					} else {

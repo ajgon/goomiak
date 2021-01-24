@@ -22,8 +22,8 @@ func (dma *DMA) GetHandler(name string) MemoryHandler {
 	return dma.handlers[name]
 }
 
-func (dma *DMA) GetMemory(address uint16) uint8 {
-	return dma.memory.Get(address)
+func (dma *DMA) GetMemoryByte(address uint16) uint8 {
+	return dma.memory.GetByte(address)
 }
 
 func (dma *DMA) SetMemoryByte(address uint16, value uint8) {
@@ -33,12 +33,19 @@ func (dma *DMA) SetMemoryByte(address uint16, value uint8) {
 	}
 }
 
+// this function is used for testing only, shouldn't be used in production code
 func (dma *DMA) SetMemoryBulk(address uint16, bytes []uint8) {
-	dma.memory.SetBulk(address, bytes)
+	for i := uint32(address); i < uint32(address)+uint32(len(bytes)); i++ {
+		dma.memory.SetByte(uint16(i), bytes[uint16(i-uint32(address))])
+	}
 
 	for _, handler := range dma.handlers {
 		handler.MarkRangeAsDirty(address, address+uint16(len(bytes))-1)
 	}
+}
+
+func (dma *DMA) LoadData(startAddress uint16, data []byte) {
+	dma.memory.LoadData(uint32(startAddress), data)
 }
 
 func DMANew(memory *memory.Memory, handlers ...MemoryHandler) *DMA {

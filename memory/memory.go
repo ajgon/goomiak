@@ -1,60 +1,77 @@
 package memory
 
-import (
-	"fmt"
-)
-
 type Memory struct {
-	bytes [65536]uint8
+	roms        [4]MemoryBank
+	banks       [8]MemoryBank
+	activeBanks [4]*MemoryBank
 }
 
-func (m *Memory) Get(address uint16) uint8 {
-	return m.bytes[address]
+func (m *Memory) GetByte(address uint16) uint8 {
+	return m.activeBanks[uint8(address>>14)].GetByte(address & 0x3fff)
 }
 
 func (m *Memory) SetByte(address uint16, value uint8) {
-	m.bytes[address] = value
-}
-
-func (m *Memory) SetBulk(address uint16, bytes []uint8) {
-	if len(bytes) == 0 {
-		return
-	}
-
-	for index, value := range bytes {
-		m.bytes[address+uint16(index)] = value
-	}
-}
-
-func (m *Memory) Dump(addressRange ...uint16) {
-	var from, to uint16
-
-	if len(addressRange) != 2 {
-		from = 0
-		to = 65535
-	} else {
-		from = addressRange[0]
-		to = addressRange[1]
-	}
-
-	for i := from / 16; i < to/16; i++ {
-		fmt.Printf("%04x  ", i*16)
-		for b := uint16(0); b < 16; b++ {
-			fmt.Printf("%02x", m.bytes[i*16+b])
-			if b == 7 {
-				fmt.Printf("  ")
-			} else if b != 15 {
-				fmt.Printf(" ")
-			}
-		}
-		fmt.Print("\n")
-	}
+	m.activeBanks[address>>14].SetByte(address&0x3fff, value)
 }
 
 func (m *Memory) Clear() {
-	m.bytes = [65536]uint8{}
+	for i := 0; i < 8; i++ {
+		m.banks[i].Clear()
+	}
 }
 
-func MemoryNew() *Memory {
-	return new(Memory)
+func (m *Memory) LoadData(startAddress uint32, data []byte) {
+	var endAddress uint32
+	memoryLimit := 4 * uint32(memoryBankSize)
+
+	if startAddress > memoryLimit {
+		startAddress = memoryLimit
+	}
+
+	if startAddress+uint32(len(data)) > memoryLimit {
+		endAddress = memoryLimit
+	} else {
+		endAddress = startAddress + uint32(len(data))
+	}
+
+	for address := startAddress; address < endAddress; address++ {
+		m.activeBanks[address>>14].bytes[address&0x3fff] = data[address-startAddress]
+	}
+}
+
+func NewMemory() *Memory {
+	memory := new(Memory)
+	for i := 0; i < 4; i++ {
+		memory.roms[i] = *NewMemoryBank(false, true)
+	}
+
+	for i := 0; i < 8; i++ {
+		// Odd memory banks are always contended
+		memory.banks[i] = *NewMemoryBank(i%2 == 1, false)
+	}
+
+	memory.activeBanks = [4]*MemoryBank{
+		&memory.roms[0], &memory.banks[5], &memory.banks[2], &memory.banks[0],
+	}
+
+	return memory
+}
+
+// only for testing, never used in real-case scenario
+func NewWritableMemory() *Memory {
+	memory := new(Memory)
+	for i := 0; i < 4; i++ {
+		memory.roms[i] = *NewMemoryBank(false, false)
+	}
+
+	for i := 0; i < 8; i++ {
+		// Odd memory banks are always contended
+		memory.banks[i] = *NewMemoryBank(i%2 == 1, false)
+	}
+
+	memory.activeBanks = [4]*MemoryBank{
+		&memory.roms[0], &memory.banks[5], &memory.banks[2], &memory.banks[0],
+	}
+
+	return memory
 }

@@ -47,7 +47,7 @@ var addTruthTable [36][9]uint8 = [36][9]uint8{
 }
 
 func TestAddRegister(t *testing.T) {
-	var mem = memory.MemoryNew()
+	var mem = memory.NewWritableMemory()
 	var dmaX = dma.DMANew(mem)
 	var cpu = CPUNew(dmaX)
 
@@ -90,7 +90,7 @@ func TestAddRegister(t *testing.T) {
 }
 
 func TestAdd_Hl_(t *testing.T) {
-	var mem = memory.MemoryNew()
+	var mem = memory.NewWritableMemory()
 	var dmaX = dma.DMANew(mem)
 	var cpu = CPUNew(dmaX)
 	cpu.HL = 0x1234
@@ -116,7 +116,7 @@ func TestAdd_Hl_(t *testing.T) {
 }
 
 func TestAdd_Ix_(t *testing.T) {
-	var mem = memory.MemoryNew()
+	var mem = memory.NewWritableMemory()
 	var dmaX = dma.DMANew(mem)
 	var cpu = CPUNew(dmaX)
 	cpu.IX = 0x121b
@@ -143,7 +143,7 @@ func TestAdd_Ix_(t *testing.T) {
 }
 
 func TestAdd_Iy_(t *testing.T) {
-	var mem = memory.MemoryNew()
+	var mem = memory.NewWritableMemory()
 	var dmaX = dma.DMANew(mem)
 	var cpu = CPUNew(dmaX)
 	cpu.IY = 0x121b
