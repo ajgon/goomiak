@@ -4,11 +4,13 @@ import (
 	"z80/dma"
 )
 
+const fullWidth uint16 = 256 + 48 + 48
+const fullHeight uint16 = 192 + 48 + 56
 const screenWidth uint16 = 256
 const screenHeight uint16 = 192
 const pixelsAddress uint16 = 0x4000
 const colorsAddress uint16 = 0x5800
-const pixelsByteCount uint32 = uint32(screenWidth) * uint32(screenHeight) * 4
+const pixelsByteCount uint32 = uint32(fullWidth) * uint32(fullHeight) * 4
 
 type Video struct {
 	dma           *dma.DMA
@@ -30,6 +32,49 @@ func (v *Video) prepareLineAddresses() {
 	}
 }
 
+func (v *Video) PaintPixel(x, y uint64) {
+	if x < 48 || x >= 304 || y < 48 || y >= 240 {
+		addrr := 4 * uint32(uint32(fullWidth)*uint32(y)+uint32(x))
+		//fmt.Println(x, y, addrr)
+		v.pixels[addrr] = 65
+		v.pixels[addrr+1] = 156
+		v.pixels[addrr+2] = 217
+		v.pixels[addrr+3] = 255
+		return
+	}
+	var color uint8
+
+	y -= 48
+	x -= 48
+
+	pixelAddress := uint16(v.lineAddresses[y])
+	colorAddress := colorsAddress + (uint16(y)/8)*32 + uint16(x)
+	value, _ := v.dma.GetMemoryByte(pixelAddress + uint16(x))
+	colorValue, _ := v.dma.GetMemoryByte(colorAddress)
+	ink := uint8(((colorValue >> 3) & 0b00001000) | (colorValue & 0b00000111))
+	paper := uint8((colorValue >> 3) & 0b00001111)
+
+	if value&(128>>(x%8)) == (128 >> (x % 8)) {
+		color = ink
+	} else {
+		color = paper
+	}
+
+	addr := 4 * uint32(uint32(fullWidth)*uint32(y+48)+uint32(x+48))
+	brightness := (color&0b00001000)*6 + 207
+
+	if color&0b00000010 == 0b00000010 {
+		v.pixels[addr] = brightness
+	}
+	if color&0b00000100 == 0b00000100 {
+		v.pixels[addr+1] = brightness
+	}
+	if color&0b00000001 == 0b00000001 {
+		v.pixels[addr+2] = brightness
+	}
+	v.pixels[addr+3] = 255
+}
+
 func (v *Video) buildPixel(x, y uint16, color uint8) {
 	addr := 4 * uint32(screenWidth*y+x)
 	brightness := (color&0b00001000)*6 + 207
@@ -48,6 +93,10 @@ func (v *Video) buildPixel(x, y uint16, color uint8) {
 
 func (v *Video) NeedsRefresh() bool {
 	return v.memoryHandler.IsMemoryDirty()
+}
+
+func (v *Video) AllPixels() []byte {
+	return v.pixels[:]
 }
 
 func (v *Video) Pixels() []byte {
