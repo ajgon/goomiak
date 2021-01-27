@@ -2,8 +2,6 @@ package cpu
 
 import (
 	"testing"
-	"z80/dma"
-	"z80/memory"
 )
 
 var sbcTruthTable [72][10]uint8 = [72][10]uint8{
@@ -84,10 +82,6 @@ var sbcTruthTable [72][10]uint8 = [72][10]uint8{
 }
 
 func TestSbcRegister(t *testing.T) {
-	var mem = memory.NewWritableMemory()
-	var dmaX = dma.DMANew(mem)
-	var cpu = CPUNew(dmaX)
-
 	for _, row := range sbcTruthTable {
 		for _, register := range [11]byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', 'X', 'x', 'Y', 'y'} {
 			adjustPC := uint16(0)
@@ -129,9 +123,6 @@ func TestSbcRegister(t *testing.T) {
 }
 
 func TestSbc_Hl_(t *testing.T) {
-	var mem = memory.NewWritableMemory()
-	var dmaX = dma.DMANew(mem)
-	var cpu = CPUNew(dmaX)
 	cpu.HL = 0x1234
 
 	for _, row := range sbcTruthTable {
@@ -157,9 +148,6 @@ func TestSbc_Hl_(t *testing.T) {
 }
 
 func TestSbc_Ix_(t *testing.T) {
-	var mem = memory.NewWritableMemory()
-	var dmaX = dma.DMANew(mem)
-	var cpu = CPUNew(dmaX)
 	cpu.IX = 0x121b
 
 	for _, row := range sbcTruthTable {
@@ -186,9 +174,6 @@ func TestSbc_Ix_(t *testing.T) {
 }
 
 func TestSbc_Iy_(t *testing.T) {
-	var mem = memory.NewWritableMemory()
-	var dmaX = dma.DMANew(mem)
-	var cpu = CPUNew(dmaX)
 	cpu.IY = 0x121b
 
 	for _, row := range sbcTruthTable {
@@ -215,10 +200,6 @@ func TestSbc_Iy_(t *testing.T) {
 }
 
 func TestSbcX(t *testing.T) {
-	var mem = memory.NewWritableMemory()
-	var dmaX = dma.DMANew(mem)
-	var cpu = CPUNew(dmaX)
-
 	for _, row := range sbcTruthTable {
 		cpu.PC = 0
 		cpu.tstates = 4

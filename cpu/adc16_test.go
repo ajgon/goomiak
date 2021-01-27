@@ -2,8 +2,6 @@ package cpu
 
 import (
 	"testing"
-	"z80/dma"
-	"z80/memory"
 )
 
 var adc16TruthTable [288][10]uint16 = [288][10]uint16{
@@ -300,10 +298,6 @@ var adc16TruthTable [288][10]uint16 = [288][10]uint16{
 }
 
 func TestAdc16bit(t *testing.T) {
-	var mem = memory.NewWritableMemory()
-	var dmaX = dma.DMANew(mem)
-	var cpu = CPUNew(dmaX)
-
 	for _, row := range adc16TruthTable {
 		for _, registerPair := range [4]string{"BC", "DE", "HL", "SP"} {
 			if registerPair == "HL" {

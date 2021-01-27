@@ -5,6 +5,7 @@ import (
 	"os"
 	"z80/cpu"
 	"z80/dma"
+	"z80/machine"
 	"z80/memory"
 	"z80/video"
 )
@@ -32,7 +33,7 @@ func main() {
 	//video := video.VideoNew(dma)
 	loadFileToMemory(dma, 0x0000, "./roms/48.rom")
 
-	cpu := cpu.CPUNew(dma)
+	cpu := cpu.CPUNew(dma, machine.Spectrum48k)
 	//reader := bufio.NewReader(os.Stdin)
 
 	for {

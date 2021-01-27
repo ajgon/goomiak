@@ -2,8 +2,6 @@ package cpu
 
 import (
 	"testing"
-	"z80/dma"
-	"z80/memory"
 )
 
 var daaTruthTable [2048][2][4]uint8 = [2048][2][4]uint8{
@@ -2059,10 +2057,6 @@ var daaTruthTable [2048][2][4]uint8 = [2048][2][4]uint8{
 }
 
 func TestDaa(t *testing.T) {
-	var mem = memory.NewWritableMemory()
-	var dmaX = dma.DMANew(mem)
-	var cpu = CPUNew(dmaX)
-
 	for _, row := range daaTruthTable {
 		before := row[0]
 		after := row[1]

@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"testing"
 	"z80/dma"
+	"z80/machine"
 	"z80/memory"
 	"z80/video"
 )
@@ -11,7 +12,7 @@ import (
 var mem = memory.NewWritableMemory()
 var videoMemoryHandler = video.VideoMemoryHandlerNew()
 var dmaX = dma.DMANew(mem, videoMemoryHandler)
-var cpu = CPUNew(dmaX)
+var cpu = CPUNew(dmaX, machine.Spectrum48k)
 
 func getMemoryByte(address uint16) (value uint8) {
 	value, _ = dmaX.GetMemoryByte(address)

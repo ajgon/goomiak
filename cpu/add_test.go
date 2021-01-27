@@ -2,8 +2,6 @@ package cpu
 
 import (
 	"testing"
-	"z80/dma"
-	"z80/memory"
 )
 
 var addTruthTable [36][9]uint8 = [36][9]uint8{
@@ -47,10 +45,6 @@ var addTruthTable [36][9]uint8 = [36][9]uint8{
 }
 
 func TestAddRegister(t *testing.T) {
-	var mem = memory.NewWritableMemory()
-	var dmaX = dma.DMANew(mem)
-	var cpu = CPUNew(dmaX)
-
 	for _, row := range addTruthTable {
 		for _, register := range [11]byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', 'X', 'x', 'Y', 'y'} {
 			adjustPC := uint16(0)
@@ -91,9 +85,6 @@ func TestAddRegister(t *testing.T) {
 }
 
 func TestAdd_Hl_(t *testing.T) {
-	var mem = memory.NewWritableMemory()
-	var dmaX = dma.DMANew(mem)
-	var cpu = CPUNew(dmaX)
 	cpu.HL = 0x1234
 
 	for _, row := range addTruthTable {
@@ -118,9 +109,6 @@ func TestAdd_Hl_(t *testing.T) {
 }
 
 func TestAdd_Ix_(t *testing.T) {
-	var mem = memory.NewWritableMemory()
-	var dmaX = dma.DMANew(mem)
-	var cpu = CPUNew(dmaX)
 	cpu.IX = 0x121b
 
 	for _, row := range addTruthTable {
@@ -146,9 +134,6 @@ func TestAdd_Ix_(t *testing.T) {
 }
 
 func TestAdd_Iy_(t *testing.T) {
-	var mem = memory.NewWritableMemory()
-	var dmaX = dma.DMANew(mem)
-	var cpu = CPUNew(dmaX)
 	cpu.IY = 0x121b
 
 	for _, row := range addTruthTable {

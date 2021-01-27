@@ -3,6 +3,7 @@ package cpu
 import (
 	"fmt"
 	"z80/dma"
+	"z80/machine"
 )
 
 var parityTable [256]bool = [256]bool{
@@ -304,25 +305,14 @@ type CPU struct {
 	IY     uint16
 	States CPUStates
 
-	dma               *dma.DMA
-	mnemonics         CPUMnemonics
-	contentionPattern []uint8
-	frameLength       uint64
-	tstates           uint64
+	dma       *dma.DMA
+	mnemonics CPUMnemonics
+	variant   machine.Machine
+	tstates   uint64
 }
 
 func (c *CPU) Tstates() uint64 {
 	return c.tstates
-}
-
-func (c *CPU) buildContentionPattern(pattern [8]uint8, initialTstate uint32) {
-	c.contentionPattern = make([]uint8, c.frameLength, c.frameLength)
-	for line := uint32(0); line < 192; line++ {
-		lineFirstTstate := initialTstate + line*224
-		for x := uint32(0); x < 128; x++ {
-			c.contentionPattern[lineFirstTstate+x] = pattern[x%8]
-		}
-	}
 }
 
 func (c *CPU) initializeMnemonics() {
@@ -607,7 +597,7 @@ func (c *CPU) readByte(address uint16, usedTstates uint8) uint8 {
 	value, contended := c.dma.GetMemoryByte(address)
 
 	if contended {
-		c.tstates += uint64(c.contentionPattern[c.tstates%c.frameLength])
+		c.tstates += uint64(c.variant.ContentionDelays[c.tstates%c.variant.FrameLength])
 	}
 
 	c.tstates += uint64(usedTstates)
@@ -619,8 +609,7 @@ func (c *CPU) writeByte(address uint16, value uint8, usedTstates uint8) {
 	contended := c.dma.SetMemoryByte(address, value)
 
 	if contended && usedTstates > 0 {
-		//fmt.Printf("write contended %d => %d\n", c.tstates%c.frameLength, c.contentionPattern[c.tstates%c.frameLength])
-		c.tstates += uint64(c.contentionPattern[c.tstates%c.frameLength])
+		c.tstates += uint64(c.variant.ContentionDelays[c.tstates%c.variant.FrameLength])
 	}
 
 	c.tstates += uint64(usedTstates)
@@ -897,12 +886,11 @@ func (c *CPU) Reset() {
 	c.States = CPUStates{IFF1: true, IFF2: true}
 }
 
-func CPUNew(dma *dma.DMA) *CPU {
+func CPUNew(dma *dma.DMA, variant machine.Machine) *CPU {
 	cpu := new(CPU)
 	cpu.dma = dma
-	cpu.frameLength = 69888
+	cpu.variant = variant
 	cpu.initializeMnemonics()
-	cpu.buildContentionPattern([8]uint8{6, 5, 4, 3, 2, 1, 0, 0}, 14335)
 	cpu.Reset()
 	return cpu
 }

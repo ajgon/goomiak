@@ -6,6 +6,7 @@ import (
 	"os"
 	"z80/cpu"
 	"z80/dma"
+	"z80/machine"
 	"z80/memory"
 	"z80/video"
 
@@ -46,7 +47,7 @@ func main() {
 	//loadFileToMemory(dma, 0x4000, "./video/example.scr")
 	loadFileToMemory(dma, 0x0000, "./roms/48.rom")
 	//loadFileToMemory(dma, 0x8000, "./roms/zexdoc.rom")
-	cpu := cpu.CPUNew(dma)
+	cpu := cpu.CPUNew(dma, machine.Spectrum48k)
 	cpu.PC = 0x0000
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
