@@ -51,7 +51,7 @@ func (dma *DMA) LoadData(startAddress uint16, data []byte) {
 	dma.memory.LoadData(uint32(startAddress), data)
 }
 
-func DMANew(memory *memory.Memory, handlers ...MemoryHandler) *DMA {
+func NewDMA(memory *memory.Memory, handlers ...MemoryHandler) *DMA {
 	dma := new(DMA)
 	dma.memory = memory
 	dma.handlers = make(map[string]MemoryHandler)

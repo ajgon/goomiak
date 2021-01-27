@@ -307,7 +307,7 @@ func TestAdc16bit(t *testing.T) {
 			}
 
 			cpu.PC = 0
-			cpu.tstates = 8
+			cpu.Tstates = 8
 			cpu.setC(row[2] == 1)
 			cpu.BC = row[1]
 			cpu.DE = row[1]
@@ -324,8 +324,8 @@ func TestAdc16bit(t *testing.T) {
 				return
 			}
 
-			if cpu.PC != 2 || cpu.tstates != 15 {
-				t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.tstates, 2, 15)
+			if cpu.PC != 2 || cpu.Tstates != 15 {
+				t.Errorf("got PC=%d, %d T-states, want PC=%d, %d T-states", cpu.PC, cpu.Tstates, 2, 15)
 			}
 		}
 	}

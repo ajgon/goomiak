@@ -30,7 +30,7 @@ func TestMemoryGetByte(t *testing.T) {
 	memory := NewMemory()
 	memory.activeBanks[0].bytes[0x1234] = 42
 
-	got := memory.GetByte(0x1234)
+	got, _ := memory.GetByte(0x1234)
 	want := uint8(42)
 
 	if got != want {
@@ -39,7 +39,7 @@ func TestMemoryGetByte(t *testing.T) {
 
 	memory.activeBanks[2].bytes[0x2345] = 77
 
-	got = memory.GetByte(0xa345)
+	got, _ = memory.GetByte(0xa345)
 	want = uint8(77)
 
 	if got != want {

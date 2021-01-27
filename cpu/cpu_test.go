@@ -4,15 +4,27 @@ import (
 	"math/rand"
 	"testing"
 	"z80/dma"
-	"z80/machine"
 	"z80/memory"
 	"z80/video"
 )
 
 var mem = memory.NewWritableMemory()
 var videoMemoryHandler = video.VideoMemoryHandlerNew()
-var dmaX = dma.DMANew(mem, videoMemoryHandler)
-var cpu = CPUNew(dmaX, machine.Spectrum48k)
+var dmaX = dma.NewDMA(mem, videoMemoryHandler)
+
+var cpu = NewCPU(dmaX, CPUConfig{FrameLength: 69888, ContentionDelays: buildContentionPattern()})
+
+func buildContentionPattern() []uint8 {
+	contentionDelays := make([]uint8, 69888)
+	for line := uint(0); line < 192; line++ {
+		lineFirstTstate := 14335 + line*224
+		for x := uint(0); x < 128; x++ {
+			contentionDelays[lineFirstTstate+x] = [8]uint8{6, 5, 4, 3, 2, 1, 0, 0}[x%8]
+		}
+	}
+
+	return contentionDelays
+}
 
 func getMemoryByte(address uint16) (value uint8) {
 	value, _ = dmaX.GetMemoryByte(address)
@@ -20,7 +32,7 @@ func getMemoryByte(address uint16) (value uint8) {
 	return
 }
 
-func checkCpu(t *testing.T, opcodeSize uint8, expectedTstates uint64, expected map[string]uint16, instructionCall func()) {
+func checkCpu(t *testing.T, opcodeSize uint8, expectedTstates uint, expected map[string]uint16, instructionCall func()) {
 	t.Helper()
 	var expectedSP, expectedBC, expectedDE, expectedHL uint16
 	var expectedAF_, expectedBC_, expectedDE_, expectedHL_ uint16
@@ -29,11 +41,11 @@ func checkCpu(t *testing.T, opcodeSize uint8, expectedTstates uint64, expected m
 
 	switch opcodeSize {
 	case 1:
-		cpu.tstates += 4
+		cpu.Tstates += 4
 	case 2:
-		cpu.tstates += 8
+		cpu.Tstates += 8
 	case 3:
-		cpu.tstates += 11
+		cpu.Tstates += 11
 	default:
 		panic("Invalid opcode size")
 	}
@@ -213,8 +225,8 @@ func checkCpu(t *testing.T, opcodeSize uint8, expectedTstates uint64, expected m
 		t.Errorf("WZ: got %x, want %x", cpu.WZ, expectedWZ)
 	}
 
-	if cpu.tstates != expectedTstates {
-		t.Errorf("Tstates: got %d, want %d", cpu.tstates, expectedTstates)
+	if cpu.Tstates != expectedTstates {
+		t.Errorf("Tstates: got %d, want %d", cpu.Tstates, expectedTstates)
 	}
 }
 
@@ -228,8 +240,8 @@ func TestReadByte(t *testing.T) {
 
 	dmaX.SetMemoryByte(0x1234, 0x44)
 
-	gotValue, gotTstates := cpu.readByte(0x1234, 3), cpu.tstates
-	wantValue, wantTstates := uint8(0x44), uint64(3)
+	gotValue, gotTstates := cpu.readByte(0x1234, 3), cpu.Tstates
+	wantValue, wantTstates := uint8(0x44), uint(3)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
@@ -237,10 +249,10 @@ func TestReadByte(t *testing.T) {
 
 	// contented memory, normal tstate
 	dmaX.SetMemoryByte(0x4004, 0x44)
-	cpu.tstates = 10000
+	cpu.Tstates = 10000
 
-	gotValue, gotTstates = cpu.readByte(0x4004, 4), cpu.tstates
-	wantValue, wantTstates = uint8(0x44), uint64(10004)
+	gotValue, gotTstates = cpu.readByte(0x4004, 4), cpu.Tstates
+	wantValue, wantTstates = uint8(0x44), uint(10004)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
@@ -248,10 +260,10 @@ func TestReadByte(t *testing.T) {
 
 	// contented memory, contented tstate
 	dmaX.SetMemoryByte(0x4004, 0x44)
-	cpu.tstates = 44191
+	cpu.Tstates = 44191
 
-	gotValue, gotTstates = cpu.readByte(0x4004, 4), cpu.tstates
-	wantValue, wantTstates = uint8(0x44), uint64(44201)
+	gotValue, gotTstates = cpu.readByte(0x4004, 4), cpu.Tstates
+	wantValue, wantTstates = uint8(0x44), uint(44201)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
@@ -259,10 +271,10 @@ func TestReadByte(t *testing.T) {
 
 	// contented memory, contented tstate wrapped out
 	dmaX.SetMemoryByte(0x4004, 0x44)
-	cpu.tstates = 114079
+	cpu.Tstates = 114079
 
-	gotValue, gotTstates = cpu.readByte(0x4004, 4), cpu.tstates
-	wantValue, wantTstates = uint8(0x44), uint64(114089)
+	gotValue, gotTstates = cpu.readByte(0x4004, 4), cpu.Tstates
+	wantValue, wantTstates = uint8(0x44), uint(114089)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
@@ -274,41 +286,41 @@ func TestWriteByte(t *testing.T) {
 
 	cpu.writeByte(0x1234, 0x55, 3)
 
-	gotValue, gotTstates := getMemoryByte(0x1234), cpu.tstates
-	wantValue, wantTstates := uint8(0x55), uint64(3)
+	gotValue, gotTstates := getMemoryByte(0x1234), cpu.Tstates
+	wantValue, wantTstates := uint8(0x55), uint(3)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
 	}
 
 	// contented memory, normal tstate
-	cpu.tstates = 10000
+	cpu.Tstates = 10000
 	cpu.writeByte(0x4004, 0x55, 3)
 
-	gotValue, gotTstates = getMemoryByte(0x4004), cpu.tstates
-	wantValue, wantTstates = uint8(0x55), uint64(10003)
+	gotValue, gotTstates = getMemoryByte(0x4004), cpu.Tstates
+	wantValue, wantTstates = uint8(0x55), uint(10003)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
 	}
 
 	// contented memory, contented tstate
-	cpu.tstates = 44191
+	cpu.Tstates = 44191
 	cpu.writeByte(0x4004, 0x55, 4)
 
-	gotValue, gotTstates = getMemoryByte(0x4004), cpu.tstates
-	wantValue, wantTstates = uint8(0x55), uint64(44201)
+	gotValue, gotTstates = getMemoryByte(0x4004), cpu.Tstates
+	wantValue, wantTstates = uint8(0x55), uint(44201)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
 	}
 
 	// contented memory, contented tstate wrapped out
-	cpu.tstates = 114079
+	cpu.Tstates = 114079
 	cpu.writeByte(0x4004, 0x55, 4)
 
-	gotValue, gotTstates = getMemoryByte(0x4004), cpu.tstates
-	wantValue, wantTstates = uint8(0x55), uint64(114089)
+	gotValue, gotTstates = getMemoryByte(0x4004), cpu.Tstates
+	wantValue, wantTstates = uint8(0x55), uint(114089)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
@@ -320,8 +332,8 @@ func TestReadWord(t *testing.T) {
 
 	dmaX.SetMemoryBulk(0x1234, []uint8{0x78, 0x56})
 
-	gotValue, gotTstates := cpu.readWord(0x1234, 3, 3), cpu.tstates
-	wantValue, wantTstates := uint16(0x5678), uint64(6)
+	gotValue, gotTstates := cpu.readWord(0x1234, 3, 3), cpu.Tstates
+	wantValue, wantTstates := uint16(0x5678), uint(6)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
@@ -329,10 +341,10 @@ func TestReadWord(t *testing.T) {
 
 	// contended memory, normal cycle
 	dmaX.SetMemoryBulk(0x4004, []uint8{0x78, 0x56})
-	cpu.tstates = 10000
+	cpu.Tstates = 10000
 
-	gotValue, gotTstates = cpu.readWord(0x4004, 4, 3), cpu.tstates
-	wantValue, wantTstates = uint16(0x5678), uint64(10007)
+	gotValue, gotTstates = cpu.readWord(0x4004, 4, 3), cpu.Tstates
+	wantValue, wantTstates = uint16(0x5678), uint(10007)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
@@ -340,10 +352,10 @@ func TestReadWord(t *testing.T) {
 
 	// contended memory, contented cycle
 	dmaX.SetMemoryBulk(0x4004, []uint8{0x78, 0x56})
-	cpu.tstates = 44191
+	cpu.Tstates = 44191
 
-	gotValue, gotTstates = cpu.readWord(0x4004, 4, 3), cpu.tstates
-	wantValue, wantTstates = uint16(0x5678), uint64(44208)
+	gotValue, gotTstates = cpu.readWord(0x4004, 4, 3), cpu.Tstates
+	wantValue, wantTstates = uint16(0x5678), uint(44208)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
@@ -351,10 +363,10 @@ func TestReadWord(t *testing.T) {
 
 	// contented memory, contended cycle wrapped out
 	dmaX.SetMemoryBulk(0x4004, []uint8{0x78, 0x56})
-	cpu.tstates = 114079
+	cpu.Tstates = 114079
 
-	gotValue, gotTstates = cpu.readWord(0x4004, 4, 3), cpu.tstates
-	wantValue, wantTstates = uint16(0x5678), uint64(114096)
+	gotValue, gotTstates = cpu.readWord(0x4004, 4, 3), cpu.Tstates
+	wantValue, wantTstates = uint16(0x5678), uint(114096)
 
 	if gotValue != wantValue || gotTstates != wantTstates {
 		t.Errorf("got 0x%x/%d, want 0x%x/%d", gotValue, gotTstates, wantValue, wantTstates)
@@ -366,41 +378,41 @@ func TestWriteWord(t *testing.T) {
 
 	cpu.writeWord(0x1234, 0x5678, 3, 3)
 
-	gotH, gotL, gotT := getMemoryByte(0x1234), getMemoryByte(0x1235), cpu.tstates
-	wantH, wantL, wantT := uint8(0x78), uint8(0x56), uint64(6)
+	gotH, gotL, gotT := getMemoryByte(0x1234), getMemoryByte(0x1235), cpu.Tstates
+	wantH, wantL, wantT := uint8(0x78), uint8(0x56), uint(6)
 
 	if gotH != wantH || gotL != wantL || gotT != wantT {
 		t.Errorf("got 0x%x%x/%d, want 0x%x%x/%d", gotH, gotL, gotT, wantH, wantL, wantT)
 	}
 
 	// contented memory, normal cycle
-	cpu.tstates = 10000
+	cpu.Tstates = 10000
 	cpu.writeWord(0x4004, 0x5678, 4, 3)
 
-	gotH, gotL, gotT = getMemoryByte(0x4004), getMemoryByte(0x4005), cpu.tstates
-	wantH, wantL, wantT = uint8(0x78), uint8(0x56), uint64(10007)
+	gotH, gotL, gotT = getMemoryByte(0x4004), getMemoryByte(0x4005), cpu.Tstates
+	wantH, wantL, wantT = uint8(0x78), uint8(0x56), uint(10007)
 
 	if gotH != wantH || gotL != wantL || gotT != wantT {
 		t.Errorf("got 0x%x%x/%d, want 0x%x%x/%d", gotH, gotL, gotT, wantH, wantL, wantT)
 	}
 
 	// contented memory, contented cycle
-	cpu.tstates = 44191
+	cpu.Tstates = 44191
 	cpu.writeWord(0x4004, 0x5678, 4, 3)
 
-	gotH, gotL, gotT = getMemoryByte(0x4004), getMemoryByte(0x4005), cpu.tstates
-	wantH, wantL, wantT = uint8(0x78), uint8(0x56), uint64(44208)
+	gotH, gotL, gotT = getMemoryByte(0x4004), getMemoryByte(0x4005), cpu.Tstates
+	wantH, wantL, wantT = uint8(0x78), uint8(0x56), uint(44208)
 
 	if gotH != wantH || gotL != wantL || gotT != wantT {
 		t.Errorf("got 0x%x%x/%d, want 0x%x%x/%d", gotH, gotL, gotT, wantH, wantL, wantT)
 	}
 
 	// contented memory, contented cycle wrapped out
-	cpu.tstates = 114079
+	cpu.Tstates = 114079
 	cpu.writeWord(0x4004, 0x5678, 4, 3)
 
-	gotH, gotL, gotT = getMemoryByte(0x4004), getMemoryByte(0x4005), cpu.tstates
-	wantH, wantL, wantT = uint8(0x78), uint8(0x56), uint64(114096)
+	gotH, gotL, gotT = getMemoryByte(0x4004), getMemoryByte(0x4005), cpu.Tstates
+	wantH, wantL, wantT = uint8(0x78), uint8(0x56), uint(114096)
 
 	if gotH != wantH || gotL != wantL || gotT != wantT {
 		t.Errorf("got 0x%x%x/%d, want 0x%x%x/%d", gotH, gotL, gotT, wantH, wantL, wantT)

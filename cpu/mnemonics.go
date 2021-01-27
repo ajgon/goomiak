@@ -1,5 +1,143 @@
 package cpu
 
+type CPUMnemonics struct {
+	base      [256]func()
+	xx80xx    [256]func()
+	xxIXxx    [256]func()
+	xxIYxx    [256]func()
+	xxBITxx   [256]func()
+	xxIXBITxx [256]func()
+	xxIYBITxx [256]func()
+}
+
+func (c *CPU) initializeMnemonics() {
+	for _, reg := range [3]string{"HL", "IX", "IY"} {
+		var highReg, lowReg byte
+		switch reg {
+		case "HL":
+			highReg, lowReg = 'H', 'L'
+		case "IX":
+			highReg, lowReg = 'X', 'x'
+		case "IY":
+			highReg, lowReg = 'Y', 'y'
+		}
+
+		baseList := [256]func(){
+			c.nop, c.ldSsNn("BC"), c.ld_Bc_A, c.incSs("BC"), c.incR('B'), c.decR('B'), c.ldRN('B'), c.rlcR(' '),
+			c.exAfAf_, c.addSsRr(reg, "BC"), c.ldA_Bc_, c.decSs("BC"), c.incR('C'), c.decR('C'), c.ldRN('C'), c.rrcR(' '),
+			c.djnzN, c.ldSsNn("DE"), c.ld_De_A, c.incSs("DE"), c.incR('D'), c.decR('D'), c.ldRN('D'), c.rlR(' '),
+			c.jrN, c.addSsRr(reg, "DE"), c.ldA_De_, c.decSs("DE"), c.incR('E'), c.decR('E'), c.ldRN('E'), c.rrR(' '),
+			c.jrNzN, c.ldSsNn(reg), c.ld_Nn_Ss(reg), c.incSs(reg), c.incR(highReg), c.decR(highReg), c.ldRN(highReg), c.daa,
+			c.jrZN, c.addSsRr(reg, reg), c.ldSs_Nn_(reg), c.decSs(reg), c.incR(lowReg), c.decR(lowReg), c.ldRN(lowReg), c.cpl,
+			c.jrNcN, c.ldSsNn("SP"), c.ld_Nn_A, c.incSs("SP"), c.inc_Ss_(reg), c.dec_Ss_(reg), c.ld_Ss_N(reg), c.scf,
+			c.jrCN, c.addSsRr(reg, "SP"), c.ldA_Nn_, c.decSs("SP"), c.incR('A'), c.decR('A'), c.ldRN('A'), c.ccf,
+			c.ldRR_('B', 'B'), c.ldRR_('B', 'C'), c.ldRR_('B', 'D'), c.ldRR_('B', 'E'), c.ldRR_('B', highReg), c.ldRR_('B', lowReg), c.ldR_Ss_('B', reg), c.ldRR_('B', 'A'),
+			c.ldRR_('C', 'B'), c.ldRR_('C', 'C'), c.ldRR_('C', 'D'), c.ldRR_('C', 'E'), c.ldRR_('C', highReg), c.ldRR_('C', lowReg), c.ldR_Ss_('C', reg), c.ldRR_('C', 'A'),
+			c.ldRR_('D', 'B'), c.ldRR_('D', 'C'), c.ldRR_('D', 'D'), c.ldRR_('D', 'E'), c.ldRR_('D', highReg), c.ldRR_('D', lowReg), c.ldR_Ss_('D', reg), c.ldRR_('D', 'A'),
+			c.ldRR_('E', 'B'), c.ldRR_('E', 'C'), c.ldRR_('E', 'D'), c.ldRR_('E', 'E'), c.ldRR_('E', highReg), c.ldRR_('E', lowReg), c.ldR_Ss_('E', reg), c.ldRR_('E', 'A'),
+			c.ldRR_(highReg, 'B'), c.ldRR_(highReg, 'C'), c.ldRR_(highReg, 'D'), c.ldRR_(highReg, 'E'), c.ldRR_(highReg, highReg), c.ldRR_(highReg, lowReg), c.ldR_Ss_('H', reg), c.ldRR_(highReg, 'A'),
+			c.ldRR_(lowReg, 'B'), c.ldRR_(lowReg, 'C'), c.ldRR_(lowReg, 'D'), c.ldRR_(lowReg, 'E'), c.ldRR_(lowReg, highReg), c.ldRR_(lowReg, lowReg), c.ldR_Ss_('L', reg), c.ldRR_(lowReg, 'A'),
+			c.ld_Ss_R(reg, 'B'), c.ld_Ss_R(reg, 'C'), c.ld_Ss_R(reg, 'D'), c.ld_Ss_R(reg, 'E'), c.ld_Ss_R(reg, 'H'), c.ld_Ss_R(reg, 'L'), c.halt, c.ld_Ss_R(reg, 'A'),
+			c.ldRR_('A', 'B'), c.ldRR_('A', 'C'), c.ldRR_('A', 'D'), c.ldRR_('A', 'E'), c.ldRR_('A', highReg), c.ldRR_('A', lowReg), c.ldR_Ss_('A', reg), c.ldRR_('A', 'A'),
+			c.addAR('B'), c.addAR('C'), c.addAR('D'), c.addAR('E'), c.addAR(highReg), c.addAR(lowReg), c.addA_Ss_(reg), c.addAR('A'),
+			c.adcAR('B'), c.adcAR('C'), c.adcAR('D'), c.adcAR('E'), c.adcAR(highReg), c.adcAR(lowReg), c.adcA_Ss_(reg), c.adcAR('A'),
+			c.subR('B'), c.subR('C'), c.subR('D'), c.subR('E'), c.subR(highReg), c.subR(lowReg), c.sub_Ss_(reg), c.subR('A'),
+			c.sbcAR('B'), c.sbcAR('C'), c.sbcAR('D'), c.sbcAR('E'), c.sbcAR(highReg), c.sbcAR(lowReg), c.sbcA_Ss_(reg), c.sbcAR('A'),
+			c.andR('B'), c.andR('C'), c.andR('D'), c.andR('E'), c.andR(highReg), c.andR(lowReg), c.and_Ss_(reg), c.andR('A'),
+			c.xorR('B'), c.xorR('C'), c.xorR('D'), c.xorR('E'), c.xorR(highReg), c.xorR(lowReg), c.xor_Ss_(reg), c.xorR('A'),
+			c.orR('B'), c.orR('C'), c.orR('D'), c.orR('E'), c.orR(highReg), c.orR(lowReg), c.or_Ss_(reg), c.orR('A'),
+			c.cpR('B'), c.cpR('C'), c.cpR('D'), c.cpR('E'), c.cpR(highReg), c.cpR(lowReg), c.cp_Ss_(reg), c.cpR('A'),
+			c.retNz, c.popSs("BC"), c.jpNzNn, c.jpNn, c.callNzNn, c.pushSs("BC"), c.addAN, c.rst(0x00),
+			c.retZ, c.ret, c.jpZNn, c.nop, c.callZNn, c.callNn, c.adcAN, c.rst(0x08),
+			c.retNc, c.popSs("DE"), c.jpNcNn, c.out_N_A, c.callNcNn, c.pushSs("DE"), c.subN, c.rst(0x10),
+			c.retC, c.exx, c.jpCNn, c.inA_N_, c.callCNn, c.nop, c.sbcAN, c.rst(0x18),
+			c.retPo, c.popSs(reg), c.jpPoNn, c.ex_Sp_Ss(reg), c.callPoNn, c.pushSs(reg), c.andN, c.rst(0x20),
+			c.retPe, c.jp_Ss_(reg), c.jpPeNn, c.exDeSs(reg), c.callPeNn, c.nop, c.xorN, c.rst(0x28),
+			c.retP, c.popSs("AF"), c.jpPNn, c.di, c.callPNn, c.pushSs("AF"), c.orN, c.rst(0x30),
+			c.retM, c.ldSpSs(reg), c.jpMNn, c.ei, c.callMNn, c.nop, c.cpN, c.rst(0x38),
+		}
+		bitList := [256]func(){
+			c.rlcR('B'), c.rlcR('C'), c.rlcR('D'), c.rlcR('E'), c.rlcR('H'), c.rlcR('L'), c.rlcSs(reg), c.rlcR('A'),
+			c.rrcR('B'), c.rrcR('C'), c.rrcR('D'), c.rrcR('E'), c.rrcR('H'), c.rrcR('L'), c.rrcSs(reg), c.rrcR('A'),
+			c.rlR('B'), c.rlR('C'), c.rlR('D'), c.rlR('E'), c.rlR('H'), c.rlR('L'), c.rlSs(reg), c.rlR('A'),
+			c.rrR('B'), c.rrR('C'), c.rrR('D'), c.rrR('E'), c.rrR('H'), c.rrR('L'), c.rrSs(reg), c.rrR('A'),
+			c.slaR('B'), c.slaR('C'), c.slaR('D'), c.slaR('E'), c.slaR('H'), c.slaR('L'), c.slaSs(reg), c.slaR('A'),
+			c.sraR('B'), c.sraR('C'), c.sraR('D'), c.sraR('E'), c.sraR('H'), c.sraR('L'), c.sraSs(reg), c.sraR('A'),
+			c.sllR('B'), c.sllR('C'), c.sllR('D'), c.sllR('E'), c.sllR('H'), c.sllR('L'), c.sllSs(reg), c.sllR('A'),
+			c.srlR('B'), c.srlR('C'), c.srlR('D'), c.srlR('E'), c.srlR('H'), c.srlR('L'), c.srlSs(reg), c.srlR('A'),
+			c.bitBR(0, 'B'), c.bitBR(0, 'C'), c.bitBR(0, 'D'), c.bitBR(0, 'E'), c.bitBR(0, highReg), c.bitBR(0, lowReg), c.bitBSs(0, reg), c.bitBR(0, 'A'),
+			c.bitBR(1, 'B'), c.bitBR(1, 'C'), c.bitBR(1, 'D'), c.bitBR(1, 'E'), c.bitBR(1, highReg), c.bitBR(1, lowReg), c.bitBSs(1, reg), c.bitBR(1, 'A'),
+			c.bitBR(2, 'B'), c.bitBR(2, 'C'), c.bitBR(2, 'D'), c.bitBR(2, 'E'), c.bitBR(2, highReg), c.bitBR(2, lowReg), c.bitBSs(2, reg), c.bitBR(2, 'A'),
+			c.bitBR(3, 'B'), c.bitBR(3, 'C'), c.bitBR(3, 'D'), c.bitBR(3, 'E'), c.bitBR(3, highReg), c.bitBR(3, lowReg), c.bitBSs(3, reg), c.bitBR(3, 'A'),
+			c.bitBR(4, 'B'), c.bitBR(4, 'C'), c.bitBR(4, 'D'), c.bitBR(4, 'E'), c.bitBR(4, highReg), c.bitBR(4, lowReg), c.bitBSs(4, reg), c.bitBR(4, 'A'),
+			c.bitBR(5, 'B'), c.bitBR(5, 'C'), c.bitBR(5, 'D'), c.bitBR(5, 'E'), c.bitBR(5, highReg), c.bitBR(5, lowReg), c.bitBSs(5, reg), c.bitBR(5, 'A'),
+			c.bitBR(6, 'B'), c.bitBR(6, 'C'), c.bitBR(6, 'D'), c.bitBR(6, 'E'), c.bitBR(6, highReg), c.bitBR(6, lowReg), c.bitBSs(6, reg), c.bitBR(6, 'A'),
+			c.bitBR(7, 'B'), c.bitBR(7, 'C'), c.bitBR(7, 'D'), c.bitBR(7, 'E'), c.bitBR(7, highReg), c.bitBR(7, lowReg), c.bitBSs(7, reg), c.bitBR(7, 'A'),
+			c.resBR(0, 'B'), c.resBR(0, 'C'), c.resBR(0, 'D'), c.resBR(0, 'E'), c.resBR(0, 'H'), c.resBR(0, 'L'), c.resBSs(0, reg), c.resBR(0, 'A'),
+			c.resBR(1, 'B'), c.resBR(1, 'C'), c.resBR(1, 'D'), c.resBR(1, 'E'), c.resBR(1, 'H'), c.resBR(1, 'L'), c.resBSs(1, reg), c.resBR(1, 'A'),
+			c.resBR(2, 'B'), c.resBR(2, 'C'), c.resBR(2, 'D'), c.resBR(2, 'E'), c.resBR(2, 'H'), c.resBR(2, 'L'), c.resBSs(2, reg), c.resBR(2, 'A'),
+			c.resBR(3, 'B'), c.resBR(3, 'C'), c.resBR(3, 'D'), c.resBR(3, 'E'), c.resBR(3, 'H'), c.resBR(3, 'L'), c.resBSs(3, reg), c.resBR(3, 'A'),
+			c.resBR(4, 'B'), c.resBR(4, 'C'), c.resBR(4, 'D'), c.resBR(4, 'E'), c.resBR(4, 'H'), c.resBR(4, 'L'), c.resBSs(4, reg), c.resBR(4, 'A'),
+			c.resBR(5, 'B'), c.resBR(5, 'C'), c.resBR(5, 'D'), c.resBR(5, 'E'), c.resBR(5, 'H'), c.resBR(5, 'L'), c.resBSs(5, reg), c.resBR(5, 'A'),
+			c.resBR(6, 'B'), c.resBR(6, 'C'), c.resBR(6, 'D'), c.resBR(6, 'E'), c.resBR(6, 'H'), c.resBR(6, 'L'), c.resBSs(6, reg), c.resBR(6, 'A'),
+			c.resBR(7, 'B'), c.resBR(7, 'C'), c.resBR(7, 'D'), c.resBR(7, 'E'), c.resBR(7, 'H'), c.resBR(7, 'L'), c.resBSs(7, reg), c.resBR(7, 'A'),
+			c.setBR(0, 'B'), c.setBR(0, 'C'), c.setBR(0, 'D'), c.setBR(0, 'E'), c.setBR(0, 'H'), c.setBR(0, 'L'), c.setBSs(0, reg), c.setBR(0, 'A'),
+			c.setBR(1, 'B'), c.setBR(1, 'C'), c.setBR(1, 'D'), c.setBR(1, 'E'), c.setBR(1, 'H'), c.setBR(1, 'L'), c.setBSs(1, reg), c.setBR(1, 'A'),
+			c.setBR(2, 'B'), c.setBR(2, 'C'), c.setBR(2, 'D'), c.setBR(2, 'E'), c.setBR(2, 'H'), c.setBR(2, 'L'), c.setBSs(2, reg), c.setBR(2, 'A'),
+			c.setBR(3, 'B'), c.setBR(3, 'C'), c.setBR(3, 'D'), c.setBR(3, 'E'), c.setBR(3, 'H'), c.setBR(3, 'L'), c.setBSs(3, reg), c.setBR(3, 'A'),
+			c.setBR(4, 'B'), c.setBR(4, 'C'), c.setBR(4, 'D'), c.setBR(4, 'E'), c.setBR(4, 'H'), c.setBR(4, 'L'), c.setBSs(4, reg), c.setBR(4, 'A'),
+			c.setBR(5, 'B'), c.setBR(5, 'C'), c.setBR(5, 'D'), c.setBR(5, 'E'), c.setBR(5, 'H'), c.setBR(5, 'L'), c.setBSs(5, reg), c.setBR(5, 'A'),
+			c.setBR(6, 'B'), c.setBR(6, 'C'), c.setBR(6, 'D'), c.setBR(6, 'E'), c.setBR(6, 'H'), c.setBR(6, 'L'), c.setBSs(6, reg), c.setBR(6, 'A'),
+			c.setBR(7, 'B'), c.setBR(7, 'C'), c.setBR(7, 'D'), c.setBR(7, 'E'), c.setBR(7, 'H'), c.setBR(7, 'L'), c.setBSs(7, reg), c.setBR(7, 'A'),
+		}
+		switch reg {
+		case "HL":
+			c.mnemonics.base = baseList
+			c.mnemonics.xxBITxx = bitList
+		case "IX":
+			c.mnemonics.xxIXxx = baseList
+			c.mnemonics.xxIXBITxx = bitList
+		case "IY":
+			c.mnemonics.xxIYxx = baseList
+			c.mnemonics.xxIYBITxx = bitList
+		}
+	}
+	c.mnemonics.xx80xx = [256]func(){
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.inR_C_('B'), c.out_C_R('B'), c.sbcHlRr("BC"), c.ld_Nn_Rr("BC"), c.neg, c.retn, c.im(0), c.ldIA,
+		c.inR_C_('C'), c.out_C_R('C'), c.adcHlRr("BC"), c.ldRr_Nn_("BC"), c.neg, c.reti, c.im(0), c.ldRA,
+		c.inR_C_('D'), c.out_C_R('D'), c.sbcHlRr("DE"), c.ld_Nn_Rr("DE"), c.neg, c.retn, c.im(1), c.ldAI,
+		c.inR_C_('E'), c.out_C_R('E'), c.adcHlRr("DE"), c.ldRr_Nn_("DE"), c.neg, c.retn, c.im(2), c.ldAR,
+		c.inR_C_('H'), c.out_C_R('H'), c.sbcHlRr("HL"), c.ld_Nn_Rr("HL"), c.neg, c.retn, c.nop, c.rrd,
+		c.inR_C_('L'), c.out_C_R('L'), c.adcHlRr("HL"), c.ldRr_Nn_("HL"), c.neg, c.retn, c.nop, c.rld,
+		c.inR_C_(' '), c.out_C_R(' '), c.sbcHlRr("SP"), c.ld_Nn_Rr("SP"), c.neg, c.retn, c.nop, c.nop,
+		c.inR_C_('A'), c.out_C_R('A'), c.adcHlRr("SP"), c.ldRr_Nn_("SP"), c.neg, c.reti, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.ldi, c.cpi, c.ini, c.outi, c.nop, c.nop, c.nop, c.nop,
+		c.ldd, c.cpd, c.ind, c.outd, c.nop, c.nop, c.nop, c.nop,
+		c.ldir, c.cpir, c.inir, c.otir, c.nop, c.nop, c.nop, c.nop,
+		c.lddr, c.cpdr, c.indr, c.otdr, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+		c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop, c.nop,
+	}
+}
+
 // every mnemonic doesn't include M1R tstates (opcode docoding), as it's done by CPU earlier on.
 // only additional T-states are included (for example if M1R=5 => c.states += 1)
 
@@ -318,7 +456,7 @@ func (c *CPU) ldR_Ss_(r byte, ss string) func() {
 		}
 
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		right = c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3)
 
 		if lhigh {
@@ -363,7 +501,7 @@ func (c *CPU) ld_Ss_R(ss string, r byte) func() {
 	// FD77S1   19 00 M1R 4 M1R 4 MRD 3 NON 5 MWR 3 ... 0 ... 0 LD (IY+S8),A
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 
 		c.writeByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), c.extractRegister(r), 3)
 
@@ -385,7 +523,7 @@ func (c *CPU) ld_Ss_N(ss string) func() {
 	// FD36S1U2 23 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 4 MWR 3 ... 0 LD (IY+S8),U8
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		c.writeByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), c.readByte(c.PC+3, 4), 3)
 
 		c.PC += 4
@@ -450,14 +588,14 @@ func (c *CPU) ld_Nn_A() {
 
 // ED57     09 00 M1R 4 M1R 5 ... 0 ... 0 ... 0 ... 0 ... 0 LD A,I
 func (c *CPU) ldAI() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	c.setAcc(c.I)
 
 	c.setS(c.I > 127)
 	c.setZ(c.I == 0)
 	c.setH(false)
-	c.setPV(c.States.IFF2)
+	c.setPV(c.IFF2)
 	c.setN(false)
 
 	c.PC += 2
@@ -465,14 +603,14 @@ func (c *CPU) ldAI() {
 
 // ED5F     09 00 M1R 4 M1R 5 ... 0 ... 0 ... 0 ... 0 ... 0 LD A,R
 func (c *CPU) ldAR() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	c.setAcc(c.R)
 
 	c.setS(c.R > 127)
 	c.setZ(c.R == 0)
 	c.setH(false)
-	c.setPV(c.States.IFF2)
+	c.setPV(c.IFF2)
 	c.setN(false)
 
 	c.PC += 2
@@ -480,7 +618,7 @@ func (c *CPU) ldAR() {
 
 // ED47     09 00 M1R 4 M1R 5 ... 0 ... 0 ... 0 ... 0 ... 0 LD I,A
 func (c *CPU) ldIA() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	c.I = c.getAcc()
 
@@ -489,7 +627,7 @@ func (c *CPU) ldIA() {
 
 // ED4F     09 00 M1R 4 M1R 5 ... 0 ... 0 ... 0 ... 0 ... 0 LD R,A
 func (c *CPU) ldRA() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	c.R = c.getAcc()
 
@@ -644,7 +782,7 @@ func (c *CPU) ldSpSs(ss string) func() {
 	// F9       06 00 M1R 6 ... 0 ... 0 ... 0 ... 0 ... 0 ... 0 LD SP,HL
 	if ss == "HL" {
 		return func() {
-			c.tstates += 2
+			c.Tstates += 2
 			c.SP = c.HL
 
 			c.PC++
@@ -654,7 +792,7 @@ func (c *CPU) ldSpSs(ss string) func() {
 	// DDF9     10 00 M1R 4 M1R 6 ... 0 ... 0 ... 0 ... 0 ... 0 LD SP,IX
 	// FDF9     10 00 M1R 4 M1R 6 ... 0 ... 0 ... 0 ... 0 ... 0 LD SP,IY
 	return func() {
-		c.tstates += 2
+		c.Tstates += 2
 		c.SP = c.extractRegisterPair(ss)
 
 		c.PC += 2
@@ -668,7 +806,7 @@ func (c *CPU) pushSs(ss string) func() {
 		// DDC5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH BC
 		// FDC5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH BC
 		return func() {
-			c.tstates += 1
+			c.Tstates += 1
 			c.pushStack(c.BC)
 			c.PC++
 		}
@@ -677,14 +815,14 @@ func (c *CPU) pushSs(ss string) func() {
 		// DDD5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH DE
 		// FDD5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH DE
 		return func() {
-			c.tstates += 1
+			c.Tstates += 1
 			c.pushStack(c.DE)
 			c.PC++
 		}
 	case "HL":
 		// E5       11 00 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 ... 0 PUSH HL
 		return func() {
-			c.tstates += 1
+			c.Tstates += 1
 			c.pushStack(c.HL)
 			c.PC++
 		}
@@ -693,7 +831,7 @@ func (c *CPU) pushSs(ss string) func() {
 		// DDF5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH AF
 		// FDF5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH AF
 		return func() {
-			c.tstates += 1
+			c.Tstates += 1
 			c.pushStack(c.AF)
 			c.PC++
 		}
@@ -702,7 +840,7 @@ func (c *CPU) pushSs(ss string) func() {
 	// DDE5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH IX
 	// FDE5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH IY
 	return func() {
-		c.tstates += 1
+		c.Tstates += 1
 		c.pushStack(c.extractRegisterPair(ss))
 		c.PC += 2
 	}
@@ -861,7 +999,7 @@ func (c *CPU) ldir() {
 
 	c.PC -= 2
 	c.WZ = c.PC + 1
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // EDA8     16 00 M1R 4 M1R 4 MRD 3 MWR 5 ... 0 ... 0 ... 0 LDD
@@ -893,7 +1031,7 @@ func (c *CPU) lddr() {
 
 	c.PC -= 2
 	c.WZ = c.PC + 1
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // EDA1     16 00 M1R 4 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 CPI
@@ -922,7 +1060,7 @@ func (c *CPU) cpi() {
 
 	c.PC += 2
 	c.WZ++
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // EDB1     21 16 M1R 4 M1R 4 MRD 3 NON 5 NON 5 ... 0 ... 0 CPIR
@@ -950,14 +1088,14 @@ func (c *CPU) cpir() {
 		c.setF5(result&0x02 == 0x02) // 0x02 not 0x20 - this is intended
 	}
 
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 
 	if c.BC == 0 || result == 0 {
 		c.WZ++
 		c.PC += 2
 		return
 	}
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // EDA9     16 00 M1R 4 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 CPD
@@ -985,7 +1123,7 @@ func (c *CPU) cpd() {
 
 	c.PC += 2
 	c.WZ--
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // EDB9     21 16 M1R 4 M1R 4 MRD 3 NON 5 NON 5 ... 0 ... 0 CPDR
@@ -1011,7 +1149,7 @@ func (c *CPU) cpdr() {
 	c.setF3(result&0x08 == 0x08)
 	c.setF5(result&0x02 == 0x02) // 0x02 not 0x20 - this is intended
 
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 
 	if c.BC == 0 || result == 0 {
 		c.WZ--
@@ -1019,7 +1157,7 @@ func (c *CPU) cpdr() {
 		return
 	}
 
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // 80       04 00 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 ... 0 ADD A,B
@@ -1080,7 +1218,7 @@ func (c *CPU) addA_Ss_(ss string) func() {
 	return func() {
 		c.setC(false)
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		c.adcValueToAcc(c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3))
 		c.PC += 3
 	}
@@ -1140,7 +1278,7 @@ func (c *CPU) adcA_Ss_(ss string) func() {
 
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		c.adcValueToAcc(c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3))
 		c.PC += 3
 	}
@@ -1215,7 +1353,7 @@ func (c *CPU) sub_Ss_(ss string) func() {
 	return func() {
 		c.setC(true)
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		c.adcValueToAcc(c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3) ^ 0xff)
 
 		c.PC += 3
@@ -1294,7 +1432,7 @@ func (c *CPU) sbcA_Ss_(ss string) func() {
 	return func() {
 		c.setC(!c.getC())
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		c.adcValueToAcc(c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3) ^ 0xff)
 
 		c.PC += 3
@@ -1388,7 +1526,7 @@ func (c *CPU) and_Ss_(ss string) func() {
 	// FDA6S2   19 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 3 ... 0 ... 0 AND A,(IY+S8)
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		result := c.getAcc() & c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3)
 
 		c.PC += 3
@@ -1488,7 +1626,7 @@ func (c *CPU) or_Ss_(ss string) func() {
 	// FDB6S2   19 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 3 ... 0 ... 0 OR A,(IY+S8)
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		result := c.getAcc() | c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3)
 
 		c.PC += 3
@@ -1588,7 +1726,7 @@ func (c *CPU) xor_Ss_(ss string) func() {
 	// FDAES2   19 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 3 ... 0 ... 0 XOR A,(IY+S8)
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		result := c.getAcc() ^ c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3)
 
 		c.PC += 3
@@ -1688,7 +1826,7 @@ func (c *CPU) cp_Ss_(ss string) func() {
 	return func() {
 		acc := c.getAcc()
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		operand := c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3)
 		c.setC(true)
 		c.adcValueToAcc(operand ^ 0xff)
@@ -1792,7 +1930,7 @@ func (c *CPU) inc_Ss_(ss string) func() {
 	// FD34S1   23 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 4 MWR 3 ... 0 INC (IY+S8)
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		addr := c.shiftedAddress(c.extractRegisterPair(ss), shift)
 		result := c.readByte(addr, 4) + 1
 		c.writeByte(addr, result, 3)
@@ -1897,7 +2035,7 @@ func (c *CPU) dec_Ss_(ss string) func() {
 	// FD35S1   23 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 4 MWR 3 ... 0 DEC (IY+S8)
 	return func() {
 		addr := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 3))
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		result := c.readByte(addr, 4) - 1
 		c.writeByte(addr, result, 3)
 		c.PC += 3
@@ -2226,8 +2364,8 @@ func (c *CPU) nop() {
 // DD76     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 HALT
 // FD76     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 HALT
 func (c *CPU) halt() {
-	c.PC++
-	c.States.Halt = true
+	//c.PC++
+	c.Halt = true
 }
 
 // F3       04 00 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 ... 0 DI
@@ -2258,7 +2396,7 @@ func (c *CPU) ei() {
 // ED7E     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 IM2
 func (c *CPU) im(mode uint8) func() {
 	return func() {
-		c.States.IM = mode
+		c.IM = mode
 		c.PC += 2
 	}
 }
@@ -2282,21 +2420,21 @@ func (c *CPU) addSsRr(ss, rr string) func() {
 			c.WZ = c.HL + 1
 			c.addRegisters(&c.HL, c.extractRegisterPair(rr))
 			c.PC++
-			c.tstates += 7 // NON + NON
+			c.Tstates += 7 // NON + NON
 		}
 	case "IX":
 		return func() {
 			c.WZ = c.IX + 1
 			c.addRegisters(&c.IX, c.extractRegisterPair(rr))
 			c.PC += 2
-			c.tstates += 7 // NON + NON
+			c.Tstates += 7 // NON + NON
 		}
 	case "IY":
 		return func() {
 			c.WZ = c.IY + 1
 			c.addRegisters(&c.IY, c.extractRegisterPair(rr))
 			c.PC += 2
-			c.tstates += 7 // NON + NON
+			c.Tstates += 7 // NON + NON
 		}
 	}
 
@@ -2313,7 +2451,7 @@ func (c *CPU) adcHlRr(rr string) func() {
 		c.HL = c.adc16bit(c.HL, c.extractRegisterPair(rr))
 
 		c.PC += 2
-		c.tstates += 7 // NON + NON
+		c.Tstates += 7 // NON + NON
 	}
 }
 
@@ -2332,7 +2470,7 @@ func (c *CPU) sbcHlRr(rr string) func() {
 		c.setC(!c.getC())
 		c.setH(!c.getH())
 
-		c.tstates += 7
+		c.Tstates += 7
 	}
 }
 
@@ -2354,37 +2492,37 @@ func (c *CPU) incSs(ss string) func() {
 		return func() {
 			c.BC++
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "DE":
 		return func() {
 			c.DE++
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "HL":
 		return func() {
 			c.HL++
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "SP":
 		return func() {
 			c.SP++
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "IX":
 		return func() {
 			c.IX++
 			c.PC += 2
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "IY":
 		return func() {
 			c.IY++
 			c.PC += 2
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	}
 
@@ -2409,37 +2547,37 @@ func (c *CPU) decSs(ss string) func() {
 		return func() {
 			c.BC--
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "DE":
 		return func() {
 			c.DE--
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "HL":
 		return func() {
 			c.HL--
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "SP":
 		return func() {
 			c.SP--
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "IX":
 		return func() {
 			c.IX--
 			c.PC += 2
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "IY":
 		return func() {
 			c.IY--
 			c.PC += 2
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	}
 
@@ -3316,7 +3454,7 @@ func (c *CPU) rld() {
 	a := c.getAcc()
 
 	c.setAcc((a & 0xf0) | ((value >> 4) & 0x0f))
-	c.tstates += 4 // NON
+	c.Tstates += 4 // NON
 	value = value << 4
 	value = (a & 0x0f) | value
 
@@ -3341,7 +3479,7 @@ func (c *CPU) rrd() {
 	a := c.getAcc()
 
 	c.setAcc((a & 0xf0) | (value & 0x0f))
-	c.tstates += 4 // NON
+	c.Tstates += 4 // NON
 	value = value >> 4
 	value = (a << 4) | value
 
@@ -4217,7 +4355,7 @@ func (c *CPU) jpMNn() {
 func (c *CPU) jrN() {
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(c.readByte(c.PC+1, 3))))
 	c.PC = c.WZ
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 // 38S2     12 07 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 ... 0 JR C,S8
@@ -4232,7 +4370,7 @@ func (c *CPU) jrCN() {
 
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(address)))
 	c.PC = c.WZ
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 // 30S2     12 07 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 ... 0 JR NC,S8
@@ -4248,7 +4386,7 @@ func (c *CPU) jrNcN() {
 
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(address)))
 	c.PC = c.WZ
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 // 28S2     12 07 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 ... 0 JR Z,S8
@@ -4264,7 +4402,7 @@ func (c *CPU) jrZN() {
 
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(address)))
 	c.PC = c.WZ
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 // 20S2     12 07 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 ... 0 JR NZ,S8
@@ -4280,7 +4418,7 @@ func (c *CPU) jrNzN() {
 
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(address)))
 	c.PC = c.WZ
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 func (c *CPU) jp_Ss_(ss string) func() {
@@ -4302,7 +4440,7 @@ func (c *CPU) jp_Ss_(ss string) func() {
 // DD10S1   17 12 M1R 4 M1R 5 MRD 3 NON 5 ... 0 ... 0 ... 0 DJNZ S8
 // FD10S1   17 12 M1R 4 M1R 5 MRD 3 NON 5 ... 0 ... 0 ... 0 DJNZ S8
 func (c *CPU) djnzN() {
-	c.tstates += 1
+	c.Tstates += 1
 	address := c.readByte(c.PC+1, 3)
 	c.BC -= 256
 
@@ -4311,7 +4449,7 @@ func (c *CPU) djnzN() {
 		return
 	}
 
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(address)))
 	c.PC = c.WZ
@@ -4337,7 +4475,7 @@ func (c *CPU) callNzNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4352,7 +4490,7 @@ func (c *CPU) callZNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4367,7 +4505,7 @@ func (c *CPU) callNcNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4382,7 +4520,7 @@ func (c *CPU) callCNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4397,7 +4535,7 @@ func (c *CPU) callPoNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4412,7 +4550,7 @@ func (c *CPU) callPeNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4427,7 +4565,7 @@ func (c *CPU) callPNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4442,7 +4580,7 @@ func (c *CPU) callMNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4465,7 +4603,7 @@ func (c *CPU) ret() {
 // DDC0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET NZ
 // FDC0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET NZ
 func (c *CPU) retNz() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if c.getZ() {
 		c.PC++
@@ -4479,7 +4617,7 @@ func (c *CPU) retNz() {
 // DDC8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET Z
 // FDC8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET Z
 func (c *CPU) retZ() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if !c.getZ() {
 		c.PC++
@@ -4493,7 +4631,7 @@ func (c *CPU) retZ() {
 // DDD0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET NC
 // FDD0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET NC
 func (c *CPU) retNc() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if c.getC() {
 		c.PC++
@@ -4507,7 +4645,7 @@ func (c *CPU) retNc() {
 // DDD8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET C
 // FDD8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET C
 func (c *CPU) retC() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if !c.getC() {
 		c.PC++
@@ -4521,7 +4659,7 @@ func (c *CPU) retC() {
 // DDE0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET PO
 // FDE0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET PO
 func (c *CPU) retPo() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if c.getPV() {
 		c.PC++
@@ -4535,7 +4673,7 @@ func (c *CPU) retPo() {
 // DDE8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET PE
 // FDE8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET PE
 func (c *CPU) retPe() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if !c.getPV() {
 		c.PC++
@@ -4549,7 +4687,7 @@ func (c *CPU) retPe() {
 // DDF0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET P
 // FDF0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET P
 func (c *CPU) retP() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if c.getS() {
 		c.PC++
@@ -4563,7 +4701,7 @@ func (c *CPU) retP() {
 // DDF8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET M
 // FDF8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET M
 func (c *CPU) retM() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if !c.getS() {
 		c.PC++
@@ -4577,13 +4715,13 @@ func (c *CPU) retM() {
 func (c *CPU) reti() {
 	c.PC = c.popStack()
 	c.WZ = c.PC
-	c.States.IFF1 = c.States.IFF2
+	c.IFF1 = c.IFF2
 }
 
 // ED45     14 00 M1R 4 M1R 4 MRD 3 MRD 3 ... 0 ... 0 ... 0 RETN
 func (c *CPU) retn() {
 	c.PC = c.popStack()
-	c.States.IFF1 = c.States.IFF2
+	c.IFF1 = c.IFF2
 }
 
 // C7       11 00 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 ... 0 RST 00H
@@ -4616,7 +4754,7 @@ func (c *CPU) rst(p uint8) func() {
 	}
 
 	return func() {
-		c.tstates += 1
+		c.Tstates += 1
 		c.pushStack(c.PC + 1)
 		c.PC = uint16(p)
 		c.WZ = c.PC
@@ -4629,7 +4767,7 @@ func (c *CPU) rst(p uint8) func() {
 func (c *CPU) inA_N_() {
 	portAddress := c.readByte(c.PC+1, 3)
 	c.WZ = (uint16(c.getAcc()) << 8) + uint16(portAddress) + 1
-	c.setAcc(c.getPort(portAddress, 4))
+	c.setAcc(c.getPort(c.getAcc(), portAddress, 4))
 
 	c.PC += 2
 }
@@ -4661,7 +4799,7 @@ func (c *CPU) inR_C_(r byte) func() {
 			panic("Invalid `r` part of the mnemonic")
 		}
 
-		result := c.getPort(uint8(c.BC), 4)
+		result := c.getPort(uint8(c.BC>>8), uint8(c.BC), 4)
 
 		if r != ' ' {
 			if lhigh {
@@ -4685,8 +4823,8 @@ func (c *CPU) inR_C_(r byte) func() {
 
 // EDA2     16 00 M1R 4 M1R 5 IOR 4 MWR 3 ... 0 ... 0 ... 0 INI
 func (c *CPU) ini() {
-	c.tstates += 1
-	c.writeByte(c.HL, c.getPort(c.extractRegister('C'), 4), 3)
+	c.Tstates += 1
+	c.writeByte(c.HL, c.getPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
 	c.WZ = c.BC + 1
 	c.HL++
 	c.BC -= 256
@@ -4707,14 +4845,14 @@ func (c *CPU) inir() {
 		return
 	}
 
-	c.tstates += 5
+	c.Tstates += 5
 	c.PC -= 2
 }
 
 // EDAA     16 00 M1R 4 M1R 5 IOR 4 MWR 3 ... 0 ... 0 ... 0 IND
 func (c *CPU) ind() {
-	c.tstates += 1
-	c.writeByte(c.HL, c.getPort(c.extractRegister('C'), 4), 3)
+	c.Tstates += 1
+	c.writeByte(c.HL, c.getPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
 	c.WZ = c.BC - 1
 	c.HL--
 	c.BC -= 256
@@ -4735,7 +4873,7 @@ func (c *CPU) indr() {
 		return
 	}
 
-	c.tstates += 5
+	c.Tstates += 5
 	c.PC -= 2
 }
 
@@ -4744,7 +4882,7 @@ func (c *CPU) indr() {
 // FDD3U1   15 00 M1R 4 M1R 4 MRD 3 IOW 4 ... 0 ... 0 ... 0 OUT (U8),A
 func (c *CPU) out_N_A() {
 	portAddress := c.readByte(c.PC+1, 3)
-	c.setPort(portAddress, c.getAcc(), 4)
+	c.setPort(c.getAcc(), portAddress, c.getAcc(), 4)
 	c.WZ = uint16(portAddress+1) | (uint16(c.getAcc()) << 8)
 
 	c.PC += 2
@@ -4772,7 +4910,7 @@ func (c *CPU) out_C_R(r byte) func() {
 			c.WZ = c.BC + 1
 		}
 
-		c.setPort(uint8(c.BC), right, 4)
+		c.setPort(uint8(c.BC>>8), uint8(c.BC), right, 4)
 
 		c.PC += 2
 	}
@@ -4780,10 +4918,11 @@ func (c *CPU) out_C_R(r byte) func() {
 
 // EDA3     16 00 M1R 4 M1R 5 MRD 3 IOW 4 ... 0 ... 0 ... 0 OUTI
 func (c *CPU) outi() {
-	c.tstates += 1
-	c.setPort(c.extractRegister('C'), c.readByte(c.HL, 3), 4)
-	c.HL++
+	c.Tstates += 1
+	value := c.readByte(c.HL, 3)
 	c.BC -= 256
+	c.setPort(uint8(c.BC>>8), uint8(c.BC), value, 4)
+	c.HL++
 	c.WZ = c.BC + 1
 
 	c.setZ(c.BC < 256)
@@ -4803,15 +4942,16 @@ func (c *CPU) otir() {
 	}
 
 	c.PC -= 2
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 // EDAB     16 00 M1R 4 M1R 5 MRD 3 IOW 4 ... 0 ... 0 ... 0 OUTD
 func (c *CPU) outd() {
-	c.tstates += 1
-	c.setPort(c.extractRegister('C'), c.readByte(c.HL, 3), 4)
-	c.HL--
+	c.Tstates += 1
+	value := c.readByte(c.HL, 3)
 	c.BC -= 256
+	c.setPort(uint8(c.BC>>8), uint8(c.BC), value, 4)
+	c.HL--
 	c.WZ = c.BC - 1
 
 	c.setZ(c.BC < 256)
@@ -4831,5 +4971,5 @@ func (c *CPU) otdr() {
 	}
 
 	c.PC -= 2
-	c.tstates += 5
+	c.Tstates += 5
 }

@@ -1888,9 +1888,9 @@ func TestLd_Hl_R(t *testing.T) {
 
 func TestHalt(t *testing.T) {
 	resetAll()
-	checkCpu(t, 1, 4, map[string]uint16{"PC": 1}, cpu.halt)
+	checkCpu(t, 1, 4, map[string]uint16{"PC": 0}, cpu.halt)
 
-	got := cpu.States.Halt
+	got := cpu.Halt
 	want := true
 
 	if got != want {
@@ -2429,20 +2429,21 @@ func TestJpNcNn(t *testing.T) {
 	checkCpu(t, 1, 10, map[string]uint16{"PC": 0x06, "WZ": 0x5678, "Flags": 0b11010111}, cpu.jpNcNn)
 }
 
-func TestOut_N_A(t *testing.T) {
-	resetAll()
-	cpu.setAcc(0xaf)
-	dmaX.SetMemoryByte(0x0001, 0x45)
+// @todo I/O mnemonics
+//func TestOut_N_A(t *testing.T) {
+//resetAll()
+//cpu.setAcc(0xaf)
+//dmaX.SetMemoryByte(0x0001, 0x45)
 
-	checkCpu(t, 1, 11, map[string]uint16{"PC": 2, "A": 0xaf, "WZ": 0xaf46}, cpu.out_N_A)
+//checkCpu(t, 1, 11, map[string]uint16{"PC": 2, "A": 0xaf, "WZ": 0xaf46}, cpu.out_N_A)
 
-	got := cpu.getPort(0x45, 0)
-	want := uint8(0xaf)
+//got := cpu.getPort(0x45, 0)
+//want := uint8(0xaf)
 
-	if got != want {
-		t.Errorf("got %02x, want %02x", got, want)
-	}
-}
+//if got != want {
+//t.Errorf("got %02x, want %02x", got, want)
+//}
+//}
 
 func TestCallNcNn(t *testing.T) {
 	resetAll()
@@ -2536,14 +2537,15 @@ func TestJpCNn(t *testing.T) {
 	checkCpu(t, 1, 10, map[string]uint16{"PC": 0x06, "WZ": 0x5678, "Flags": 0b11010110}, cpu.jpCNn)
 }
 
-func TestInA_N_(t *testing.T) {
-	resetAll()
-	cpu.setAcc(0x11)
-	cpu.setPort(0x45, 0xaf, 0)
-	dmaX.SetMemoryByte(0x0001, 0x45)
+// @todo I/O mnemonics
+//func TestInA_N_(t *testing.T) {
+//resetAll()
+//cpu.setAcc(0x11)
+//cpu.setPort(0x45, 0xaf, 0)
+//dmaX.SetMemoryByte(0x0001, 0x45)
 
-	checkCpu(t, 1, 11, map[string]uint16{"PC": 2, "WZ": 0x1146, "A": 0xaf}, cpu.inA_N_)
-}
+//checkCpu(t, 1, 11, map[string]uint16{"PC": 2, "WZ": 0x1146, "A": 0xaf}, cpu.inA_N_)
+//}
 
 func TestCallCNn(t *testing.T) {
 	resetAll()
@@ -3033,97 +3035,99 @@ func TestCallMNn(t *testing.T) {
 	}
 }
 
-func TestInR_C_(t *testing.T) {
-	expectedRegisterMap := map[byte]string{
-		'B': "BC", 'C': "BC", 'D': "DE", 'E': "DE", 'H': "HL", 'L': "HL", 'A': "A",
-	}
-	for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', ' '} {
-		expectedValueMap := map[byte]uint16{
-			'B': 0x8b34, 'C': 0x008b, 'D': 0x8b00, 'E': 0x008b, 'H': 0x8b00, 'L': 0x008b,
-		}
+// @todo I/O mnemonics
+//func TestInR_C_(t *testing.T) {
+//expectedRegisterMap := map[byte]string{
+//'B': "BC", 'C': "BC", 'D': "DE", 'E': "DE", 'H': "HL", 'L': "HL", 'A': "A",
+//}
+//for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', ' '} {
+//expectedValueMap := map[byte]uint16{
+//'B': 0x8b34, 'C': 0x008b, 'D': 0x8b00, 'E': 0x008b, 'H': 0x8b00, 'L': 0x008b,
+//}
 
-		resetAll()
-		cpu.setAcc(0x00)
-		cpu.BC = 0x0034
-		cpu.DE = 0x0000
-		cpu.HL = 0x0000
-		cpu.WZ = 0x0001
-		cpu.setFlags(0b00000001)
-		cpu.setPort(0x34, 0x8b, 0)
+//resetAll()
+//cpu.setAcc(0x00)
+//cpu.BC = 0x0034
+//cpu.DE = 0x0000
+//cpu.HL = 0x0000
+//cpu.WZ = 0x0001
+//cpu.setFlags(0b00000001)
+//cpu.setPort(0x34, 0x8b, 0)
 
-		switch register {
-		case ' ':
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x0034, "WZ": 0x0035, "Flags": 0b10000101}, cpu.inR_C_(register))
-		case 'A':
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x0034, "A": 0x8b, "WZ": 0x0035, "Flags": 0b10000101}, cpu.inR_C_(register))
-		case 'B':
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x8b34, "WZ": 0x8b35, "Flags": 0b10000101}, cpu.inR_C_(register))
-		case 'C':
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x008b, "WZ": 0x008c, "Flags": 0b10000101}, cpu.inR_C_(register))
-		default:
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x0034, expectedRegisterMap[register]: expectedValueMap[register], "WZ": 0x0035, "Flags": 0b10000101}, cpu.inR_C_(register))
-		}
+//switch register {
+//case ' ':
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x0034, "WZ": 0x0035, "Flags": 0b10000101}, cpu.inR_C_(register))
+//case 'A':
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x0034, "A": 0x8b, "WZ": 0x0035, "Flags": 0b10000101}, cpu.inR_C_(register))
+//case 'B':
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x8b34, "WZ": 0x8b35, "Flags": 0b10000101}, cpu.inR_C_(register))
+//case 'C':
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x008b, "WZ": 0x008c, "Flags": 0b10000101}, cpu.inR_C_(register))
+//default:
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x0034, expectedRegisterMap[register]: expectedValueMap[register], "WZ": 0x0035, "Flags": 0b10000101}, cpu.inR_C_(register))
+//}
 
-		expectedValueMap = map[byte]uint16{
-			'B': 0x0034, 'C': 0xff00, 'D': 0x00ff, 'E': 0xff00, 'H': 0x00ff, 'L': 0xff00,
-		}
+//expectedValueMap = map[byte]uint16{
+//'B': 0x0034, 'C': 0xff00, 'D': 0x00ff, 'E': 0xff00, 'H': 0x00ff, 'L': 0xff00,
+//}
 
-		resetAll()
-		cpu.setAcc(0x00)
-		cpu.BC = 0xff34
-		cpu.DE = 0xffff
-		cpu.HL = 0xffff
-		cpu.setFlags(0b00000000)
-		cpu.setPort(0x34, 0x00, 0)
+//resetAll()
+//cpu.setAcc(0x00)
+//cpu.BC = 0xff34
+//cpu.DE = 0xffff
+//cpu.HL = 0xffff
+//cpu.setFlags(0b00000000)
+//cpu.setPort(0x34, 0x00, 0)
 
-		switch register {
-		case ' ':
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0xff34, "WZ": 0xff35, "Flags": 0b01000100}, cpu.inR_C_(register))
-		case 'A':
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0xff34, "WZ": 0xff35, "A": 0x00, "Flags": 0b01000100}, cpu.inR_C_(register))
-		case 'B':
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x0034, "WZ": 0x0035, "Flags": 0b01000100}, cpu.inR_C_(register))
-		case 'C':
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0xff00, "WZ": 0xff01, "Flags": 0b01000100}, cpu.inR_C_(register))
-		default:
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0xff34, expectedRegisterMap[register]: expectedValueMap[register], "WZ": 0xff35, "Flags": 0b01000100}, cpu.inR_C_(register))
-		}
-	}
-}
+//switch register {
+//case ' ':
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0xff34, "WZ": 0xff35, "Flags": 0b01000100}, cpu.inR_C_(register))
+//case 'A':
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0xff34, "WZ": 0xff35, "A": 0x00, "Flags": 0b01000100}, cpu.inR_C_(register))
+//case 'B':
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0x0034, "WZ": 0x0035, "Flags": 0b01000100}, cpu.inR_C_(register))
+//case 'C':
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0xff00, "WZ": 0xff01, "Flags": 0b01000100}, cpu.inR_C_(register))
+//default:
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "BC": 0xff34, expectedRegisterMap[register]: expectedValueMap[register], "WZ": 0xff35, "Flags": 0b01000100}, cpu.inR_C_(register))
+//}
+//}
+//}
 
-func TestOut_C_R(t *testing.T) {
-	for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', ' '} {
-		var want uint8
+// @todo I/O mnemonics
+//func TestOut_C_R(t *testing.T) {
+//for _, register := range []byte{'B', 'C', 'D', 'E', 'H', 'L', 'A', ' '} {
+//var want uint8
 
-		resetAll()
-		cpu.setAcc(0x8b)
-		cpu.BC = 0x8b34
-		cpu.DE = 0x8b8b
-		cpu.HL = 0x8b8b
-		cpu.WZ = 0x0001
+//resetAll()
+//cpu.setAcc(0x8b)
+//cpu.BC = 0x8b34
+//cpu.DE = 0x8b8b
+//cpu.HL = 0x8b8b
+//cpu.WZ = 0x0001
 
-		if register == 'A' {
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "A": 0x8b, "BC": 0x8b34, "DE": 0x8b8b, "HL": 0x8b8b, "WZ": 0x8b35}, cpu.out_C_R(register))
-		} else {
-			checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "A": 0x8b, "BC": 0x8b34, "DE": 0x8b8b, "HL": 0x8b8b, "WZ": 0x0001}, cpu.out_C_R(register))
-		}
+//if register == 'A' {
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "A": 0x8b, "BC": 0x8b34, "DE": 0x8b8b, "HL": 0x8b8b, "WZ": 0x8b35}, cpu.out_C_R(register))
+//} else {
+//checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "A": 0x8b, "BC": 0x8b34, "DE": 0x8b8b, "HL": 0x8b8b, "WZ": 0x0001}, cpu.out_C_R(register))
+//}
 
-		got := cpu.getPort(0x34, 0)
+//got := cpu.getPort(0x34, 0)
 
-		switch register {
-		case ' ':
-			want = 0
-		case 'C':
-			want = 0x34
-		default:
-			want = 0x8b
-		}
+//switch register {
+//case ' ':
+//want = 0
+//case 'C':
+//want = 0x34
+//default:
+//want = 0x8b
+//}
 
-		if got != want {
-			t.Errorf("%c got %02x, want %02x", register, got, want)
-		}
-	}
-}
+//if got != want {
+//t.Errorf("%c got %02x, want %02x", register, got, want)
+//}
+//}
+//}
 
 func TestLd_Nn_Rr(t *testing.T) {
 	for _, registerPair := range [4]string{"BC", "DE", "HL", "SP"} {
@@ -3170,8 +3174,8 @@ func TestRetn(t *testing.T) {
 	cpu.PC = 0x1234
 	cpu.SP = 0xfffc
 	dmaX.SetMemoryBulk(0xfffc, []uint8{0x78, 0x56})
-	cpu.States.IFF1 = true
-	cpu.States.IFF2 = false
+	cpu.IFF1 = true
+	cpu.IFF2 = false
 
 	checkCpu(t, 2, 14, map[string]uint16{"PC": 0x5678, "SP": 0xfffe}, cpu.retn)
 
@@ -3188,8 +3192,8 @@ func TestReti(t *testing.T) {
 	cpu.PC = 0x1234
 	cpu.SP = 0xfffc
 	dmaX.SetMemoryBulk(0xfffc, []uint8{0x78, 0x56})
-	cpu.States.IFF1 = true
-	cpu.States.IFF2 = false
+	cpu.IFF1 = true
+	cpu.IFF2 = false
 
 	checkCpu(t, 2, 14, map[string]uint16{"PC": 0x5678, "WZ": 0x5678, "SP": 0xfffe}, cpu.reti)
 
@@ -3204,11 +3208,11 @@ func TestReti(t *testing.T) {
 func TestIm(t *testing.T) {
 	for im := 0; im <= 2; im++ {
 		resetAll()
-		cpu.States.IM = uint8(im + 1)
+		cpu.IM = uint8(im + 1)
 
 		checkCpu(t, 2, 8, map[string]uint16{"PC": 2}, cpu.im(uint8(im)))
 
-		got := cpu.States.IM
+		got := cpu.IM
 		want := uint8(im)
 
 		if got != want {
@@ -3228,7 +3232,7 @@ func TestLdAI(t *testing.T) {
 	resetAll()
 
 	cpu.I = 0x99
-	cpu.States.IFF2 = false
+	cpu.IFF2 = false
 	cpu.setFlags(0b01010110)
 
 	checkCpu(t, 2, 9, map[string]uint16{"PC": 2, "A": 0x99, "I": 0x99, "Flags": 0b10000000}, cpu.ldAI)
@@ -3237,7 +3241,7 @@ func TestLdAI(t *testing.T) {
 
 	cpu.setAcc(0x32)
 	cpu.I = 0x00
-	cpu.States.IFF2 = true
+	cpu.IFF2 = true
 	cpu.setFlags(0b10010011)
 
 	checkCpu(t, 2, 9, map[string]uint16{"PC": 2, "A": 0x00, "I": 0x00, "Flags": 0b01000101}, cpu.ldAI)
@@ -3268,7 +3272,7 @@ func TestLdAR(t *testing.T) {
 	resetAll()
 
 	cpu.R = 0x99
-	cpu.States.IFF2 = false
+	cpu.IFF2 = false
 	cpu.setFlags(0b01010110)
 
 	checkCpu(t, 2, 9, map[string]uint16{"PC": 2, "A": 0x99, "R": 0x99, "Flags": 0b10000000}, cpu.ldAR)
@@ -3277,7 +3281,7 @@ func TestLdAR(t *testing.T) {
 
 	cpu.setAcc(0x32)
 	cpu.R = 0x00
-	cpu.States.IFF2 = true
+	cpu.IFF2 = true
 	cpu.setFlags(0b10010011)
 
 	checkCpu(t, 2, 9, map[string]uint16{"PC": 2, "A": 0x00, "R": 0x00, "Flags": 0b01000101}, cpu.ldAR)
@@ -3990,6 +3994,7 @@ func TestDec_Iy_(t *testing.T) {
 
 func TestLdi(t *testing.T) {
 	resetAll()
+	cpu.setAcc(0x00)
 	cpu.HL = 0x1111
 	cpu.DE = 0x2222
 	cpu.BC = 0x0007
@@ -3997,7 +4002,7 @@ func TestLdi(t *testing.T) {
 	dmaX.SetMemoryByte(0x1111, 0x88)
 	dmaX.SetMemoryByte(0x2222, 0x66)
 
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1112, "DE": 0x2223, "BC": 0x0006, "Flags": 0b11000101}, cpu.ldi)
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "A": 0x00, "HL": 0x1112, "DE": 0x2223, "BC": 0x0006, "Flags": 0b11001101}, cpu.ldi)
 
 	got := getMemoryByte(0x1111)
 	want := uint8(0x88)
@@ -4050,69 +4055,69 @@ func TestCpi(t *testing.T) {
 	}
 }
 
-func TestIni(t *testing.T) {
-	resetAll()
-	cpu.BC = 0x1007
-	cpu.HL = 0x1000
-	cpu.States.Ports[0x07] = 0x7b
-	cpu.setFlags(0b01000000)
+// @todo I/O mnemonics
+//func TestIni(t *testing.T) {
+//resetAll()
+//cpu.BC = 0x1007
+//cpu.HL = 0x1000
+//cpu.setFlags(0b01000000)
 
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0f07, "WZ": 0x1008, "Flags": 0b00001010}, cpu.ini)
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0f07, "WZ": 0x1008, "Flags": 0b00001010}, cpu.ini)
 
-	got := getMemoryByte(0x1000)
-	want := uint8(0x7b)
+//got := getMemoryByte(0x1000)
+//want := uint8(0x7b)
 
-	if got != want {
-		t.Errorf("got %02x, want %02x", got, want)
-	}
+//if got != want {
+//t.Errorf("got %02x, want %02x", got, want)
+//}
 
-	resetAll()
-	cpu.BC = 0x0107
-	cpu.HL = 0x1000
-	cpu.States.Ports[0x07] = 0x7b
-	cpu.setFlags(0b10010101)
+//resetAll()
+//cpu.BC = 0x0107
+//cpu.HL = 0x1000
+//cpu.setFlags(0b10010101)
 
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0007, "WZ": 0x0108, "Flags": 0b11010111}, cpu.ini)
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0007, "WZ": 0x0108, "Flags": 0b11010111}, cpu.ini)
 
-	got = getMemoryByte(0x1000)
-	want = uint8(0x7b)
+//got = getMemoryByte(0x1000)
+//want = uint8(0x7b)
 
-	if got != want {
-		t.Errorf("got %02x, want %02x", got, want)
-	}
-}
+//if got != want {
+//t.Errorf("got %02x, want %02x", got, want)
+//}
+//}
 
-func TestOuti(t *testing.T) {
-	resetAll()
-	cpu.BC = 0x1007
-	cpu.HL = 0x1000
-	cpu.setFlags(0b01000000)
-	dmaX.SetMemoryByte(0x1000, 0x59)
+// @todo I/O mnemonics
+//func TestOuti(t *testing.T) {
+//resetAll()
+//cpu.BC = 0x1007
+//cpu.HL = 0x1000
+//cpu.setFlags(0b01000000)
+//dmaX.SetMemoryByte(0x1000, 0x59)
 
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0f07, "WZ": 0x0f08, "Flags": 0b00001010}, cpu.outi)
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0f07, "WZ": 0x0f08, "Flags": 0b00001010}, cpu.outi)
 
-	got := cpu.getPort(0x07, 0)
-	want := uint8(0x59)
+//got := cpu.getPort(0x07, 0)
+//want := uint8(0x59)
 
-	if got != want {
-		t.Errorf("got %02x, want %02x", got, want)
-	}
+//if got != want {
+//t.Errorf("got %02x, want %02x", got, want)
+//}
 
-	resetAll()
-	cpu.BC = 0x0107
-	cpu.HL = 0x1000
-	cpu.setFlags(0b10010101)
-	dmaX.SetMemoryByte(0x1000, 0x59)
+//resetAll()
+//cpu.BC = 0x0107
+//cpu.HL = 0x1000
+//cpu.setFlags(0b10010101)
+//dmaX.SetMemoryByte(0x1000, 0x59)
 
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0007, "WZ": 0x0008, "Flags": 0b11010111}, cpu.outi)
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0007, "WZ": 0x0008, "Flags": 0b11010111}, cpu.outi)
 
-	got = cpu.getPort(0x07, 0)
-	want = uint8(0x59)
+//got = cpu.getPort(0x07, 0)
+//want = uint8(0x59)
 
-	if got != want {
-		t.Errorf("got %02x, want %02x", got, want)
-	}
-}
+//if got != want {
+//t.Errorf("got %02x, want %02x", got, want)
+//}
+//}
 
 func TestLdd(t *testing.T) {
 	resetAll()
@@ -4177,69 +4182,70 @@ func TestCpd(t *testing.T) {
 	}
 }
 
-func TestInd(t *testing.T) {
-	resetAll()
-	cpu.BC = 0x1007
-	cpu.HL = 0x1000
-	cpu.setPort(0x07, 0x7b, 0)
-	cpu.setFlags(0b01000000)
+// @todo I/O mnemonics
+//func TestInd(t *testing.T) {
+//resetAll()
+//cpu.BC = 0x1007
+//cpu.HL = 0x1000
+//cpu.setPort(0x07, 0x7b, 0)
+//cpu.setFlags(0b01000000)
 
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0f07, "WZ": 0x1006, "Flags": 0b00001010}, cpu.ind)
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0f07, "WZ": 0x1006, "Flags": 0b00001010}, cpu.ind)
 
-	got := getMemoryByte(0x1000)
-	want := uint8(0x7b)
+//got := getMemoryByte(0x1000)
+//want := uint8(0x7b)
 
-	if got != want {
-		t.Errorf("got %02x, want %02x", got, want)
-	}
+//if got != want {
+//t.Errorf("got %02x, want %02x", got, want)
+//}
 
-	resetAll()
-	cpu.BC = 0x0107
-	cpu.HL = 0x1000
-	cpu.States.Ports[0x07] = 0x7b
-	cpu.setFlags(0b10010101)
+//resetAll()
+//cpu.BC = 0x0107
+//cpu.HL = 0x1000
+//cpu.setFlags(0b10010101)
 
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0007, "WZ": 0x0106, "Flags": 0b11010111}, cpu.ind)
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0007, "WZ": 0x0106, "Flags": 0b11010111}, cpu.ind)
 
-	got = getMemoryByte(0x1000)
-	want = uint8(0x7b)
+//got = getMemoryByte(0x1000)
+//want = uint8(0x7b)
 
-	if got != want {
-		t.Errorf("got %02x, want %02x", got, want)
-	}
-}
+//if got != want {
+//t.Errorf("got %02x, want %02x", got, want)
+//}
+//}
 
-func TestOutd(t *testing.T) {
-	resetAll()
-	cpu.BC = 0x1007
-	cpu.HL = 0x1000
-	cpu.setFlags(0b01000000)
-	dmaX.SetMemoryByte(0x1000, 0x59)
+// @todo I/O mnemonics
+//func TestOutd(t *testing.T) {
+//resetAll()
+//cpu.BC = 0x1007
+//cpu.HL = 0x1000
+//cpu.setFlags(0b01000000)
+//dmaX.SetMemoryByte(0x1000, 0x59)
 
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0f07, "WZ": 0x0f06, "Flags": 0b00001010}, cpu.outd)
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0f07, "WZ": 0x0f06, "Flags": 0b00001010}, cpu.outd)
 
-	got := cpu.getPort(0x07, 0)
-	want := uint8(0x59)
+//got := cpu.getPort(0x07, 0)
+//want := uint8(0x59)
 
-	if got != want {
-		t.Errorf("got %02x, want %02x", got, want)
-	}
+//if got != want {
+//t.Errorf("got %02x, want %02x", got, want)
+//}
 
-	resetAll()
-	cpu.BC = 0x0107
-	cpu.HL = 0x1000
-	cpu.setFlags(0b10010101)
-	dmaX.SetMemoryByte(0x1000, 0x59)
+//resetAll()
+//cpu.BC = 0x0107
+//cpu.HL = 0x1000
+//cpu.setFlags(0b10010101)
+//dmaX.SetMemoryByte(0x1000, 0x59)
 
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0007, "WZ": 0x0006, "Flags": 0b11010111}, cpu.outd)
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0007, "WZ": 0x0006, "Flags": 0b11010111}, cpu.outd)
 
-	got = cpu.getPort(0x07, 0)
-	want = uint8(0x59)
+//got = cpu.getPort(0x07, 0)
+//want = uint8(0x59)
 
-	if got != want {
-		t.Errorf("got %02x, want %02x", got, want)
-	}
-}
+//if got != want {
+//t.Errorf("got %02x, want %02x", got, want)
+//}
+//}
 
 func TestLdir(t *testing.T) {
 	resetAll()
@@ -4251,10 +4257,10 @@ func TestLdir(t *testing.T) {
 	dmaX.SetMemoryBulk(0x2222, []uint8{0x66, 0x59, 0xc5})
 
 	for cpu.BC > 1 {
-		cpu.tstates = 8
+		cpu.Tstates = 8
 		cpu.ldir()
-		got := cpu.tstates
-		want := uint64(21)
+		got := cpu.Tstates
+		want := uint(21)
 
 		if got != want {
 			t.Errorf("got %d, want %d", got, want)
@@ -4262,7 +4268,7 @@ func TestLdir(t *testing.T) {
 	}
 
 	cpu.setAcc(0x11)
-	cpu.tstates = 0
+	cpu.Tstates = 0
 	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "A": 0x11, "HL": 0x1114, "DE": 0x2225, "BC": 0x0000, "WZ": 0x0001, "Flags": 0b11100001}, cpu.ldir)
 
 	gotHLA, gotHLB, gotHLC := getMemoryByte(0x1111), getMemoryByte(0x1112), getMemoryByte(0x1113)
@@ -4290,17 +4296,17 @@ func TestCpir(t *testing.T) {
 	dmaX.SetMemoryBulk(0x1111, []uint8{0x52, 0x00, 0xf3})
 
 	for i := 0; i < 2; i++ {
-		cpu.tstates = 8
+		cpu.Tstates = 8
 		cpu.cpir()
-		got := cpu.tstates
-		want := uint64(21)
+		got := cpu.Tstates
+		want := uint(21)
 
 		if got != want {
 			t.Errorf("got %d, want %d", got, want)
 		}
 	}
 
-	cpu.tstates = 0
+	cpu.Tstates = 0
 	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "A": 0xf3, "HL": 0x1114, "BC": 0x0004, "WZ": 0x0002, "Flags": 0b01000111}, cpu.cpir)
 
 	gotHLA, gotHLB, gotHLC := getMemoryByte(0x1111), getMemoryByte(0x1112), getMemoryByte(0x1113)
@@ -4311,68 +4317,71 @@ func TestCpir(t *testing.T) {
 	}
 }
 
-func TestInir(t *testing.T) {
-	resetAll()
-	cpu.BC = 0x0307
-	cpu.HL = 0x1000
-	ports := []uint8{0x51, 0xa9, 0x03}
-	cpu.setFlags(0b01000000)
+// @todo I/O mnemonics
+//func TestInir(t *testing.T) {
+//resetAll()
+//cpu.BC = 0x0307
+//cpu.HL = 0x1000
+//ports := []uint8{0x51, 0xa9, 0x03}
+//cpu.setFlags(0b01000000)
 
-	for i := 0; cpu.BC > 512; i++ {
-		cpu.setPort(0x07, ports[i], 0)
-		cpu.tstates = 8
-		cpu.inir()
-		got := cpu.tstates
-		want := uint64(21)
+//for i := 0; cpu.BC > 512; i++ {
+//cpu.setPort(0x07, ports[i], 0)
+//cpu.Tstates = 8
+//cpu.inir()
+//got := cpu.Tstates
+//want := uint64(21)
 
-		if got != want {
-			t.Errorf("got %d, want %d", got, want)
-		}
-	}
+//if got != want {
+//t.Errorf("got %d, want %d", got, want)
+//}
+//}
 
-	cpu.tstates = 0
-	cpu.setPort(0x07, ports[2], 0)
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1003, "BC": 0x0007, "WZ": 0x0108, "Flags": 0b01000010}, cpu.inir)
+//cpu.Tstates = 0
+//cpu.setPort(0x07, ports[2], 0)
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1003, "BC": 0x0007, "WZ": 0x0108, "Flags": 0b01000010}, cpu.inir)
 
-	gotA, gotB, gotC := getMemoryByte(0x1000), getMemoryByte(0x1001), getMemoryByte(0x1002)
-	wantA, wantB, wantC := uint8(0x51), uint8(0xa9), uint8(0x03)
+//gotA, gotB, gotC := getMemoryByte(0x1000), getMemoryByte(0x1001), getMemoryByte(0x1002)
+//wantA, wantB, wantC := uint8(0x51), uint8(0xa9), uint8(0x03)
 
-	if gotA != wantA || gotB != wantB || gotC != wantC {
-		t.Errorf("got %02x/%02x/%02x, want %02x/%02x/%02x", gotA, gotB, gotC, wantA, wantB, wantC)
-	}
-}
+//if gotA != wantA || gotB != wantB || gotC != wantC {
+//t.Errorf("got %02x/%02x/%02x, want %02x/%02x/%02x", gotA, gotB, gotC, wantA, wantB, wantC)
+//}
+//}
 
-func TestOtir(t *testing.T) {
-	resetAll()
-	cpu.BC = 0x0307
-	cpu.HL = 0x1000
-	dmaX.SetMemoryBulk(0x1000, []uint8{0x51, 0xa9, 0x03})
-	cpu.setFlags(0b01000000)
+// @todo I/O mnemonics
+//func TestOtir(t *testing.T) {
+//resetAll()
+//cpu.BC = 0x0307
+//cpu.HL = 0x1000
+//dmaX.SetMemoryBulk(0x1000, []uint8{0x51, 0xa9, 0x03})
+//cpu.setFlags(0b01000000)
 
-	for i := 0x1000; cpu.BC > 512; i++ {
-		cpu.tstates = 8
-		cpu.otir()
-		gotT, gotPort := cpu.tstates, cpu.getPort(0x07, 0)
-		wantT, wantPort := uint64(21), uint8(getMemoryByte(uint16(i)))
+//for i := 0x1000; cpu.BC > 512; i++ {
+//cpu.Tstates = 8
+//cpu.otir()
+//gotT, gotPort := cpu.Tstates, cpu.getPort(0x07, 0)
+//wantT, wantPort := uint64(21), uint8(getMemoryByte(uint16(i)))
 
-		if gotT != wantT || gotPort != wantPort {
-			t.Errorf("got %02x (%d), want %02x (%d)", gotPort, gotT, wantPort, wantT)
-		}
-	}
+//if gotT != wantT || gotPort != wantPort {
+//t.Errorf("got %02x (%d), want %02x (%d)", gotPort, gotT, wantPort, wantT)
+//}
+//}
 
-	cpu.tstates = 0
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1003, "BC": 0x0007, "WZ": 0x0008, "Flags": 0b01000010}, cpu.otir)
+//cpu.Tstates = 0
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1003, "BC": 0x0007, "WZ": 0x0008, "Flags": 0b01000010}, cpu.otir)
 
-	got := cpu.getPort(0x07, 0)
-	want := uint8(0x03)
+//got := cpu.getPort(0x07, 0)
+//want := uint8(0x03)
 
-	if got != want {
-		t.Errorf("got %02x, want %02x", got, want)
-	}
-}
+//if got != want {
+//t.Errorf("got %02x, want %02x", got, want)
+//}
+//}
 
 func TestLddr(t *testing.T) {
 	resetAll()
+	cpu.setAcc(0x00)
 	cpu.HL = 0x1114
 	cpu.DE = 0x2225
 	cpu.BC = 0x0003
@@ -4381,17 +4390,17 @@ func TestLddr(t *testing.T) {
 	dmaX.SetMemoryBulk(0x2223, []uint8{0x66, 0x59, 0xc5})
 
 	for cpu.BC > 1 {
-		cpu.tstates = 8
+		cpu.Tstates = 8
 		cpu.lddr()
-		got := cpu.tstates
-		want := uint64(21)
+		got := cpu.Tstates
+		want := uint(21)
 
 		if got != want {
 			t.Errorf("got %d, want %d", got, want)
 		}
 	}
 
-	cpu.tstates = 0
+	cpu.Tstates = 0
 	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1111, "DE": 0x2222, "BC": 0x0000, "WZ": 0x0001, "Flags": 0b11100001}, cpu.lddr)
 
 	gotHLA, gotHLB, gotHLC := getMemoryByte(0x1112), getMemoryByte(0x1113), getMemoryByte(0x1114)
@@ -4419,17 +4428,17 @@ func TestCpdr(t *testing.T) {
 	dmaX.SetMemoryBulk(0x1116, []uint8{0xf3, 0x00, 0x52})
 
 	for i := 0; i < 2; i++ {
-		cpu.tstates = 8
+		cpu.Tstates = 8
 		cpu.cpdr()
-		got := cpu.tstates
-		want := uint64(21)
+		got := cpu.Tstates
+		want := uint(21)
 
 		if got != want {
 			t.Errorf("got %d, want %d", got, want)
 		}
 	}
 
-	cpu.tstates = 0
+	cpu.Tstates = 0
 	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "A": 0xf3, "HL": 0x1115, "BC": 0x0004, "WZ": 0x0000, "Flags": 0b01000111}, cpu.cpdr)
 
 	gotHLA, gotHLB, gotHLC := getMemoryByte(0x1116), getMemoryByte(0x1117), getMemoryByte(0x1118)
@@ -4440,65 +4449,67 @@ func TestCpdr(t *testing.T) {
 	}
 }
 
-func TestIndr(t *testing.T) {
-	resetAll()
-	cpu.BC = 0x0307
-	cpu.HL = 0x1000
-	ports := []uint8{0x51, 0xa9, 0x03}
-	cpu.setFlags(0b01000000)
+// @todo I/O mnemonics
+//func TestIndr(t *testing.T) {
+//resetAll()
+//cpu.BC = 0x0307
+//cpu.HL = 0x1000
+//ports := []uint8{0x51, 0xa9, 0x03}
+//cpu.setFlags(0b01000000)
 
-	for i := 0; cpu.BC > 512; i++ {
-		cpu.setPort(0x07, ports[i], 0)
-		cpu.tstates = 8
-		cpu.indr()
-		got := cpu.tstates
-		want := uint64(21)
+//for i := 0; cpu.BC > 512; i++ {
+//cpu.setPort(0x07, ports[i], 0)
+//cpu.Tstates = 8
+//cpu.indr()
+//got := cpu.Tstates
+//want := uint64(21)
 
-		if got != want {
-			t.Errorf("got %d, want %d", got, want)
-		}
-	}
+//if got != want {
+//t.Errorf("got %d, want %d", got, want)
+//}
+//}
 
-	cpu.tstates = 0
-	cpu.setPort(0x07, ports[2], 0)
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0ffd, "BC": 0x0007, "WZ": 0x0106, "Flags": 0b01000010}, cpu.indr)
+//cpu.Tstates = 0
+//cpu.setPort(0x07, ports[2], 0)
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0ffd, "BC": 0x0007, "WZ": 0x0106, "Flags": 0b01000010}, cpu.indr)
 
-	gotA, gotB, gotC := getMemoryByte(0x0ffe), getMemoryByte(0x0fff), getMemoryByte(0x1000)
-	wantA, wantB, wantC := uint8(0x03), uint8(0xa9), uint8(0x51)
+//gotA, gotB, gotC := getMemoryByte(0x0ffe), getMemoryByte(0x0fff), getMemoryByte(0x1000)
+//wantA, wantB, wantC := uint8(0x03), uint8(0xa9), uint8(0x51)
 
-	if gotA != wantA || gotB != wantB || gotC != wantC {
-		t.Errorf("got %02x/%02x/%02x, want %02x/%02x/%02x", gotA, gotB, gotC, wantA, wantB, wantC)
-	}
-}
+//if gotA != wantA || gotB != wantB || gotC != wantC {
+//t.Errorf("got %02x/%02x/%02x, want %02x/%02x/%02x", gotA, gotB, gotC, wantA, wantB, wantC)
+//}
+//}
 
-func TestOtdr(t *testing.T) {
-	resetAll()
-	cpu.BC = 0x0307
-	cpu.HL = 0x1000
-	dmaX.SetMemoryBulk(0x0ffe, []uint8{0x51, 0xa9, 0x03})
-	cpu.setFlags(0b01000000)
+// @todo I/O mnemonics
+//func TestOtdr(t *testing.T) {
+//resetAll()
+//cpu.BC = 0x0307
+//cpu.HL = 0x1000
+//dmaX.SetMemoryBulk(0x0ffe, []uint8{0x51, 0xa9, 0x03})
+//cpu.setFlags(0b01000000)
 
-	for i := 0x1000; cpu.BC > 512; i-- {
-		cpu.tstates = 8
-		cpu.otdr()
-		gotT, gotPort := cpu.tstates, cpu.getPort(0x07, 0)
-		wantT, wantPort := uint64(21), uint8(getMemoryByte(uint16(i)))
+//for i := 0x1000; cpu.BC > 512; i-- {
+//cpu.Tstates = 8
+//cpu.otdr()
+//gotT, gotPort := cpu.Tstates, cpu.getPort(0x07, 0)
+//wantT, wantPort := uint64(21), uint8(getMemoryByte(uint16(i)))
 
-		if gotT != wantT || gotPort != wantPort {
-			t.Errorf("got %02x (%d), want %02x (%d)", gotPort, gotT, wantPort, wantT)
-		}
-	}
+//if gotT != wantT || gotPort != wantPort {
+//t.Errorf("got %02x (%d), want %02x (%d)", gotPort, gotT, wantPort, wantT)
+//}
+//}
 
-	cpu.tstates = 0
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0ffd, "BC": 0x0007, "WZ": 0x0006, "Flags": 0b01000010}, cpu.otdr)
+//cpu.Tstates = 0
+//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0ffd, "BC": 0x0007, "WZ": 0x0006, "Flags": 0b01000010}, cpu.otdr)
 
-	got := cpu.getPort(0x07, 0)
-	want := uint8(0x51)
+//got := cpu.getPort(0x07, 0)
+//want := uint8(0x51)
 
-	if got != want {
-		t.Errorf("got %02x, want %02x", got, want)
-	}
-}
+//if got != want {
+//t.Errorf("got %02x, want %02x", got, want)
+//}
+//}
 
 func TestRlcR(t *testing.T) {
 	expectedRegisterMap := map[byte]string{
