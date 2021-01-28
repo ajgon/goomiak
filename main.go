@@ -2,10 +2,10 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"z80/cpu"
 	"z80/dma"
+	"z80/loader"
 	"z80/machine"
 	"z80/memory"
 	"z80/video"
@@ -42,8 +42,15 @@ func main() {
 	dma := dma.DMANew(mem, videoMemoryHandler)
 	video := video.VideoNew(dma)
 	loadFileToMemory(dma, 0x0000, "./roms/48.rom")
+	//loadFileToMemory(dma, 0x5c00, "./roms/vars.rom")
+	//loadFileToMemory(dma, 0x8000, "./roms/zexdoc.rom")
 
 	cpu := cpu.CPUNew(dma, machine.Spectrum48k)
+	//cpu.PC = 0x8000
+
+	s := loader.Z80("./pp.z80")
+	cpu.LoadSnapshot(s)
+	mem.LoadSnapshot(s)
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
@@ -65,12 +72,19 @@ func main() {
 
 	// 14336 - 10776 =
 	tstatesUla := uint64(0)
-	var screenWidthPixels, screenHeightPixels uint64 = 256, 192
+	//var screenWidthPixels, screenHeightPixels uint64 = 256, 192
+	var screenWidthPixels uint64 = 256
 	var borderTopPixels, borderRightPixels, borderLeftPixels uint64 = 48, 48, 48
 	initialDrawingTstate := machine.Spectrum48k.InitialContendedTstate - machine.Spectrum48k.TstatesPerScanline*borderTopPixels + borderLeftPixels/2
 	//reader := bufio.NewReader(os.Stdin)
 	running := true
+	frame := 0
 	for running {
+		frame++
+		//fmt.Println("FRAME")
+		if cpu.States.IRQ && cpu.States.IFF1 {
+			cpu.HandleInterrupt()
+		}
 		for tstatesUla = 0; tstatesUla < machine.Spectrum48k.FrameLength; tstatesUla++ {
 			if tstatesUla >= initialDrawingTstate { // beam returned, ULA starts drawing border
 				y := (tstatesUla - initialDrawingTstate) / machine.Spectrum48k.TstatesPerScanline
@@ -79,9 +93,9 @@ func main() {
 					//fmt.Printf("y = %d, x = [%d, %d] (ulaT = %d, cpuT = %d)", y, x, x+1, tstatesUla, cpu.Tstates())
 					video.PaintPixel(x, y)
 					video.PaintPixel(x+1, y)
-					if y < borderTopPixels || y >= borderTopPixels+screenHeightPixels || x < borderLeftPixels || x >= borderLeftPixels+screenWidthPixels {
-						//fmt.Printf(" [BORDER]")
-					}
+					//if y < borderTopPixels || y >= borderTopPixels+screenHeightPixels || x < borderLeftPixels || x >= borderLeftPixels+screenWidthPixels {
+					//fmt.Printf(" [BORDER]")
+					//}
 					//fmt.Printf("\n")
 				}
 			}
@@ -93,16 +107,17 @@ func main() {
 				//}
 			}
 		}
+		//if frame%1000 == 0 {
+		//fmt.Println("draw frame")
 		drawScreen(renderer, texture, video)
+		//}
 		//reader.ReadString('\n')
+		cpu.States.IRQ = true
+		//time.Sleep(10 * time.Millisecond)
 
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch event.(type) {
 			case *sdl.QuitEvent:
-				for i := 0x4000; i < 0x4000+6912; i++ {
-					a, _ := dma.GetMemoryByte(uint16(i))
-					fmt.Printf("%02x", a)
-				}
 				running = false
 				break
 			}

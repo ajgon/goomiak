@@ -1,5 +1,9 @@
 package memory
 
+import (
+	"z80/loader"
+)
+
 type Memory struct {
 	roms        [4]MemoryBank
 	banks       [8]MemoryBank
@@ -77,4 +81,10 @@ func NewWritableMemory() *Memory {
 	}
 
 	return memory
+}
+
+func (m *Memory) LoadSnapshot(snapshot loader.Snapshot) {
+	for ptr := 0; ptr < len(snapshot.Memory); ptr++ {
+		m.SetByte(uint16(0x4000+ptr), snapshot.Memory[ptr])
+	}
 }

@@ -3,6 +3,7 @@ package cpu
 import (
 	"fmt"
 	"z80/dma"
+	"z80/loader"
 	"z80/machine"
 )
 
@@ -275,6 +276,8 @@ type CPUStates struct {
 	IFF1  bool
 	IFF2  bool
 	IM    uint8
+	IRQ   bool
+	Tmp   uint64
 }
 
 type CPUMnemonics struct {
@@ -559,9 +562,26 @@ func (c *CPU) pushStack(value uint16) {
 	c.writeWord(c.SP, value, 3, 3)
 }
 
-func (c *CPU) getPort(addr uint8, tstates uint8) uint8 {
+func (c *CPU) getPort(highAddrHalf, lowAddrHalf uint8, tstates uint8) uint8 {
 	c.tstates += uint64(tstates)
-	return c.States.Ports[addr]
+	//if c.States.Tmp > 200 {
+	//c.States.Tmp = 0
+	//fmt.Printf("PORT address %02x%02x\n", highAddrHalf, lowAddrHalf)
+	//if highAddrHalf&4 == 4 {
+	//fmt.Printf("%02x-%02x\n", highAddrHalf, lowAddrHalf)
+	if highAddrHalf&0x08 == 0 {
+		if c.States.Tmp%200 < 10 {
+			c.States.Tmp++
+			return 0x17
+		}
+		//fmt.Println(c.States.Tmp)
+		c.States.Tmp++
+	}
+	//return 0x00
+	//}
+	//}
+	//c.States.Tmp++
+	return 0xff
 }
 
 func (c *CPU) setPort(addr uint8, value uint8, tstates uint8) {
@@ -893,4 +913,53 @@ func CPUNew(dma *dma.DMA, variant machine.Machine) *CPU {
 	cpu.initializeMnemonics()
 	cpu.Reset()
 	return cpu
+}
+
+func (c *CPU) LoadSnapshot(snapshot loader.Snapshot) {
+	c.Reset()
+	c.PC = snapshot.PC
+	c.SP = snapshot.SP
+	c.AF = snapshot.AF
+	c.AF_ = snapshot.AF_
+	c.BC = snapshot.BC
+	c.BC_ = snapshot.BC_
+	c.DE = snapshot.DE
+	c.DE_ = snapshot.DE_
+	c.HL = snapshot.HL
+	c.HL_ = snapshot.HL_
+	c.I = snapshot.I
+	c.R = snapshot.R
+	c.IX = snapshot.IX
+	c.IY = snapshot.IY
+
+	c.States.IM = snapshot.IM
+	c.States.IFF1 = snapshot.IFF1
+	c.States.IFF2 = snapshot.IFF2
+}
+
+func (c *CPU) PushStack(value uint16) {
+	c.pushStack(value)
+}
+
+func (c *CPU) HandleInterrupt() {
+	if c.States.Halt {
+		//fmt.Println("HALT")
+		c.PC++
+	}
+	c.States.IFF1, c.States.IFF2 = false, false
+	c.pushStack(c.PC)
+
+	switch c.States.IM {
+	case 0:
+		panic("IM 0")
+	case 1:
+		c.PC = 0x0038
+		c.tstates += 7
+	case 2:
+		inttemp := uint16((uint16(c.I) << 8) | 0x00ff)
+		c.PC = c.readWord(inttemp, 3, 3)
+		c.tstates += 7
+		//panic("IM 2")
+	}
+
 }

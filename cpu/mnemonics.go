@@ -2226,7 +2226,7 @@ func (c *CPU) nop() {
 // DD76     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 HALT
 // FD76     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 HALT
 func (c *CPU) halt() {
-	c.PC++
+	//c.PC++
 	c.States.Halt = true
 }
 
@@ -4629,7 +4629,7 @@ func (c *CPU) rst(p uint8) func() {
 func (c *CPU) inA_N_() {
 	portAddress := c.readByte(c.PC+1, 3)
 	c.WZ = (uint16(c.getAcc()) << 8) + uint16(portAddress) + 1
-	c.setAcc(c.getPort(portAddress, 4))
+	c.setAcc(c.getPort(c.getAcc(), portAddress, 4))
 
 	c.PC += 2
 }
@@ -4661,7 +4661,7 @@ func (c *CPU) inR_C_(r byte) func() {
 			panic("Invalid `r` part of the mnemonic")
 		}
 
-		result := c.getPort(uint8(c.BC), 4)
+		result := c.getPort(uint8(c.BC>>8), uint8(c.BC), 4)
 
 		if r != ' ' {
 			if lhigh {
@@ -4686,7 +4686,7 @@ func (c *CPU) inR_C_(r byte) func() {
 // EDA2     16 00 M1R 4 M1R 5 IOR 4 MWR 3 ... 0 ... 0 ... 0 INI
 func (c *CPU) ini() {
 	c.tstates += 1
-	c.writeByte(c.HL, c.getPort(c.extractRegister('C'), 4), 3)
+	c.writeByte(c.HL, c.getPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
 	c.WZ = c.BC + 1
 	c.HL++
 	c.BC -= 256
@@ -4714,7 +4714,7 @@ func (c *CPU) inir() {
 // EDAA     16 00 M1R 4 M1R 5 IOR 4 MWR 3 ... 0 ... 0 ... 0 IND
 func (c *CPU) ind() {
 	c.tstates += 1
-	c.writeByte(c.HL, c.getPort(c.extractRegister('C'), 4), 3)
+	c.writeByte(c.HL, c.getPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
 	c.WZ = c.BC - 1
 	c.HL--
 	c.BC -= 256
