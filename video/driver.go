@@ -1,6 +1,11 @@
 package video
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"fmt"
+	"time"
+
+	"github.com/veandco/go-sdl2/sdl"
+)
 
 type VideoDriver interface {
 	DrawScreen()
@@ -31,14 +36,15 @@ func (svd *SDLVideoDriver) DrawScreen() {
 func NewSDLVideoDriver(pixelRenderer *PixelRenderer) *SDLVideoDriver {
 	var err error
 
-	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+	if err = sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
 	}
 
 	window, err := sdl.CreateWindow(
 		"test",
-		sdl.WINDOWPOS_UNDEFINED,
-		sdl.WINDOWPOS_UNDEFINED,
+		//sdl.WINDOWPOS_UNDEFINED,
+		//sdl.WINDOWPOS_UNDEFINED,
+		10, 10,
 		int32(fullWidth),
 		int32(fullHeight),
 		sdl.WINDOW_SHOWN|sdl.WINDOW_RESIZABLE|sdl.WINDOW_OPENGL|sdl.WINDOW_ALLOW_HIGHDPI,
@@ -59,6 +65,12 @@ func NewSDLVideoDriver(pixelRenderer *PixelRenderer) *SDLVideoDriver {
 		int32(fullWidth),
 		int32(fullHeight),
 	)
+
+	renderer.Copy(texture, nil, nil)
+	renderer.Present()
+	fmt.Println("SLEEP")
+	time.Sleep(5 * time.Second)
+	fmt.Println("/SLEEP")
 
 	return &SDLVideoDriver{
 		Window:   window,

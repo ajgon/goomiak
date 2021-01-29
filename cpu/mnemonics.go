@@ -318,7 +318,7 @@ func (c *CPU) ldR_Ss_(r byte, ss string) func() {
 		}
 
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		right = c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3)
 
 		if lhigh {
@@ -363,7 +363,7 @@ func (c *CPU) ld_Ss_R(ss string, r byte) func() {
 	// FD77S1   19 00 M1R 4 M1R 4 MRD 3 NON 5 MWR 3 ... 0 ... 0 LD (IY+S8),A
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 
 		c.writeByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), c.extractRegister(r), 3)
 
@@ -385,7 +385,7 @@ func (c *CPU) ld_Ss_N(ss string) func() {
 	// FD36S1U2 23 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 4 MWR 3 ... 0 LD (IY+S8),U8
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		c.writeByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), c.readByte(c.PC+3, 4), 3)
 
 		c.PC += 4
@@ -450,7 +450,7 @@ func (c *CPU) ld_Nn_A() {
 
 // ED57     09 00 M1R 4 M1R 5 ... 0 ... 0 ... 0 ... 0 ... 0 LD A,I
 func (c *CPU) ldAI() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	c.setAcc(c.I)
 
@@ -465,7 +465,7 @@ func (c *CPU) ldAI() {
 
 // ED5F     09 00 M1R 4 M1R 5 ... 0 ... 0 ... 0 ... 0 ... 0 LD A,R
 func (c *CPU) ldAR() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	c.setAcc(c.R)
 
@@ -480,7 +480,7 @@ func (c *CPU) ldAR() {
 
 // ED47     09 00 M1R 4 M1R 5 ... 0 ... 0 ... 0 ... 0 ... 0 LD I,A
 func (c *CPU) ldIA() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	c.I = c.getAcc()
 
@@ -489,7 +489,7 @@ func (c *CPU) ldIA() {
 
 // ED4F     09 00 M1R 4 M1R 5 ... 0 ... 0 ... 0 ... 0 ... 0 LD R,A
 func (c *CPU) ldRA() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	c.R = c.getAcc()
 
@@ -644,7 +644,7 @@ func (c *CPU) ldSpSs(ss string) func() {
 	// F9       06 00 M1R 6 ... 0 ... 0 ... 0 ... 0 ... 0 ... 0 LD SP,HL
 	if ss == "HL" {
 		return func() {
-			c.tstates += 2
+			c.Tstates += 2
 			c.SP = c.HL
 
 			c.PC++
@@ -654,7 +654,7 @@ func (c *CPU) ldSpSs(ss string) func() {
 	// DDF9     10 00 M1R 4 M1R 6 ... 0 ... 0 ... 0 ... 0 ... 0 LD SP,IX
 	// FDF9     10 00 M1R 4 M1R 6 ... 0 ... 0 ... 0 ... 0 ... 0 LD SP,IY
 	return func() {
-		c.tstates += 2
+		c.Tstates += 2
 		c.SP = c.extractRegisterPair(ss)
 
 		c.PC += 2
@@ -668,7 +668,7 @@ func (c *CPU) pushSs(ss string) func() {
 		// DDC5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH BC
 		// FDC5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH BC
 		return func() {
-			c.tstates += 1
+			c.Tstates += 1
 			c.pushStack(c.BC)
 			c.PC++
 		}
@@ -677,14 +677,14 @@ func (c *CPU) pushSs(ss string) func() {
 		// DDD5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH DE
 		// FDD5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH DE
 		return func() {
-			c.tstates += 1
+			c.Tstates += 1
 			c.pushStack(c.DE)
 			c.PC++
 		}
 	case "HL":
 		// E5       11 00 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 ... 0 PUSH HL
 		return func() {
-			c.tstates += 1
+			c.Tstates += 1
 			c.pushStack(c.HL)
 			c.PC++
 		}
@@ -693,7 +693,7 @@ func (c *CPU) pushSs(ss string) func() {
 		// DDF5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH AF
 		// FDF5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH AF
 		return func() {
-			c.tstates += 1
+			c.Tstates += 1
 			c.pushStack(c.AF)
 			c.PC++
 		}
@@ -702,7 +702,7 @@ func (c *CPU) pushSs(ss string) func() {
 	// DDE5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH IX
 	// FDE5     15 00 M1R 4 M1R 5 MWR 3 MWR 3 ... 0 ... 0 ... 0 PUSH IY
 	return func() {
-		c.tstates += 1
+		c.Tstates += 1
 		c.pushStack(c.extractRegisterPair(ss))
 		c.PC += 2
 	}
@@ -861,7 +861,7 @@ func (c *CPU) ldir() {
 
 	c.PC -= 2
 	c.WZ = c.PC + 1
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // EDA8     16 00 M1R 4 M1R 4 MRD 3 MWR 5 ... 0 ... 0 ... 0 LDD
@@ -893,7 +893,7 @@ func (c *CPU) lddr() {
 
 	c.PC -= 2
 	c.WZ = c.PC + 1
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // EDA1     16 00 M1R 4 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 CPI
@@ -922,7 +922,7 @@ func (c *CPU) cpi() {
 
 	c.PC += 2
 	c.WZ++
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // EDB1     21 16 M1R 4 M1R 4 MRD 3 NON 5 NON 5 ... 0 ... 0 CPIR
@@ -950,14 +950,14 @@ func (c *CPU) cpir() {
 		c.setF5(result&0x02 == 0x02) // 0x02 not 0x20 - this is intended
 	}
 
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 
 	if c.BC == 0 || result == 0 {
 		c.WZ++
 		c.PC += 2
 		return
 	}
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // EDA9     16 00 M1R 4 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 CPD
@@ -985,7 +985,7 @@ func (c *CPU) cpd() {
 
 	c.PC += 2
 	c.WZ--
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // EDB9     21 16 M1R 4 M1R 4 MRD 3 NON 5 NON 5 ... 0 ... 0 CPDR
@@ -1011,7 +1011,7 @@ func (c *CPU) cpdr() {
 	c.setF3(result&0x08 == 0x08)
 	c.setF5(result&0x02 == 0x02) // 0x02 not 0x20 - this is intended
 
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 
 	if c.BC == 0 || result == 0 {
 		c.WZ--
@@ -1019,7 +1019,7 @@ func (c *CPU) cpdr() {
 		return
 	}
 
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 }
 
 // 80       04 00 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 ... 0 ADD A,B
@@ -1080,7 +1080,7 @@ func (c *CPU) addA_Ss_(ss string) func() {
 	return func() {
 		c.setC(false)
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		c.adcValueToAcc(c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3))
 		c.PC += 3
 	}
@@ -1140,7 +1140,7 @@ func (c *CPU) adcA_Ss_(ss string) func() {
 
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		c.adcValueToAcc(c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3))
 		c.PC += 3
 	}
@@ -1215,7 +1215,7 @@ func (c *CPU) sub_Ss_(ss string) func() {
 	return func() {
 		c.setC(true)
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		c.adcValueToAcc(c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3) ^ 0xff)
 
 		c.PC += 3
@@ -1294,7 +1294,7 @@ func (c *CPU) sbcA_Ss_(ss string) func() {
 	return func() {
 		c.setC(!c.getC())
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		c.adcValueToAcc(c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3) ^ 0xff)
 
 		c.PC += 3
@@ -1388,7 +1388,7 @@ func (c *CPU) and_Ss_(ss string) func() {
 	// FDA6S2   19 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 3 ... 0 ... 0 AND A,(IY+S8)
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		result := c.getAcc() & c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3)
 
 		c.PC += 3
@@ -1488,7 +1488,7 @@ func (c *CPU) or_Ss_(ss string) func() {
 	// FDB6S2   19 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 3 ... 0 ... 0 OR A,(IY+S8)
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		result := c.getAcc() | c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3)
 
 		c.PC += 3
@@ -1588,7 +1588,7 @@ func (c *CPU) xor_Ss_(ss string) func() {
 	// FDAES2   19 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 3 ... 0 ... 0 XOR A,(IY+S8)
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		result := c.getAcc() ^ c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3)
 
 		c.PC += 3
@@ -1688,7 +1688,7 @@ func (c *CPU) cp_Ss_(ss string) func() {
 	return func() {
 		acc := c.getAcc()
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		operand := c.readByte(c.shiftedAddress(c.extractRegisterPair(ss), shift), 3)
 		c.setC(true)
 		c.adcValueToAcc(operand ^ 0xff)
@@ -1792,7 +1792,7 @@ func (c *CPU) inc_Ss_(ss string) func() {
 	// FD34S1   23 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 4 MWR 3 ... 0 INC (IY+S8)
 	return func() {
 		shift := c.readByte(c.PC+2, 3)
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		addr := c.shiftedAddress(c.extractRegisterPair(ss), shift)
 		result := c.readByte(addr, 4) + 1
 		c.writeByte(addr, result, 3)
@@ -1897,7 +1897,7 @@ func (c *CPU) dec_Ss_(ss string) func() {
 	// FD35S1   23 00 M1R 4 M1R 4 MRD 3 NON 5 MRD 4 MWR 3 ... 0 DEC (IY+S8)
 	return func() {
 		addr := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 3))
-		c.tstates += 5 // NON
+		c.Tstates += 5 // NON
 		result := c.readByte(addr, 4) - 1
 		c.writeByte(addr, result, 3)
 		c.PC += 3
@@ -2282,21 +2282,21 @@ func (c *CPU) addSsRr(ss, rr string) func() {
 			c.WZ = c.HL + 1
 			c.addRegisters(&c.HL, c.extractRegisterPair(rr))
 			c.PC++
-			c.tstates += 7 // NON + NON
+			c.Tstates += 7 // NON + NON
 		}
 	case "IX":
 		return func() {
 			c.WZ = c.IX + 1
 			c.addRegisters(&c.IX, c.extractRegisterPair(rr))
 			c.PC += 2
-			c.tstates += 7 // NON + NON
+			c.Tstates += 7 // NON + NON
 		}
 	case "IY":
 		return func() {
 			c.WZ = c.IY + 1
 			c.addRegisters(&c.IY, c.extractRegisterPair(rr))
 			c.PC += 2
-			c.tstates += 7 // NON + NON
+			c.Tstates += 7 // NON + NON
 		}
 	}
 
@@ -2313,7 +2313,7 @@ func (c *CPU) adcHlRr(rr string) func() {
 		c.HL = c.adc16bit(c.HL, c.extractRegisterPair(rr))
 
 		c.PC += 2
-		c.tstates += 7 // NON + NON
+		c.Tstates += 7 // NON + NON
 	}
 }
 
@@ -2332,7 +2332,7 @@ func (c *CPU) sbcHlRr(rr string) func() {
 		c.setC(!c.getC())
 		c.setH(!c.getH())
 
-		c.tstates += 7
+		c.Tstates += 7
 	}
 }
 
@@ -2354,37 +2354,37 @@ func (c *CPU) incSs(ss string) func() {
 		return func() {
 			c.BC++
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "DE":
 		return func() {
 			c.DE++
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "HL":
 		return func() {
 			c.HL++
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "SP":
 		return func() {
 			c.SP++
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "IX":
 		return func() {
 			c.IX++
 			c.PC += 2
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "IY":
 		return func() {
 			c.IY++
 			c.PC += 2
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	}
 
@@ -2409,37 +2409,37 @@ func (c *CPU) decSs(ss string) func() {
 		return func() {
 			c.BC--
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "DE":
 		return func() {
 			c.DE--
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "HL":
 		return func() {
 			c.HL--
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "SP":
 		return func() {
 			c.SP--
 			c.PC++
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "IX":
 		return func() {
 			c.IX--
 			c.PC += 2
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	case "IY":
 		return func() {
 			c.IY--
 			c.PC += 2
-			c.tstates += 2
+			c.Tstates += 2
 		}
 	}
 
@@ -3316,7 +3316,7 @@ func (c *CPU) rld() {
 	a := c.getAcc()
 
 	c.setAcc((a & 0xf0) | ((value >> 4) & 0x0f))
-	c.tstates += 4 // NON
+	c.Tstates += 4 // NON
 	value = value << 4
 	value = (a & 0x0f) | value
 
@@ -3341,7 +3341,7 @@ func (c *CPU) rrd() {
 	a := c.getAcc()
 
 	c.setAcc((a & 0xf0) | (value & 0x0f))
-	c.tstates += 4 // NON
+	c.Tstates += 4 // NON
 	value = value >> 4
 	value = (a << 4) | value
 
@@ -4217,7 +4217,7 @@ func (c *CPU) jpMNn() {
 func (c *CPU) jrN() {
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(c.readByte(c.PC+1, 3))))
 	c.PC = c.WZ
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 // 38S2     12 07 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 ... 0 JR C,S8
@@ -4232,7 +4232,7 @@ func (c *CPU) jrCN() {
 
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(address)))
 	c.PC = c.WZ
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 // 30S2     12 07 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 ... 0 JR NC,S8
@@ -4248,7 +4248,7 @@ func (c *CPU) jrNcN() {
 
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(address)))
 	c.PC = c.WZ
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 // 28S2     12 07 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 ... 0 JR Z,S8
@@ -4264,7 +4264,7 @@ func (c *CPU) jrZN() {
 
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(address)))
 	c.PC = c.WZ
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 // 20S2     12 07 M1R 4 MRD 3 NON 5 ... 0 ... 0 ... 0 ... 0 JR NZ,S8
@@ -4280,7 +4280,7 @@ func (c *CPU) jrNzN() {
 
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(address)))
 	c.PC = c.WZ
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 func (c *CPU) jp_Ss_(ss string) func() {
@@ -4302,7 +4302,7 @@ func (c *CPU) jp_Ss_(ss string) func() {
 // DD10S1   17 12 M1R 4 M1R 5 MRD 3 NON 5 ... 0 ... 0 ... 0 DJNZ S8
 // FD10S1   17 12 M1R 4 M1R 5 MRD 3 NON 5 ... 0 ... 0 ... 0 DJNZ S8
 func (c *CPU) djnzN() {
-	c.tstates += 1
+	c.Tstates += 1
 	address := c.readByte(c.PC+1, 3)
 	c.BC -= 256
 
@@ -4311,7 +4311,7 @@ func (c *CPU) djnzN() {
 		return
 	}
 
-	c.tstates += 5 // NON
+	c.Tstates += 5 // NON
 
 	c.WZ = 2 + uint16(int16(c.PC)+int16(int8(address)))
 	c.PC = c.WZ
@@ -4337,7 +4337,7 @@ func (c *CPU) callNzNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4352,7 +4352,7 @@ func (c *CPU) callZNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4367,7 +4367,7 @@ func (c *CPU) callNcNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4382,7 +4382,7 @@ func (c *CPU) callCNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4397,7 +4397,7 @@ func (c *CPU) callPoNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4412,7 +4412,7 @@ func (c *CPU) callPeNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4427,7 +4427,7 @@ func (c *CPU) callPNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4442,7 +4442,7 @@ func (c *CPU) callMNn() {
 		c.PC += 3
 		return
 	}
-	c.tstates += 1 // additional tstate
+	c.Tstates += 1 // additional tstate
 	c.pushStack(c.PC + 3)
 	c.PC = c.WZ
 }
@@ -4465,7 +4465,7 @@ func (c *CPU) ret() {
 // DDC0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET NZ
 // FDC0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET NZ
 func (c *CPU) retNz() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if c.getZ() {
 		c.PC++
@@ -4479,7 +4479,7 @@ func (c *CPU) retNz() {
 // DDC8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET Z
 // FDC8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET Z
 func (c *CPU) retZ() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if !c.getZ() {
 		c.PC++
@@ -4493,7 +4493,7 @@ func (c *CPU) retZ() {
 // DDD0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET NC
 // FDD0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET NC
 func (c *CPU) retNc() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if c.getC() {
 		c.PC++
@@ -4507,7 +4507,7 @@ func (c *CPU) retNc() {
 // DDD8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET C
 // FDD8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET C
 func (c *CPU) retC() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if !c.getC() {
 		c.PC++
@@ -4521,7 +4521,7 @@ func (c *CPU) retC() {
 // DDE0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET PO
 // FDE0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET PO
 func (c *CPU) retPo() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if c.getPV() {
 		c.PC++
@@ -4535,7 +4535,7 @@ func (c *CPU) retPo() {
 // DDE8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET PE
 // FDE8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET PE
 func (c *CPU) retPe() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if !c.getPV() {
 		c.PC++
@@ -4549,7 +4549,7 @@ func (c *CPU) retPe() {
 // DDF0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET P
 // FDF0     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET P
 func (c *CPU) retP() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if c.getS() {
 		c.PC++
@@ -4563,7 +4563,7 @@ func (c *CPU) retP() {
 // DDF8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET M
 // FDF8     15 09 M1R 4 M1R 5 MRD 3 MRD 3 ... 0 ... 0 ... 0 RET M
 func (c *CPU) retM() {
-	c.tstates += 1
+	c.Tstates += 1
 
 	if !c.getS() {
 		c.PC++
@@ -4616,7 +4616,7 @@ func (c *CPU) rst(p uint8) func() {
 	}
 
 	return func() {
-		c.tstates += 1
+		c.Tstates += 1
 		c.pushStack(c.PC + 1)
 		c.PC = uint16(p)
 		c.WZ = c.PC
@@ -4685,7 +4685,7 @@ func (c *CPU) inR_C_(r byte) func() {
 
 // EDA2     16 00 M1R 4 M1R 5 IOR 4 MWR 3 ... 0 ... 0 ... 0 INI
 func (c *CPU) ini() {
-	c.tstates += 1
+	c.Tstates += 1
 	c.writeByte(c.HL, c.getPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
 	c.WZ = c.BC + 1
 	c.HL++
@@ -4707,13 +4707,13 @@ func (c *CPU) inir() {
 		return
 	}
 
-	c.tstates += 5
+	c.Tstates += 5
 	c.PC -= 2
 }
 
 // EDAA     16 00 M1R 4 M1R 5 IOR 4 MWR 3 ... 0 ... 0 ... 0 IND
 func (c *CPU) ind() {
-	c.tstates += 1
+	c.Tstates += 1
 	c.writeByte(c.HL, c.getPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
 	c.WZ = c.BC - 1
 	c.HL--
@@ -4735,7 +4735,7 @@ func (c *CPU) indr() {
 		return
 	}
 
-	c.tstates += 5
+	c.Tstates += 5
 	c.PC -= 2
 }
 
@@ -4780,7 +4780,7 @@ func (c *CPU) out_C_R(r byte) func() {
 
 // EDA3     16 00 M1R 4 M1R 5 MRD 3 IOW 4 ... 0 ... 0 ... 0 OUTI
 func (c *CPU) outi() {
-	c.tstates += 1
+	c.Tstates += 1
 	c.setPort(c.extractRegister('C'), c.readByte(c.HL, 3), 4)
 	c.HL++
 	c.BC -= 256
@@ -4803,12 +4803,12 @@ func (c *CPU) otir() {
 	}
 
 	c.PC -= 2
-	c.tstates += 5
+	c.Tstates += 5
 }
 
 // EDAB     16 00 M1R 4 M1R 5 MRD 3 IOW 4 ... 0 ... 0 ... 0 OUTD
 func (c *CPU) outd() {
-	c.tstates += 1
+	c.Tstates += 1
 	c.setPort(c.extractRegister('C'), c.readByte(c.HL, 3), 4)
 	c.HL--
 	c.BC -= 256
@@ -4831,5 +4831,5 @@ func (c *CPU) otdr() {
 	}
 
 	c.PC -= 2
-	c.tstates += 5
+	c.Tstates += 5
 }

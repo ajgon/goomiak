@@ -271,7 +271,7 @@ var mnemonicsDebug = MnemonicsDebug{
 
 type CPUConfig struct {
 	ContentionDelays []uint8
-	FrameLength      uint64
+	FrameLength      uint
 }
 
 type CPUStates struct {
@@ -315,7 +315,7 @@ type CPU struct {
 	config    CPUConfig
 	dma       *dma.DMA
 	mnemonics CPUMnemonics
-	tstates   uint64
+	Tstates   uint
 }
 
 func (c *CPU) initializeMnemonics() {
@@ -562,8 +562,8 @@ func (c *CPU) pushStack(value uint16) {
 	c.writeWord(c.SP, value, 3, 3)
 }
 
-func (c *CPU) getPort(highAddrHalf, lowAddrHalf uint8, tstates uint8) uint8 {
-	c.tstates += uint64(tstates)
+func (c *CPU) getPort(highAddrHalf, lowAddrHalf uint8, tstates uint) uint8 {
+	c.Tstates += uint(tstates)
 	//if c.States.Tmp > 200 {
 	//c.States.Tmp = 0
 	//fmt.Printf("PORT address %02x%02x\n", highAddrHalf, lowAddrHalf)
@@ -584,8 +584,8 @@ func (c *CPU) getPort(highAddrHalf, lowAddrHalf uint8, tstates uint8) uint8 {
 	return 0xff
 }
 
-func (c *CPU) setPort(addr uint8, value uint8, tstates uint8) {
-	c.tstates += uint64(tstates)
+func (c *CPU) setPort(addr uint8, value uint8, tstates uint) {
+	c.Tstates += tstates
 	c.States.Ports[addr] = value
 }
 
@@ -613,33 +613,33 @@ func (c *CPU) shiftedAddress(base uint16, shift uint8) uint16 {
 	return c.WZ
 }
 
-func (c *CPU) readByte(address uint16, usedTstates uint8) uint8 {
+func (c *CPU) readByte(address uint16, usedTstates uint) uint8 {
 	value, contended := c.dma.GetMemoryByte(address)
 
 	if contended {
-		c.tstates += uint64(c.config.ContentionDelays[c.tstates%c.config.FrameLength])
+		c.Tstates += uint(c.config.ContentionDelays[c.Tstates%c.config.FrameLength])
 	}
 
-	c.tstates += uint64(usedTstates)
+	c.Tstates += usedTstates
 
 	return value
 }
 
-func (c *CPU) writeByte(address uint16, value uint8, usedTstates uint8) {
+func (c *CPU) writeByte(address uint16, value uint8, usedTstates uint) {
 	contended := c.dma.SetMemoryByte(address, value)
 
 	if contended && usedTstates > 0 {
-		c.tstates += uint64(c.config.ContentionDelays[c.tstates%c.config.FrameLength])
+		c.Tstates += uint(c.config.ContentionDelays[c.Tstates%c.config.FrameLength])
 	}
 
-	c.tstates += uint64(usedTstates)
+	c.Tstates += usedTstates
 }
 
 // reads word and maintains endianess
 // example:
 // 0040 34 21
 // readWord(0x0040) => 0x1234
-func (c *CPU) readWord(address uint16, usedTstates1, usedTstates2 uint8) uint16 {
+func (c *CPU) readWord(address uint16, usedTstates1, usedTstates2 uint) uint16 {
 	return uint16(c.readByte(address+1, usedTstates1))<<8 | uint16(c.readByte(address, usedTstates2))
 }
 
@@ -647,7 +647,7 @@ func (c *CPU) readWord(address uint16, usedTstates1, usedTstates2 uint8) uint16 
 // example:
 // writeWord(0x1234, 0x5678)
 // 1234  78 56
-func (c *CPU) writeWord(address uint16, value uint16, usedTstates1, usedTstates2 uint8) {
+func (c *CPU) writeWord(address uint16, value uint16, usedTstates1, usedTstates2 uint) {
 	c.writeByte(address, uint8(value), usedTstates1)
 	c.writeByte(address+1, uint8(value>>8), usedTstates2)
 }
@@ -790,7 +790,7 @@ func (c *CPU) DebugStep() (tstates uint8) {
 	var debugOpcode string
 
 	//pc := c.PC
-	debugT := c.tstates % 69888
+	debugT := c.Tstates % 69888
 
 	opcode := c.readByte(c.PC, 4)
 	dbOpcode := opcode
@@ -849,7 +849,7 @@ func (c *CPU) DebugStep() (tstates uint8) {
 		return
 	}
 
-	//fmt.Printf("%04x: %s [%d]\n", pc, debugOpcode, c.tstates)
+	//fmt.Printf("%04x: %s [%d]\n", pc, debugOpcode, c.Tstates)
 	return
 }
 
@@ -902,7 +902,7 @@ func (c *CPU) Reset() {
 	c.R = 0
 	c.IX = 0
 	c.IY = 0
-	c.tstates = 0
+	c.Tstates = 0
 	c.States = CPUStates{IFF1: true, IFF2: true}
 }
 
@@ -952,10 +952,10 @@ func (c *CPU) HandleInterrupt() {
 		panic("IM 0")
 	case 1:
 		c.PC = 0x0038
-		c.tstates += 7
+		c.Tstates += 7
 	case 2:
 		inttemp := uint16((uint16(c.I) << 8) | 0x00ff)
 		c.PC = c.readWord(inttemp, 3, 3)
-		c.tstates += 7
+		c.Tstates += 7
 	}
 }

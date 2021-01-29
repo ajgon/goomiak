@@ -4,8 +4,8 @@ import (
 	"z80/dma"
 )
 
-const fullWidth uint = 256 + 48 + 48
-const fullHeight uint = 256 + 48 + 48
+const fullWidth uint = 48 + 256 + 48
+const fullHeight uint = 48 + 192 + 56
 const screenWidth uint = 256
 const screenHeight uint = 192
 
@@ -19,7 +19,7 @@ const borderBottomPosition uint = 48 + 192
 
 const pixelsAddress uint16 = 0x4000
 const attributesAddress uint16 = 0x5800
-const pixelsByteCount uint = fullWidth * fullHeight
+const pixelsByteCount uint = 4 * fullWidth * fullHeight
 
 type PixelRenderer struct {
 	dma           *dma.DMA
