@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"z80/dma"
 	"z80/loader"
-	"z80/machine"
 )
 
 var parityTable [256]bool = [256]bool{
@@ -270,6 +269,11 @@ var mnemonicsDebug = MnemonicsDebug{
 	},
 }
 
+type CPUConfig struct {
+	ContentionDelays []uint8
+	FrameLength      uint64
+}
+
 type CPUStates struct {
 	Halt  bool
 	Ports [256]uint8
@@ -308,14 +312,10 @@ type CPU struct {
 	IY     uint16
 	States CPUStates
 
+	config    CPUConfig
 	dma       *dma.DMA
 	mnemonics CPUMnemonics
-	variant   machine.Machine
 	tstates   uint64
-}
-
-func (c *CPU) Tstates() uint64 {
-	return c.tstates
 }
 
 func (c *CPU) initializeMnemonics() {
@@ -617,7 +617,7 @@ func (c *CPU) readByte(address uint16, usedTstates uint8) uint8 {
 	value, contended := c.dma.GetMemoryByte(address)
 
 	if contended {
-		c.tstates += uint64(c.variant.ContentionDelays[c.tstates%c.variant.FrameLength])
+		c.tstates += uint64(c.config.ContentionDelays[c.tstates%c.config.FrameLength])
 	}
 
 	c.tstates += uint64(usedTstates)
@@ -629,7 +629,7 @@ func (c *CPU) writeByte(address uint16, value uint8, usedTstates uint8) {
 	contended := c.dma.SetMemoryByte(address, value)
 
 	if contended && usedTstates > 0 {
-		c.tstates += uint64(c.variant.ContentionDelays[c.tstates%c.variant.FrameLength])
+		c.tstates += uint64(c.config.ContentionDelays[c.tstates%c.config.FrameLength])
 	}
 
 	c.tstates += uint64(usedTstates)
@@ -906,12 +906,14 @@ func (c *CPU) Reset() {
 	c.States = CPUStates{IFF1: true, IFF2: true}
 }
 
-func CPUNew(dma *dma.DMA, variant machine.Machine) *CPU {
+func NewCPU(dma *dma.DMA, config CPUConfig) *CPU {
 	cpu := new(CPU)
 	cpu.dma = dma
-	cpu.variant = variant
+	cpu.config = config
+
 	cpu.initializeMnemonics()
 	cpu.Reset()
+
 	return cpu
 }
 
@@ -937,13 +939,9 @@ func (c *CPU) LoadSnapshot(snapshot loader.Snapshot) {
 	c.States.IFF2 = snapshot.IFF2
 }
 
-func (c *CPU) PushStack(value uint16) {
-	c.pushStack(value)
-}
-
 func (c *CPU) HandleInterrupt() {
 	if c.States.Halt {
-		//fmt.Println("HALT")
+		c.States.Halt = false
 		c.PC++
 	}
 	c.States.IFF1, c.States.IFF2 = false, false
@@ -959,7 +957,5 @@ func (c *CPU) HandleInterrupt() {
 		inttemp := uint16((uint16(c.I) << 8) | 0x00ff)
 		c.PC = c.readWord(inttemp, 3, 3)
 		c.tstates += 7
-		//panic("IM 2")
 	}
-
 }
