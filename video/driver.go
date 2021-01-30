@@ -1,9 +1,6 @@
 package video
 
 import (
-	"fmt"
-	"time"
-
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -31,6 +28,15 @@ func (svd *SDLVideoDriver) DrawScreen() {
 	svd.Texture.Update(nil, pixels, int(fullWidth*4))
 	svd.Renderer.Copy(svd.Texture, nil, nil)
 	svd.Renderer.Present()
+
+	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+		switch event.(type) {
+		case *sdl.QuitEvent:
+			panic("Quit")
+			break
+		}
+	}
+
 }
 
 func NewSDLVideoDriver(pixelRenderer *PixelRenderer) *SDLVideoDriver {
@@ -65,12 +71,6 @@ func NewSDLVideoDriver(pixelRenderer *PixelRenderer) *SDLVideoDriver {
 		int32(fullWidth),
 		int32(fullHeight),
 	)
-
-	renderer.Copy(texture, nil, nil)
-	renderer.Present()
-	fmt.Println("SLEEP")
-	time.Sleep(5 * time.Second)
-	fmt.Println("/SLEEP")
 
 	return &SDLVideoDriver{
 		Window:   window,

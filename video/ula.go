@@ -9,7 +9,7 @@ type ULA struct {
 	Config  ULAConfig
 	Tstates uint
 
-	pixelRenderer        *PixelRenderer
+	PixelRenderer        *PixelRenderer
 	initialDrawingTstate uint
 }
 
@@ -30,14 +30,14 @@ func (u *ULA) Step() {
 		return
 	}
 
-	u.pixelRenderer.PaintPixel(x, y)
-	u.pixelRenderer.PaintPixel(x+1, y)
+	u.PixelRenderer.PaintPixel(x, y)
+	u.PixelRenderer.PaintPixel(x+1, y)
 }
 
 func NewULA(pixelRenderer *PixelRenderer, config ULAConfig) *ULA {
 	ula := &ULA{Config: config}
 	ula.initialDrawingTstate = config.InitialContendedTstate - config.TstatesPerScanline*borderTopHeight + borderLeftWidth/2
-	ula.pixelRenderer = pixelRenderer
+	ula.PixelRenderer = pixelRenderer
 
 	return ula
 }

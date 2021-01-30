@@ -1,7 +1,8 @@
 package machine
 
 import (
-	"fmt"
+	"bufio"
+	"os"
 	"z80/cpu"
 	"z80/dma"
 	"z80/memory"
@@ -58,7 +59,6 @@ func (m *Machine) build() {
 func (m *Machine) Run() {
 	running := true
 	for running {
-		fmt.Println("FRAME")
 		for m.ULA.Tstates < m.Config.FrameLength {
 			if m.CPU.States.IRQ && m.CPU.States.IFF1 {
 				m.CPU.HandleInterrupt()
@@ -71,7 +71,8 @@ func (m *Machine) Run() {
 			}
 		}
 
-		m.VideoDriver.DrawScreen()
+		m.ULA.Tstates = 0
+		m.VideoDriver.DrawScreen() // @todo this goes to ULA as it needs to handle SDL events as well
 		m.CPU.States.IRQ = true
 	}
 }
@@ -81,4 +82,20 @@ func NewMachine(config MachineConfig) *Machine {
 	machine.build()
 
 	return machine
+}
+
+func (m *Machine) LoadFileToMemory(address uint16, filePath string) {
+	file, err := os.Open(filePath)
+	defer file.Close()
+	if err != nil {
+		panic("error loading file!")
+	}
+
+	stat, _ := file.Stat()
+
+	bytes := make([]byte, stat.Size())
+	buf := bufio.NewReader(file)
+	buf.Read(bytes)
+
+	m.DMA.LoadData(address, bytes)
 }
