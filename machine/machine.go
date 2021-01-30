@@ -74,6 +74,10 @@ func (m *Machine) Run() {
 
 		m.ULA.Tstates = 0
 		m.VideoDriver.DrawScreen() // @todo this goes to ULA as it needs to handle SDL events as well
+		keyPressedMasks := m.VideoDriver.KeyPressedOut()
+		for kpAddr, kpValue := range keyPressedMasks {
+			m.CPU.SetPort(kpAddr, 0xfe, kpValue, 0)
+		}
 		m.CPU.SetIRQ(true)
 	}
 }

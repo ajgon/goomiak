@@ -53,6 +53,7 @@ type CPU struct {
 	IM   uint8
 	IRQ  bool
 
+	Ports   [65536]uint8
 	Tstates uint
 
 	config    CPUConfig
@@ -176,13 +177,36 @@ func (c *CPU) popStack() (value uint16) {
 	return
 }
 
-func (c *CPU) getPort(highAddrHalf, lowAddrHalf uint8, tstates uint) uint8 {
+func (c *CPU) GetPort(addressHigh, addressLow uint8, tstates uint) uint8 {
+	var value uint8
+
 	c.Tstates += uint(tstates)
-	return 0xff
+
+	if addressLow&0x01 == 0x00 { // ULA
+		addressLeft := (uint16(addressHigh&0x0f) << 8) | 0xf0fe
+		addressRight := (uint16(addressHigh&0xf0) << 8) | 0x0ffe
+
+		valueLeft := c.Ports[addressLeft]
+		valueRight := c.Ports[addressRight]
+
+		//if addressHigh != 0 {
+		//fmt.Printf("%04x - %04x : %02x - %02x\n", addressLeft, addressRight, valueLeft, valueRight)
+		//}
+
+		value = valueLeft & valueRight
+
+	} else {
+		address := (uint16(addressHigh) << 8) | uint16(addressLow)
+
+		value = c.Ports[address]
+	}
+
+	return value
 }
 
-func (c *CPU) setPort(highAddrHalf, lowAddrHalf uint8, value uint8, tstates uint) {
+func (c *CPU) SetPort(addressHigh, addressLow, value uint8, tstates uint) {
 	c.Tstates += tstates
+	c.Ports[(uint16(addressHigh)<<8)|uint16(addressLow)] = value
 }
 
 func (c *CPU) disableInterrupts() {
@@ -515,6 +539,10 @@ func (c *CPU) Reset() {
 	c.IFF2 = true
 	c.IM = 0
 	c.IRQ = false
+
+	for i := 0; i < 65536; i++ {
+		c.Ports[i] = 0xff
+	}
 }
 
 func NewCPU(dma *dma.DMA, config CPUConfig) *CPU {
