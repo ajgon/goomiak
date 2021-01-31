@@ -60,6 +60,7 @@ func (m *Machine) build() {
 
 func (m *Machine) Run() {
 	running := true
+	frames := 0
 	for running {
 		startTime := time.Now()
 		for m.ULA.Tstates < m.Config.FrameLength {
@@ -72,10 +73,15 @@ func (m *Machine) Run() {
 
 			if m.CPU.Tstates%m.Config.FrameLength <= m.ULA.Tstates {
 				m.CPU.Step()
+				if m.CPU.GetPort(0x00, 0xfe, 0) != 255 {
+					m.ULA.SetBorder(m.CPU.GetPort(0x00, 0xfe, 0))
+				}
 			}
 		}
 
 		m.ULA.Tstates = 0
+		m.ULA.Flash = (frames/32)%2 == 1
+		frames++
 		m.VideoDriver.DrawScreen() // @todo this goes to ULA as it needs to handle SDL events as well
 		keyPressedMasks := m.VideoDriver.KeyPressedOut()
 		for kpAddr, kpValue := range keyPressedMasks {

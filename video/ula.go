@@ -8,9 +8,14 @@ type ULAConfig struct {
 type ULA struct {
 	Config  ULAConfig
 	Tstates uint
+	Flash   bool
 
 	PixelRenderer        *PixelRenderer
 	initialDrawingTstate uint
+}
+
+func (u *ULA) SetBorder(border uint8) {
+	u.PixelRenderer.SetBorder(border)
 }
 
 func (u *ULA) Step() {
@@ -30,8 +35,8 @@ func (u *ULA) Step() {
 		return
 	}
 
-	u.PixelRenderer.PaintPixel(x, y)
-	u.PixelRenderer.PaintPixel(x+1, y)
+	u.PixelRenderer.PaintPixel(x, y, u.Flash)
+	u.PixelRenderer.PaintPixel(x+1, y, u.Flash)
 }
 
 func NewULA(pixelRenderer *PixelRenderer, config ULAConfig) *ULA {

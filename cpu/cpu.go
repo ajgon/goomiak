@@ -184,18 +184,17 @@ func (c *CPU) GetPort(addressHigh, addressLow uint8, tstates uint) uint8 {
 	c.Tstates += uint(tstates)
 
 	if addressLow&0x01 == 0x00 { // ULA
-		addressLeft := (uint16(addressHigh&0x0f) << 8) | 0xf0fe
-		addressRight := (uint16(addressHigh&0xf0) << 8) | 0x0ffe
+		if addressHigh == 0x00 {
+			value = c.Ports[0x00fe]
+		} else {
+			addressLeft := (uint16(addressHigh&0x0f) << 8) | 0xf0fe
+			addressRight := (uint16(addressHigh&0xf0) << 8) | 0x0ffe
 
-		valueLeft := c.Ports[addressLeft]
-		valueRight := c.Ports[addressRight]
+			valueLeft := c.Ports[addressLeft]
+			valueRight := c.Ports[addressRight]
 
-		//if addressHigh != 0 {
-		//fmt.Printf("%04x - %04x : %02x - %02x\n", addressLeft, addressRight, valueLeft, valueRight)
-		//}
-
-		value = valueLeft & valueRight
-
+			value = valueLeft & valueRight
+		}
 	} else {
 		address := (uint16(addressHigh) << 8) | uint16(addressLow)
 
@@ -207,7 +206,12 @@ func (c *CPU) GetPort(addressHigh, addressLow uint8, tstates uint) uint8 {
 
 func (c *CPU) SetPort(addressHigh, addressLow, value uint8, tstates uint) {
 	c.Tstates += tstates
-	c.Ports[(uint16(addressHigh)<<8)|uint16(addressLow)] = value
+
+	if addressLow&0x01 == 0x00 && tstates != 0 { // ULA
+		c.Ports[0x00fe] = value
+	} else {
+		c.Ports[(uint16(addressHigh)<<8)|uint16(addressLow)] = value
+	}
 }
 
 func (c *CPU) disableInterrupts() {

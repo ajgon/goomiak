@@ -23,6 +23,7 @@ const pixelsByteCount uint = 4 * fullWidth * fullHeight
 
 type PixelRenderer struct {
 	dma           *dma.DMA
+	border        uint8
 	pixels        [pixelsByteCount]byte
 	memoryHandler dma.MemoryHandler
 
@@ -43,47 +44,7 @@ func (pr *PixelRenderer) prepareScreenPixelAddresses() {
 	}
 }
 
-func (pr *PixelRenderer) PaintPixel(x, y uint) {
-	var pixelPosition uint
-
-	// @todo check port for border color, also paint only if color changes
-	if x < borderLeftWidth || x >= borderRightPosition || y < borderTopHeight || y >= borderBottomPosition {
-		pixelPosition = 4 * (fullWidth*y + x)
-
-		pr.pixels[pixelPosition] = 207
-		pr.pixels[pixelPosition+1] = 207
-		pr.pixels[pixelPosition+2] = 207
-		pr.pixels[pixelPosition+3] = 207
-
-		return
-	}
-
-	var color uint8
-
-	xIndex := (x - 48) / 8
-	yIndex := (y - 48)
-
-	pixelAddress := uint16(pr.screenPixelAddresses[yIndex][xIndex])
-	// we need to divide by 8 and thenmultiple by 32, to drop decimal part, simple Y*4 won't work
-	colorAddress := attributesAddress + uint16((yIndex/8)*32+xIndex)
-
-	//fmt.Printf("%d, %d, %02x, %02x\n", xIndex, yIndex, pixelAddress, colorAddress)
-
-	if !pr.memoryHandler.CheckAddressDirtiness(pixelAddress) && !pr.memoryHandler.CheckAddressDirtiness(colorAddress) {
-		return
-	}
-
-	value, _ := pr.dma.GetMemoryByte(pixelAddress)
-	colorValue, _ := pr.dma.GetMemoryByte(colorAddress)
-
-	if value&(128>>(x%8)) == (128 >> (x % 8)) {
-		color = uint8(((colorValue >> 3) & 0b00001000) | (colorValue & 0b00000111)) // ink
-	} else {
-		color = uint8((colorValue >> 3) & 0b00001111) // paper
-	}
-
-	pixelPosition = 4 * (fullWidth*y + x)
-
+func (pr *PixelRenderer) setColor(pixelPosition uint, color uint8) {
 	brightness := (color&0b00001000)*6 + 207
 
 	if color&0b00000010 == 0b00000010 {
@@ -102,6 +63,52 @@ func (pr *PixelRenderer) PaintPixel(x, y uint) {
 		pr.pixels[pixelPosition+2] = 0
 	}
 	pr.pixels[pixelPosition+3] = 255
+}
+
+func (pr *PixelRenderer) PaintPixel(x, y uint, inverted bool) {
+	var pixelPosition uint
+
+	// @todo check port for border color, also paint only if color changes
+	if x < borderLeftWidth || x >= borderRightPosition || y < borderTopHeight || y >= borderBottomPosition {
+		pixelPosition = 4 * (fullWidth*y + x)
+
+		pr.setColor(pixelPosition, pr.border)
+
+		return
+	}
+
+	var color uint8
+
+	xIndex := (x - 48) / 8
+	yIndex := (y - 48)
+
+	pixelAddress := uint16(pr.screenPixelAddresses[yIndex][xIndex])
+	// we need to divide by 8 and thenmultiple by 32, to drop decimal part, simple Y*4 won't work
+	colorAddress := attributesAddress + uint16((yIndex/8)*32+xIndex)
+
+	//fmt.Printf("%d, %d, %02x, %02x\n", xIndex, yIndex, pixelAddress, colorAddress)
+
+	if !pr.memoryHandler.CheckAddressDirtiness(pixelAddress) {
+		return
+	}
+
+	value, _ := pr.dma.GetMemoryByte(pixelAddress)
+	colorValue, _ := pr.dma.GetMemoryByte(colorAddress)
+
+	invertPixel := (colorValue&0x80 == 0x80) && inverted
+
+	if (value&(128>>(x%8)) == (128 >> (x % 8))) != invertPixel {
+		color = uint8(((colorValue >> 3) & 0b00001000) | (colorValue & 0b00000111)) // ink
+	} else {
+		color = uint8((colorValue >> 3) & 0b00001111) // paper
+	}
+
+	pixelPosition = 4 * (fullWidth*y + x)
+	pr.setColor(pixelPosition, color)
+}
+
+func (pr *PixelRenderer) SetBorder(value uint8) {
+	pr.border = value & 0x07
 }
 
 func (pr *PixelRenderer) Pixels() []byte {
