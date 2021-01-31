@@ -69,7 +69,9 @@ func (m *Machine) Run() {
 			}
 
 			m.ULA.Step()
-			m.CPU.HandleInterrupt()
+			if m.CPU.HandleInterrupt() {
+				continue
+			}
 
 			if m.CPU.Tstates%m.Config.FrameLength <= m.ULA.Tstates {
 				m.CPU.Step()
@@ -99,6 +101,10 @@ func (m *Machine) Run() {
 func (m *Machine) LoadSnapshot(snapshot loader.Snapshot) {
 	m.DMA.LoadSnapshot(snapshot)
 	m.CPU.LoadSnapshot(snapshot)
+}
+
+func (m *Machine) InsertTape(tape *loader.TapFile) {
+	m.CPU.InsertTape(tape)
 }
 
 func NewMachine(config MachineConfig) *Machine {

@@ -26,6 +26,133 @@ var parityTable [256]bool = [256]bool{
 	/* F */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
 }
 
+type CPUTrap struct {
+	address  uint16
+	opcode   uint8
+	trapFunc func() bool
+}
+
+func (c *CPU) attachTraps() {
+	c.traps = []CPUTrap{
+		CPUTrap{address: 0x056b, opcode: 0xc0, trapFunc: c.tapeLoad},
+		CPUTrap{address: 0x0111, opcode: 0xc0, trapFunc: c.tapeLoad},
+	}
+}
+
+func (c *CPU) handleTrap(opcode uint8) bool {
+	for _, trap := range c.traps {
+		if c.PC == trap.address && trap.opcode == opcode {
+			return trap.trapFunc()
+		}
+	}
+
+	return true
+}
+
+func (c *CPU) tapeLoad() bool {
+	if !c.currentTape.Loaded() {
+		return true
+	}
+
+	data := c.currentTape.NextBlock()
+	length := uint16(len(data))
+
+	if length == 0 {
+		c.HL = (c.HL & 0xff00) | 0x0001
+		c.AF_ = (c.AF_ & 0xff00) | 0x0001
+		c.setC(false)
+		c.PC = 0x05e2
+		panic("length 0")
+		return false
+	}
+
+	read := length - 1
+	if read > c.DE {
+		read = c.DE
+	}
+
+	i := c.AF_ >> 8
+	c.AF_ = 0x0145
+	c.setAcc(0)
+
+	c.HL = (c.HL & 0xff00) | uint16(data[0])
+	parity := data[0]
+	data = data[1:]
+
+	if parity != uint8(i) {
+		// error
+		c.setC(false)
+		c.BC = (c.BC & 0xff00) | 0x01
+		c.HL = (c.HL & 0x00ff) | (uint16(parity) << 8)
+		c.DE -= i
+		c.IX += i
+		c.PC = 0x05e2
+		return false
+	}
+
+	c.HL = (c.HL & 0xff00) | uint16(data[read-1])
+
+	if c.AF_&0x01 == 0x01 {
+		// LOAD
+		for i = 0; i < read; i++ {
+			parity ^= data[i]
+			c.writeByte(c.IX+i, data[i], 3)
+		}
+	} else {
+		// VERIFY
+		for i = 0; i < read; i++ {
+			parity ^= data[i]
+			if data[i] != c.readByte(c.IX+i, 3) {
+				c.HL = (c.HL & 0xff00) | uint16(data[i])
+				// this is error routine, it repeats few times here, refactor it @todo
+				c.setC(false)
+				c.BC = (c.BC & 0xff00) | 0x01
+				c.HL = (c.HL & 0x00ff) | (uint16(parity) << 8)
+				c.DE -= i
+				c.IX += i
+				c.PC = 0x05e2
+				return false
+			}
+		}
+	}
+
+	if c.DE == i && read+1 < length {
+		parity ^= data[read]
+		c.setAcc(parity)
+		// CP 1 start @todo refactor this
+		c.setC(true)
+		c.adcValueToAcc(1 ^ 0xff)
+
+		c.setAcc(parity)
+		c.setN(true)
+		c.setC(!c.getC())
+		c.setH(!c.getH())
+		c.setF5(false)
+		c.setF3(false)
+		// CP 1 end
+		//fmt.Println("CHECK C", c.getC())
+		c.BC = (c.BC & 0x00ff) | 0x01
+	} else {
+		//fmt.Println("NOK")
+		c.BC = (c.BC & 0x00ff) | 0xff
+		c.HL = (c.HL & 0xff00) | 0x01
+		c.incR('B')
+		c.setC(false)
+	}
+
+	c.BC = (c.BC & 0xff00) | 0x01
+	c.HL = (c.HL & 0x00ff) | (uint16(parity) << 8)
+	c.DE -= i
+	c.IX += i
+
+	c.PC = 0x05e2
+	return false
+}
+
+func (c *CPU) InsertTape(tape *loader.TapFile) {
+	c.currentTape = tape
+}
+
 type CPUConfig struct {
 	ContentionDelays []uint8
 	FrameLength      uint
@@ -57,9 +184,11 @@ type CPU struct {
 	Ports   [65536]uint8
 	Tstates uint
 
-	config    CPUConfig
-	dma       *dma.DMA
-	mnemonics CPUMnemonics
+	config      CPUConfig
+	dma         *dma.DMA
+	mnemonics   CPUMnemonics
+	currentTape *loader.TapFile
+	traps       []CPUTrap
 }
 
 func (c *CPU) getAcc() uint8 {
@@ -164,6 +293,10 @@ func (c *CPU) setC(value bool) {
 
 func (c *CPU) setFlags(value uint8) {
 	c.AF = (c.AF & 0xff00) | uint16(value)
+}
+
+func (c *CPU) increaseR() {
+	c.R = ((c.R + 1) & 0x7f) | (c.R & 0x80)
 }
 
 func (c *CPU) pushStack(value uint16) {
@@ -408,9 +541,13 @@ func (c *CPU) adc16bit(addendLeft, addendRight uint16) (result uint16) {
 }
 
 func (c *CPU) DebugStep() (tstates uint8) {
+	c.increaseR()
 	debugT := c.Tstates % c.config.FrameLength
 
 	opcode := c.readByte(c.PC, 4)
+	if !c.handleTrap(opcode) {
+		return
+	}
 	dbOpcode := opcode
 
 	if dbOpcode == 0xcb || dbOpcode == 0xdd || dbOpcode == 0xed || dbOpcode == 0xfd {
@@ -458,7 +595,12 @@ func (c *CPU) DebugStep() (tstates uint8) {
 }
 
 func (c *CPU) Step() {
+	c.increaseR()
 	opcode := c.readByte(c.PC, 4)
+	if !c.handleTrap(opcode) {
+		return
+	}
+
 	switch opcode {
 	case 0xcb:
 		opcode = c.readByte(c.PC+1, 4)
@@ -495,9 +637,9 @@ func (c *CPU) SetIRQ(state bool) {
 	c.IRQ = state
 }
 
-func (c *CPU) HandleInterrupt() {
+func (c *CPU) HandleInterrupt() bool {
 	if !c.IRQ || !c.IFF1 {
-		return
+		return false
 	}
 
 	if c.Halt {
@@ -505,6 +647,7 @@ func (c *CPU) HandleInterrupt() {
 		c.PC++
 	}
 
+	c.increaseR()
 	c.IFF1, c.IFF2 = false, false
 	c.pushStack(c.PC)
 
@@ -519,6 +662,8 @@ func (c *CPU) HandleInterrupt() {
 		c.PC = c.readWord(inttemp, 3, 3)
 		c.Tstates += 7
 	}
+
+	return true
 }
 
 func (c *CPU) Reset() {
@@ -578,6 +723,7 @@ func NewCPU(dma *dma.DMA, config CPUConfig) *CPU {
 	cpu.config = config
 
 	cpu.initializeMnemonics()
+	cpu.attachTraps()
 	cpu.Reset()
 
 	return cpu
