@@ -3,6 +3,7 @@ package cpu
 import (
 	"fmt"
 	"z80/dma"
+	"z80/loader"
 )
 
 var parityTable [256]bool = [256]bool{
@@ -543,6 +544,28 @@ func (c *CPU) Reset() {
 	for i := 0; i < 65536; i++ {
 		c.Ports[i] = 0xff
 	}
+}
+
+func (c *CPU) LoadSnapshot(snapshot loader.Snapshot) {
+	c.Reset()
+	c.PC = snapshot.PC
+	c.SP = snapshot.SP
+	c.AF = snapshot.AF
+	c.AF_ = snapshot.AF_
+	c.BC = snapshot.BC
+	c.BC_ = snapshot.BC_
+	c.DE = snapshot.DE
+	c.DE_ = snapshot.DE_
+	c.HL = snapshot.HL
+	c.HL_ = snapshot.HL_
+	c.I = snapshot.I
+	c.R = snapshot.R
+	c.IX = snapshot.IX
+	c.IY = snapshot.IY
+
+	c.IM = snapshot.IM
+	c.IFF1 = snapshot.IFF1
+	c.IFF2 = snapshot.IFF2
 }
 
 func NewCPU(dma *dma.DMA, config CPUConfig) *CPU {

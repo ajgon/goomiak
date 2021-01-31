@@ -3,8 +3,10 @@ package machine
 import (
 	"bufio"
 	"os"
+	"time"
 	"z80/cpu"
 	"z80/dma"
+	"z80/loader"
 	"z80/memory"
 	"z80/video"
 )
@@ -59,6 +61,7 @@ func (m *Machine) build() {
 func (m *Machine) Run() {
 	running := true
 	for running {
+		startTime := time.Now()
 		for m.ULA.Tstates < m.Config.FrameLength {
 			if m.ULA.Tstates == 32 {
 				m.CPU.SetIRQ(false)
@@ -79,7 +82,17 @@ func (m *Machine) Run() {
 			m.CPU.SetPort(kpAddr, 0xfe, kpValue, 0)
 		}
 		m.CPU.SetIRQ(true)
+		passedTime := time.Since(startTime)
+
+		if passedTime < 20*time.Millisecond {
+			time.Sleep(20*time.Millisecond - passedTime)
+		}
 	}
+}
+
+func (m *Machine) LoadSnapshot(snapshot loader.Snapshot) {
+	m.DMA.LoadSnapshot(snapshot)
+	m.CPU.LoadSnapshot(snapshot)
 }
 
 func NewMachine(config MachineConfig) *Machine {

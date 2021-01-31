@@ -1,6 +1,7 @@
 package dma
 
 import (
+	"z80/loader"
 	"z80/memory"
 )
 
@@ -49,6 +50,12 @@ func (dma *DMA) SetMemoryBulk(address uint16, bytes []uint8) {
 
 func (dma *DMA) LoadData(startAddress uint16, data []byte) {
 	dma.memory.LoadData(uint32(startAddress), data)
+}
+
+func (dma *DMA) LoadSnapshot(snapshot loader.Snapshot) {
+	for ptr := 0; ptr < len(snapshot.Memory); ptr++ {
+		dma.SetMemoryByte(0x4000+uint16(ptr), snapshot.Memory[ptr])
+	}
 }
 
 func NewDMA(memory *memory.Memory, handlers ...MemoryHandler) *DMA {
