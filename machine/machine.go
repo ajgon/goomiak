@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"os"
 	"time"
+	"z80/bus"
 	"z80/cpu"
 	"z80/dma"
 	"z80/loader"
@@ -22,10 +23,13 @@ type Machine struct {
 	Config           MachineConfig
 	ContentionDelays []uint8
 
+	IO          *bus.IO // @todo temporary
 	CPU         *cpu.CPU
 	DMA         *dma.DMA
 	ULA         *video.ULA
 	VideoDriver video.VideoDriver
+
+	fullSpeed bool
 }
 
 func (m *Machine) buildContentionPattern() {
@@ -42,12 +46,14 @@ func (m *Machine) build() {
 	m.buildContentionPattern()
 
 	memory := memory.NewMemory()
+	m.IO = bus.NewIO()
 	videoMemoryHandler := video.VideoMemoryHandlerNew()
 	m.DMA = dma.NewDMA(memory, videoMemoryHandler)
 
 	pixelRenderer := video.NewPixelRenderer(m.DMA)
 	m.VideoDriver = video.NewSDLVideoDriver(pixelRenderer)
 	m.ULA = video.NewULA(
+		m.IO,
 		pixelRenderer,
 		video.ULAConfig{
 			InitialContendedTstate: m.Config.InitialContendedTstate,
@@ -55,7 +61,11 @@ func (m *Machine) build() {
 		},
 	)
 
-	m.CPU = cpu.NewCPU(m.DMA, cpu.CPUConfig{ContentionDelays: m.ContentionDelays, FrameLength: m.Config.FrameLength})
+	m.CPU = cpu.NewCPU(m.IO, m.DMA, cpu.CPUConfig{ContentionDelays: m.ContentionDelays, FrameLength: m.Config.FrameLength})
+}
+
+func (m *Machine) FullSpeed(value bool) {
+	m.fullSpeed = value
 }
 
 func (m *Machine) Run() {
@@ -75,9 +85,6 @@ func (m *Machine) Run() {
 
 			if m.CPU.Tstates%m.Config.FrameLength <= m.ULA.Tstates {
 				m.CPU.Step()
-				if m.CPU.GetPort(0x00, 0xfe, 0) != 255 {
-					m.ULA.SetBorder(m.CPU.GetPort(0x00, 0xfe, 0))
-				}
 			}
 		}
 
@@ -87,12 +94,13 @@ func (m *Machine) Run() {
 		m.VideoDriver.DrawScreen() // @todo this goes to ULA as it needs to handle SDL events as well
 		keyPressedMasks := m.VideoDriver.KeyPressedOut()
 		for kpAddr, kpValue := range keyPressedMasks {
-			m.CPU.SetPort(kpAddr, 0xfe, kpValue, 0)
+			// @todo this goes to ULA
+			m.IO.Write(1, (uint16(kpAddr)<<8)|0xfe, kpValue)
 		}
 		m.CPU.SetIRQ(true)
 		passedTime := time.Since(startTime)
 
-		if passedTime < 20*time.Millisecond {
+		if !m.fullSpeed && passedTime < 20*time.Millisecond {
 			time.Sleep(20*time.Millisecond - passedTime)
 		}
 	}

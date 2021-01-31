@@ -3,6 +3,7 @@ package cpu
 import (
 	"math/rand"
 	"testing"
+	"z80/bus"
 	"z80/dma"
 	"z80/memory"
 	"z80/video"
@@ -11,8 +12,9 @@ import (
 var mem = memory.NewWritableMemory()
 var videoMemoryHandler = video.VideoMemoryHandlerNew()
 var dmaX = dma.NewDMA(mem, videoMemoryHandler)
+var io = bus.NewIO()
 
-var cpu = NewCPU(dmaX, CPUConfig{FrameLength: 69888, ContentionDelays: buildContentionPattern()})
+var cpu = NewCPU(io, dmaX, CPUConfig{FrameLength: 69888, ContentionDelays: buildContentionPattern()})
 
 func buildContentionPattern() []uint8 {
 	contentionDelays := make([]uint8, 69888)

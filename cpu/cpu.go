@@ -2,9 +2,12 @@ package cpu
 
 import (
 	"fmt"
+	"z80/bus"
 	"z80/dma"
 	"z80/loader"
 )
+
+const busSource uint8 = 0
 
 var parityTable [256]bool = [256]bool{
 	/*	      0     1      2     3      4     5      6     7      8     9      A     B      C     D      E     F */
@@ -186,6 +189,7 @@ type CPU struct {
 
 	config      CPUConfig
 	dma         *dma.DMA
+	io          *bus.IO
 	mnemonics   CPUMnemonics
 	currentTape *loader.TapFile
 	traps       []CPUTrap
@@ -311,40 +315,14 @@ func (c *CPU) popStack() (value uint16) {
 	return
 }
 
-func (c *CPU) GetPort(addressHigh, addressLow uint8, tstates uint) uint8 {
-	var value uint8
-
-	c.Tstates += uint(tstates)
-
-	if addressLow&0x01 == 0x00 { // ULA
-		if addressHigh == 0x00 {
-			value = c.Ports[0x00fe]
-		} else {
-			addressLeft := (uint16(addressHigh&0x0f) << 8) | 0xf0fe
-			addressRight := (uint16(addressHigh&0xf0) << 8) | 0x0ffe
-
-			valueLeft := c.Ports[addressLeft]
-			valueRight := c.Ports[addressRight]
-
-			value = valueLeft & valueRight
-		}
-	} else {
-		address := (uint16(addressHigh) << 8) | uint16(addressLow)
-
-		value = c.Ports[address]
-	}
-
-	return value
-}
-
-func (c *CPU) SetPort(addressHigh, addressLow, value uint8, tstates uint) {
+func (c *CPU) getPort(addressHigh, addressLow uint8, tstates uint) uint8 {
 	c.Tstates += tstates
 
-	if addressLow&0x01 == 0x00 && tstates != 0 { // ULA
-		c.Ports[0x00fe] = value
-	} else {
-		c.Ports[(uint16(addressHigh)<<8)|uint16(addressLow)] = value
-	}
+	return c.io.Read(busSource, (uint16(addressHigh)<<8)|uint16(addressLow))
+}
+
+func (c *CPU) setPort(addressHigh, addressLow, value uint8, tstates uint) {
+	c.io.Write(busSource, (uint16(addressHigh)<<8)|uint16(addressLow), value)
 }
 
 func (c *CPU) disableInterrupts() {
@@ -717,9 +695,10 @@ func (c *CPU) LoadSnapshot(snapshot loader.Snapshot) {
 	c.IFF2 = snapshot.IFF2
 }
 
-func NewCPU(dma *dma.DMA, config CPUConfig) *CPU {
+func NewCPU(io *bus.IO, dma *dma.DMA, config CPUConfig) *CPU {
 	cpu := new(CPU)
 	cpu.dma = dma
+	cpu.io = io
 	cpu.config = config
 
 	cpu.initializeMnemonics()

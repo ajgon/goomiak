@@ -1,5 +1,9 @@
 package video
 
+import "z80/bus"
+
+const busSource uint8 = 1
+
 type ULAConfig struct {
 	InitialContendedTstate uint
 	TstatesPerScanline     uint
@@ -10,12 +14,10 @@ type ULA struct {
 	Tstates uint
 	Flash   bool
 
-	PixelRenderer        *PixelRenderer
-	initialDrawingTstate uint
-}
+	PixelRenderer *PixelRenderer
 
-func (u *ULA) SetBorder(border uint8) {
-	u.PixelRenderer.SetBorder(border)
+	initialDrawingTstate uint
+	io                   *bus.IO
 }
 
 func (u *ULA) Step() {
@@ -25,6 +27,9 @@ func (u *ULA) Step() {
 		// beam returns, ULA has nothing to do
 		return
 	}
+
+	border := u.io.Read(busSource, 0x00fe)
+	u.PixelRenderer.SetBorder(border)
 
 	tstateRef := u.Tstates - u.initialDrawingTstate
 
@@ -39,10 +44,10 @@ func (u *ULA) Step() {
 	u.PixelRenderer.PaintPixel(x+1, y, u.Flash)
 }
 
-func NewULA(pixelRenderer *PixelRenderer, config ULAConfig) *ULA {
-	ula := &ULA{Config: config}
+func NewULA(io *bus.IO, pixelRenderer *PixelRenderer, config ULAConfig) *ULA {
+	ula := &ULA{io: io, PixelRenderer: pixelRenderer, Config: config}
+
 	ula.initialDrawingTstate = config.InitialContendedTstate - config.TstatesPerScanline*borderTopHeight + borderLeftWidth/2
-	ula.PixelRenderer = pixelRenderer
 
 	return ula
 }

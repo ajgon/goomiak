@@ -4767,7 +4767,7 @@ func (c *CPU) rst(p uint8) func() {
 func (c *CPU) inA_N_() {
 	portAddress := c.readByte(c.PC+1, 3)
 	c.WZ = (uint16(c.getAcc()) << 8) + uint16(portAddress) + 1
-	c.setAcc(c.GetPort(c.getAcc(), portAddress, 4))
+	c.setAcc(c.getPort(c.getAcc(), portAddress, 4))
 
 	c.PC += 2
 }
@@ -4799,7 +4799,7 @@ func (c *CPU) inR_C_(r byte) func() {
 			panic("Invalid `r` part of the mnemonic")
 		}
 
-		result := c.GetPort(uint8(c.BC>>8), uint8(c.BC), 4)
+		result := c.getPort(uint8(c.BC>>8), uint8(c.BC), 4)
 
 		if r != ' ' {
 			if lhigh {
@@ -4824,7 +4824,7 @@ func (c *CPU) inR_C_(r byte) func() {
 // EDA2     16 00 M1R 4 M1R 5 IOR 4 MWR 3 ... 0 ... 0 ... 0 INI
 func (c *CPU) ini() {
 	c.Tstates += 1
-	c.writeByte(c.HL, c.GetPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
+	c.writeByte(c.HL, c.getPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
 	c.WZ = c.BC + 1
 	c.HL++
 	c.BC -= 256
@@ -4852,7 +4852,7 @@ func (c *CPU) inir() {
 // EDAA     16 00 M1R 4 M1R 5 IOR 4 MWR 3 ... 0 ... 0 ... 0 IND
 func (c *CPU) ind() {
 	c.Tstates += 1
-	c.writeByte(c.HL, c.GetPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
+	c.writeByte(c.HL, c.getPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
 	c.WZ = c.BC - 1
 	c.HL--
 	c.BC -= 256
@@ -4882,7 +4882,7 @@ func (c *CPU) indr() {
 // FDD3U1   15 00 M1R 4 M1R 4 MRD 3 IOW 4 ... 0 ... 0 ... 0 OUT (U8),A
 func (c *CPU) out_N_A() {
 	portAddress := c.readByte(c.PC+1, 3)
-	c.SetPort(c.getAcc(), portAddress, c.getAcc(), 4)
+	c.setPort(c.getAcc(), portAddress, c.getAcc(), 4)
 	c.WZ = uint16(portAddress+1) | (uint16(c.getAcc()) << 8)
 
 	c.PC += 2
@@ -4910,7 +4910,7 @@ func (c *CPU) out_C_R(r byte) func() {
 			c.WZ = c.BC + 1
 		}
 
-		c.SetPort(uint8(c.BC>>8), uint8(c.BC), right, 4)
+		c.setPort(uint8(c.BC>>8), uint8(c.BC), right, 4)
 
 		c.PC += 2
 	}
@@ -4921,7 +4921,7 @@ func (c *CPU) outi() {
 	c.Tstates += 1
 	value := c.readByte(c.HL, 3)
 	c.BC -= 256
-	c.SetPort(uint8(c.BC>>8), uint8(c.BC), value, 4)
+	c.setPort(uint8(c.BC>>8), uint8(c.BC), value, 4)
 	c.HL++
 	c.WZ = c.BC + 1
 
@@ -4950,7 +4950,7 @@ func (c *CPU) outd() {
 	c.Tstates += 1
 	value := c.readByte(c.HL, 3)
 	c.BC -= 256
-	c.SetPort(uint8(c.BC>>8), uint8(c.BC), value, 4)
+	c.setPort(uint8(c.BC>>8), uint8(c.BC), value, 4)
 	c.HL--
 	c.WZ = c.BC - 1
 
