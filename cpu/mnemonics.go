@@ -1078,7 +1078,6 @@ func (c *CPU) cpir() {
 	c.setN(true)
 	c.setPV(c.BC != 0)
 	c.setH(!c.getH())
-	c.WZ = c.PC + 1
 
 	if c.getH() {
 		c.setF3((result-1)&0x08 == 0x08)
@@ -1094,6 +1093,8 @@ func (c *CPU) cpir() {
 		c.WZ++
 		c.PC += 2
 		return
+	} else {
+		c.WZ = c.PC + 1
 	}
 	c.Tstates += 5 // NON
 }
@@ -1141,7 +1142,6 @@ func (c *CPU) cpdr() {
 	c.setN(true)
 	c.setPV(c.BC != 0)
 	c.setH(!c.getH())
-	c.WZ = c.PC + 1
 
 	if c.getH() {
 		result--
@@ -1155,6 +1155,8 @@ func (c *CPU) cpdr() {
 		c.WZ--
 		c.PC += 2
 		return
+	} else {
+		c.WZ = c.PC + 1
 	}
 
 	c.Tstates += 5 // NON

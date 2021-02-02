@@ -4306,8 +4306,16 @@ func TestCpir(t *testing.T) {
 		}
 	}
 
+	got := cpu.WZ
+	want := uint16(0x0001)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+
 	cpu.Tstates = 0
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "A": 0xf3, "HL": 0x1114, "BC": 0x0004, "WZ": 0x0002, "Flags": 0b01000111}, cpu.cpir)
+	cpu.WZ = 0x1111
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "A": 0xf3, "HL": 0x1114, "BC": 0x0004, "WZ": 0x1112, "Flags": 0b01000111}, cpu.cpir)
 
 	gotHLA, gotHLB, gotHLC := getMemoryByte(0x1111), getMemoryByte(0x1112), getMemoryByte(0x1113)
 	wantHLA, wantHLB, wantHLC := uint8(0x52), uint8(0x00), uint8(0xf3)
@@ -4438,8 +4446,16 @@ func TestCpdr(t *testing.T) {
 		}
 	}
 
+	got := cpu.WZ
+	want := uint16(0x0001)
+
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+
 	cpu.Tstates = 0
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "A": 0xf3, "HL": 0x1115, "BC": 0x0004, "WZ": 0x0000, "Flags": 0b01000111}, cpu.cpdr)
+	cpu.WZ = 0x1111
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "A": 0xf3, "HL": 0x1115, "BC": 0x0004, "WZ": 0x1110, "Flags": 0b01000111}, cpu.cpdr)
 
 	gotHLA, gotHLB, gotHLC := getMemoryByte(0x1116), getMemoryByte(0x1117), getMemoryByte(0x1118)
 	wantHLA, wantHLB, wantHLC := uint8(0xf3), uint8(0x00), uint8(0x52)
