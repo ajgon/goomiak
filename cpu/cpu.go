@@ -9,26 +9,6 @@ import (
 
 const busSource uint8 = 0
 
-var parityTable [256]bool = [256]bool{
-	/*	      0     1      2     3      4     5      6     7      8     9      A     B      C     D      E     F */
-	/* 0 */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-	/* 1 */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-	/* 2 */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-	/* 3 */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-	/* 4 */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-	/* 5 */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-	/* 6 */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-	/* 7 */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-	/* 8 */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-	/* 9 */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-	/* A */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-	/* B */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-	/* C */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-	/* D */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-	/* E */ false, true, true, false, true, false, false, true, true, false, false, true, false, true, true, false,
-	/* F */ true, false, false, true, false, true, true, false, false, true, true, false, true, false, false, true,
-}
-
 type CPUTrap struct {
 	address  uint16
 	opcode   uint8
@@ -184,7 +164,6 @@ type CPU struct {
 	IM   uint8
 	IRQ  bool
 
-	Ports   [65536]uint8
 	Tstates uint
 
 	config      CPUConfig
@@ -322,6 +301,8 @@ func (c *CPU) getPort(addressHigh, addressLow uint8, tstates uint) uint8 {
 }
 
 func (c *CPU) setPort(addressHigh, addressLow, value uint8, tstates uint) {
+	c.Tstates += tstates
+
 	c.io.Write(busSource, (uint16(addressHigh)<<8)|uint16(addressLow), value)
 }
 
@@ -581,9 +562,11 @@ func (c *CPU) Step() {
 
 	switch opcode {
 	case 0xcb:
+		c.increaseR()
 		opcode = c.readByte(c.PC+1, 4)
 		c.mnemonics.xxBITxx[opcode]()
 	case 0xdd:
+		c.increaseR()
 		opcode = c.readByte(c.PC+1, 4)
 		switch opcode {
 		case 0xcb:
@@ -593,9 +576,11 @@ func (c *CPU) Step() {
 			c.mnemonics.xxIXxx[opcode]()
 		}
 	case 0xed:
+		c.increaseR()
 		opcode = c.readByte(c.PC+1, 4)
 		c.mnemonics.xx80xx[opcode]()
 	case 0xfd:
+		c.increaseR()
 		opcode = c.readByte(c.PC+1, 4)
 		switch opcode {
 		case 0xcb:
@@ -667,10 +652,6 @@ func (c *CPU) Reset() {
 	c.IFF2 = true
 	c.IM = 0
 	c.IRQ = false
-
-	for i := 0; i < 65536; i++ {
-		c.Ports[i] = 0xff
-	}
 }
 
 func (c *CPU) LoadSnapshot(snapshot loader.Snapshot) {

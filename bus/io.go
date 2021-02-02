@@ -17,6 +17,7 @@ func (io *IO) Read(source uint8, address uint16) uint8 {
 		}
 
 		// CPU reads BUS, wants keyboard code
+		// @todo include EAR
 		if source == sourceCPU {
 			addressLeft := (address & 0x0f00) | 0xf0fe
 			addressRight := (address & 0xf000) | 0x0ffe
@@ -24,7 +25,12 @@ func (io *IO) Read(source uint8, address uint16) uint8 {
 			valueLeft := io.keysPressed[addressLeft]
 			valueRight := io.keysPressed[addressRight]
 
-			return valueLeft & valueRight
+			value := valueLeft & valueRight
+			// if no key is pressed, then return 0xff as ULA doesn't expose anything
+			// (assuming EAR is not used - @todo)
+			if value != 0x1f {
+				return valueLeft & valueRight
+			}
 		}
 	}
 

@@ -597,6 +597,8 @@ func (c *CPU) ldAI() {
 	c.setH(false)
 	c.setPV(c.IFF2)
 	c.setN(false)
+	c.setF5(c.I&0x20 == 0x20)
+	c.setF3(c.I&0x08 == 0x08)
 
 	c.PC += 2
 }
@@ -612,6 +614,8 @@ func (c *CPU) ldAR() {
 	c.setH(false)
 	c.setPV(c.IFF2)
 	c.setN(false)
+	c.setF5(c.R&0x20 == 0x20)
+	c.setF3(c.R&0x08 == 0x08)
 
 	c.PC += 2
 }
@@ -4826,15 +4830,25 @@ func (c *CPU) inR_C_(r byte) func() {
 // EDA2     16 00 M1R 4 M1R 5 IOR 4 MWR 3 ... 0 ... 0 ... 0 INI
 func (c *CPU) ini() {
 	c.Tstates += 1
-	c.writeByte(c.HL, c.getPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
+
+	portValue := c.getPort(uint8(c.BC>>8), uint8(c.BC), 4)
+
+	c.writeByte(c.HL, portValue, 3)
 	c.WZ = c.BC + 1
 	c.HL++
 	c.BC -= 256
 
-	c.setZ(c.BC < 256)
-	c.setN(true)
-	c.setF5(c.BC&0x2000 == 0x2000)
-	c.setF3(c.BC&0x0800 == 0x0800)
+	temp := portValue + uint8(c.BC) + 1
+	regB := uint8(c.BC >> 8)
+
+	c.setS(regB > 127)
+	c.setZ(regB == 0)
+	c.setF5(regB&0x20 == 0x20)
+	c.setH(temp < portValue)
+	c.setF3(regB&0x08 == 0x08)
+	c.setPV(parityTable[(temp&0x07)^uint8(c.BC>>8)])
+	c.setN(portValue&0x80 == 0x80)
+	c.setC(temp < portValue)
 
 	c.PC += 2
 }
@@ -4854,15 +4868,25 @@ func (c *CPU) inir() {
 // EDAA     16 00 M1R 4 M1R 5 IOR 4 MWR 3 ... 0 ... 0 ... 0 IND
 func (c *CPU) ind() {
 	c.Tstates += 1
-	c.writeByte(c.HL, c.getPort(c.extractRegister('B'), c.extractRegister('C'), 4), 3)
+
+	portValue := c.getPort(uint8(c.BC>>8), uint8(c.BC), 4)
+
+	c.writeByte(c.HL, portValue, 3)
 	c.WZ = c.BC - 1
 	c.HL--
 	c.BC -= 256
 
-	c.setZ(c.BC < 256)
-	c.setN(true)
-	c.setF5(c.BC&0x2000 == 0x2000)
-	c.setF3(c.BC&0x0800 == 0x0800)
+	temp := portValue + uint8(c.BC) - 1
+	regB := uint8(c.BC >> 8)
+
+	c.setS(regB > 127)
+	c.setZ(regB == 0)
+	c.setF5(regB&0x20 == 0x20)
+	c.setH(temp < portValue)
+	c.setF3(regB&0x08 == 0x08)
+	c.setPV(parityTable[(temp&0x07)^uint8(c.BC>>8)])
+	c.setN(portValue&0x80 == 0x80)
+	c.setC(temp < portValue)
 
 	c.PC += 2
 }
@@ -4921,16 +4945,25 @@ func (c *CPU) out_C_R(r byte) func() {
 // EDA3     16 00 M1R 4 M1R 5 MRD 3 IOW 4 ... 0 ... 0 ... 0 OUTI
 func (c *CPU) outi() {
 	c.Tstates += 1
-	value := c.readByte(c.HL, 3)
+
+	portValue := c.readByte(c.HL, 3)
 	c.BC -= 256
-	c.setPort(uint8(c.BC>>8), uint8(c.BC), value, 4)
+	c.setPort(uint8(c.BC>>8), uint8(c.BC), portValue, 4)
 	c.HL++
 	c.WZ = c.BC + 1
 
-	c.setZ(c.BC < 256)
-	c.setN(true)
-	c.setF5(c.BC&0x2000 == 0x2000)
-	c.setF3(c.BC&0x0800 == 0x0800)
+	regB := uint8(c.BC >> 8)
+
+	temp := portValue + uint8(c.HL)
+
+	c.setS(regB > 127)
+	c.setZ(regB == 0)
+	c.setF5(regB&0x20 == 0x20)
+	c.setH(temp < portValue)
+	c.setF3(regB&0x08 == 0x08)
+	c.setPV(parityTable[(temp&0x07)^uint8(c.BC>>8)])
+	c.setN(portValue&0x80 == 0x80)
+	c.setC(temp < portValue)
 
 	c.PC += 2
 }
@@ -4950,16 +4983,24 @@ func (c *CPU) otir() {
 // EDAB     16 00 M1R 4 M1R 5 MRD 3 IOW 4 ... 0 ... 0 ... 0 OUTD
 func (c *CPU) outd() {
 	c.Tstates += 1
-	value := c.readByte(c.HL, 3)
+	portValue := c.readByte(c.HL, 3)
 	c.BC -= 256
-	c.setPort(uint8(c.BC>>8), uint8(c.BC), value, 4)
+	c.setPort(uint8(c.BC>>8), uint8(c.BC), portValue, 4)
 	c.HL--
 	c.WZ = c.BC - 1
 
-	c.setZ(c.BC < 256)
-	c.setN(true)
-	c.setF5(c.BC&0x2000 == 0x2000)
-	c.setF3(c.BC&0x0800 == 0x0800)
+	regB := uint8(c.BC >> 8)
+
+	temp := portValue + uint8(c.HL)
+
+	c.setS(regB > 127)
+	c.setZ(regB == 0)
+	c.setF5(regB&0x20 == 0x20)
+	c.setH(temp < portValue)
+	c.setF3(regB&0x08 == 0x08)
+	c.setPV(parityTable[(temp&0x07)^uint8(c.BC>>8)])
+	c.setN(portValue&0x80 == 0x80)
+	c.setC(temp < portValue)
 
 	c.PC += 2
 }

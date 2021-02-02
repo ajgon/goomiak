@@ -34,6 +34,14 @@ func getMemoryByte(address uint16) (value uint8) {
 	return
 }
 
+func getPort(addressHigh, addressLow uint8) uint8 {
+	return cpu.getPort(addressHigh, addressLow, 0)
+}
+
+func setPort(addressHigh, addressLow, value uint8) {
+	cpu.setPort(addressHigh, addressLow, value, 0)
+}
+
 func checkCpu(t *testing.T, opcodeSize uint8, expectedTstates uint, expected map[string]uint16, instructionCall func()) {
 	t.Helper()
 	var expectedSP, expectedBC, expectedDE, expectedHL uint16

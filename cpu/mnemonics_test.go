@@ -2437,7 +2437,7 @@ func TestJpNcNn(t *testing.T) {
 
 //checkCpu(t, 1, 11, map[string]uint16{"PC": 2, "A": 0xaf, "WZ": 0xaf46}, cpu.out_N_A)
 
-//got := cpu.getPort(0x45, 0)
+//got := getPort(0x45, 0)
 //want := uint8(0xaf)
 
 //if got != want {
@@ -2541,7 +2541,7 @@ func TestJpCNn(t *testing.T) {
 //func TestInA_N_(t *testing.T) {
 //resetAll()
 //cpu.setAcc(0x11)
-//cpu.setPort(0x45, 0xaf, 0)
+//setPort(0x45, 0xaf, 0)
 //dmaX.SetMemoryByte(0x0001, 0x45)
 
 //checkCpu(t, 1, 11, map[string]uint16{"PC": 2, "WZ": 0x1146, "A": 0xaf}, cpu.inA_N_)
@@ -3052,7 +3052,7 @@ func TestCallMNn(t *testing.T) {
 //cpu.HL = 0x0000
 //cpu.WZ = 0x0001
 //cpu.setFlags(0b00000001)
-//cpu.setPort(0x34, 0x8b, 0)
+//setPort(0x34, 0x8b, 0)
 
 //switch register {
 //case ' ':
@@ -3077,7 +3077,7 @@ func TestCallMNn(t *testing.T) {
 //cpu.DE = 0xffff
 //cpu.HL = 0xffff
 //cpu.setFlags(0b00000000)
-//cpu.setPort(0x34, 0x00, 0)
+//setPort(0x34, 0x00, 0)
 
 //switch register {
 //case ' ':
@@ -3112,7 +3112,7 @@ func TestCallMNn(t *testing.T) {
 //checkCpu(t, 2, 12, map[string]uint16{"PC": 2, "A": 0x8b, "BC": 0x8b34, "DE": 0x8b8b, "HL": 0x8b8b, "WZ": 0x0001}, cpu.out_C_R(register))
 //}
 
-//got := cpu.getPort(0x34, 0)
+//got := getPort(0x34, 0)
 
 //switch register {
 //case ' ':
@@ -3235,7 +3235,7 @@ func TestLdAI(t *testing.T) {
 	cpu.IFF2 = false
 	cpu.setFlags(0b01010110)
 
-	checkCpu(t, 2, 9, map[string]uint16{"PC": 2, "A": 0x99, "I": 0x99, "Flags": 0b10000000}, cpu.ldAI)
+	checkCpu(t, 2, 9, map[string]uint16{"PC": 2, "A": 0x99, "I": 0x99, "Flags": 0b10001000}, cpu.ldAI)
 
 	resetAll()
 
@@ -3275,7 +3275,7 @@ func TestLdAR(t *testing.T) {
 	cpu.IFF2 = false
 	cpu.setFlags(0b01010110)
 
-	checkCpu(t, 2, 9, map[string]uint16{"PC": 2, "A": 0x99, "R": 0x99, "Flags": 0b10000000}, cpu.ldAR)
+	checkCpu(t, 2, 9, map[string]uint16{"PC": 2, "A": 0x99, "R": 0x99, "Flags": 0b10001000}, cpu.ldAR)
 
 	resetAll()
 
@@ -4055,69 +4055,53 @@ func TestCpi(t *testing.T) {
 	}
 }
 
-// @todo I/O mnemonics
-//func TestIni(t *testing.T) {
-//resetAll()
-//cpu.BC = 0x1007
-//cpu.HL = 0x1000
-//cpu.setFlags(0b01000000)
+func TestIni(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x1007
+	cpu.HL = 0x1000
+	cpu.setFlags(0b01000000)
 
-//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0f07, "WZ": 0x1008, "Flags": 0b00001010}, cpu.ini)
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0f07, "WZ": 0x1008, "Flags": 0b00011011}, cpu.ini)
 
-//got := getMemoryByte(0x1000)
-//want := uint8(0x7b)
+	got := getMemoryByte(0x1000)
+	want := uint8(0xff)
 
-//if got != want {
-//t.Errorf("got %02x, want %02x", got, want)
-//}
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
 
-//resetAll()
-//cpu.BC = 0x0107
-//cpu.HL = 0x1000
-//cpu.setFlags(0b10010101)
+	resetAll()
+	cpu.BC = 0x0107
+	cpu.HL = 0x1000
+	cpu.setFlags(0b10010101)
 
-//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0007, "WZ": 0x0108, "Flags": 0b11010111}, cpu.ini)
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0007, "WZ": 0x0108, "Flags": 0b01010011}, cpu.ini)
 
-//got = getMemoryByte(0x1000)
-//want = uint8(0x7b)
+	got = getMemoryByte(0x1000)
+	want = uint8(0xff)
 
-//if got != want {
-//t.Errorf("got %02x, want %02x", got, want)
-//}
-//}
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+}
 
-// @todo I/O mnemonics
-//func TestOuti(t *testing.T) {
-//resetAll()
-//cpu.BC = 0x1007
-//cpu.HL = 0x1000
-//cpu.setFlags(0b01000000)
-//dmaX.SetMemoryByte(0x1000, 0x59)
+func TestOuti(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x1007
+	cpu.HL = 0x1000
+	cpu.setFlags(0b01000000)
+	dmaX.SetMemoryByte(0x1000, 0x59)
 
-//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0f07, "WZ": 0x0f08, "Flags": 0b00001010}, cpu.outi)
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0f07, "WZ": 0x0f08, "Flags": 0b00001000}, cpu.outi)
 
-//got := cpu.getPort(0x07, 0)
-//want := uint8(0x59)
+	resetAll()
+	cpu.BC = 0x0107
+	cpu.HL = 0x1000
+	cpu.setFlags(0b10010101)
+	dmaX.SetMemoryByte(0x1000, 0x59)
 
-//if got != want {
-//t.Errorf("got %02x, want %02x", got, want)
-//}
-
-//resetAll()
-//cpu.BC = 0x0107
-//cpu.HL = 0x1000
-//cpu.setFlags(0b10010101)
-//dmaX.SetMemoryByte(0x1000, 0x59)
-
-//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0007, "WZ": 0x0008, "Flags": 0b11010111}, cpu.outi)
-
-//got = cpu.getPort(0x07, 0)
-//want = uint8(0x59)
-
-//if got != want {
-//t.Errorf("got %02x, want %02x", got, want)
-//}
-//}
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1001, "BC": 0x0007, "WZ": 0x0008, "Flags": 0b01000000}, cpu.outi)
+}
 
 func TestLdd(t *testing.T) {
 	resetAll()
@@ -4182,70 +4166,53 @@ func TestCpd(t *testing.T) {
 	}
 }
 
-// @todo I/O mnemonics
-//func TestInd(t *testing.T) {
-//resetAll()
-//cpu.BC = 0x1007
-//cpu.HL = 0x1000
-//cpu.setPort(0x07, 0x7b, 0)
-//cpu.setFlags(0b01000000)
+func TestInd(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x1007
+	cpu.HL = 0x1000
+	cpu.setFlags(0b01000000)
 
-//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0f07, "WZ": 0x1006, "Flags": 0b00001010}, cpu.ind)
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0f07, "WZ": 0x1006, "Flags": 0b00011111}, cpu.ind)
 
-//got := getMemoryByte(0x1000)
-//want := uint8(0x7b)
+	got := getMemoryByte(0x1000)
+	want := uint8(0xff)
 
-//if got != want {
-//t.Errorf("got %02x, want %02x", got, want)
-//}
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
 
-//resetAll()
-//cpu.BC = 0x0107
-//cpu.HL = 0x1000
-//cpu.setFlags(0b10010101)
+	resetAll()
+	cpu.BC = 0x0107
+	cpu.HL = 0x1000
+	cpu.setFlags(0b10010101)
 
-//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0007, "WZ": 0x0106, "Flags": 0b11010111}, cpu.ind)
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0007, "WZ": 0x0106, "Flags": 0b01010111}, cpu.ind)
 
-//got = getMemoryByte(0x1000)
-//want = uint8(0x7b)
+	got = getMemoryByte(0x1000)
+	want = uint8(0xff)
 
-//if got != want {
-//t.Errorf("got %02x, want %02x", got, want)
-//}
-//}
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+}
 
-// @todo I/O mnemonics
-//func TestOutd(t *testing.T) {
-//resetAll()
-//cpu.BC = 0x1007
-//cpu.HL = 0x1000
-//cpu.setFlags(0b01000000)
-//dmaX.SetMemoryByte(0x1000, 0x59)
+func TestOutd(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x1007
+	cpu.HL = 0x1000
+	cpu.setFlags(0b01000000)
+	dmaX.SetMemoryByte(0x1000, 0x59)
 
-//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0f07, "WZ": 0x0f06, "Flags": 0b00001010}, cpu.outd)
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0f07, "WZ": 0x0f06, "Flags": 0b00011101}, cpu.outd)
 
-//got := cpu.getPort(0x07, 0)
-//want := uint8(0x59)
+	resetAll()
+	cpu.BC = 0x0107
+	cpu.HL = 0x1000
+	cpu.setFlags(0b10010101)
+	dmaX.SetMemoryByte(0x1000, 0x59)
 
-//if got != want {
-//t.Errorf("got %02x, want %02x", got, want)
-//}
-
-//resetAll()
-//cpu.BC = 0x0107
-//cpu.HL = 0x1000
-//cpu.setFlags(0b10010101)
-//dmaX.SetMemoryByte(0x1000, 0x59)
-
-//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0007, "WZ": 0x0006, "Flags": 0b11010111}, cpu.outd)
-
-//got = cpu.getPort(0x07, 0)
-//want = uint8(0x59)
-
-//if got != want {
-//t.Errorf("got %02x, want %02x", got, want)
-//}
-//}
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0fff, "BC": 0x0007, "WZ": 0x0006, "Flags": 0b01010101}, cpu.outd)
+}
 
 func TestLdir(t *testing.T) {
 	resetAll()
@@ -4325,67 +4292,62 @@ func TestCpir(t *testing.T) {
 	}
 }
 
-// @todo I/O mnemonics
-//func TestInir(t *testing.T) {
-//resetAll()
-//cpu.BC = 0x0307
-//cpu.HL = 0x1000
-//ports := []uint8{0x51, 0xa9, 0x03}
-//cpu.setFlags(0b01000000)
+func TestInir(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x0307
+	cpu.HL = 0x1000
+	cpu.setFlags(0b01000000)
 
-//for i := 0; cpu.BC > 512; i++ {
-//cpu.setPort(0x07, ports[i], 0)
-//cpu.Tstates = 8
-//cpu.inir()
-//got := cpu.Tstates
-//want := uint64(21)
+	for i := 0; cpu.BC > 512; i++ {
+		cpu.Tstates = 8
+		cpu.inir()
+		got := cpu.Tstates
+		want := uint(21)
 
-//if got != want {
-//t.Errorf("got %d, want %d", got, want)
-//}
-//}
+		if got != want {
+			t.Errorf("got %d, want %d", got, want)
+		}
+	}
 
-//cpu.Tstates = 0
-//cpu.setPort(0x07, ports[2], 0)
-//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1003, "BC": 0x0007, "WZ": 0x0108, "Flags": 0b01000010}, cpu.inir)
+	cpu.Tstates = 0
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1003, "BC": 0x0007, "WZ": 0x0108, "Flags": 0b01010011}, cpu.inir)
 
-//gotA, gotB, gotC := getMemoryByte(0x1000), getMemoryByte(0x1001), getMemoryByte(0x1002)
-//wantA, wantB, wantC := uint8(0x51), uint8(0xa9), uint8(0x03)
+	gotA, gotB, gotC := getMemoryByte(0x1000), getMemoryByte(0x1001), getMemoryByte(0x1002)
+	wantA, wantB, wantC := uint8(0xff), uint8(0xff), uint8(0xff)
 
-//if gotA != wantA || gotB != wantB || gotC != wantC {
-//t.Errorf("got %02x/%02x/%02x, want %02x/%02x/%02x", gotA, gotB, gotC, wantA, wantB, wantC)
-//}
-//}
+	if gotA != wantA || gotB != wantB || gotC != wantC {
+		t.Errorf("got %02x/%02x/%02x, want %02x/%02x/%02x", gotA, gotB, gotC, wantA, wantB, wantC)
+	}
+}
 
-// @todo I/O mnemonics
-//func TestOtir(t *testing.T) {
-//resetAll()
-//cpu.BC = 0x0307
-//cpu.HL = 0x1000
-//dmaX.SetMemoryBulk(0x1000, []uint8{0x51, 0xa9, 0x03})
-//cpu.setFlags(0b01000000)
+func TestOtir(t *testing.T) {
+	resetAll()
+	cpu.BC = 0x0307
+	cpu.HL = 0x1000
+	dmaX.SetMemoryBulk(0x1000, []uint8{0x51, 0xa9, 0x03})
+	cpu.setFlags(0b01000000)
 
-//for i := 0x1000; cpu.BC > 512; i++ {
-//cpu.Tstates = 8
-//cpu.otir()
-//gotT, gotPort := cpu.Tstates, cpu.getPort(0x07, 0)
-//wantT, wantPort := uint64(21), uint8(getMemoryByte(uint16(i)))
+	for i := 0x1000; cpu.BC > 512; i++ {
+		cpu.Tstates = 8
+		cpu.otir()
+		gotT, gotPort := cpu.Tstates, getPort(0x07, 0)
+		wantT, wantPort := uint(21), uint8(0xff)
 
-//if gotT != wantT || gotPort != wantPort {
-//t.Errorf("got %02x (%d), want %02x (%d)", gotPort, gotT, wantPort, wantT)
-//}
-//}
+		if gotT != wantT || gotPort != wantPort {
+			t.Errorf("got %02x (%d), want %02x (%d)", gotPort, gotT, wantPort, wantT)
+		}
+	}
 
-//cpu.Tstates = 0
-//checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1003, "BC": 0x0007, "WZ": 0x0008, "Flags": 0b01000010}, cpu.otir)
+	cpu.Tstates = 0
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1003, "BC": 0x0007, "WZ": 0x0008, "Flags": 0b01000100}, cpu.otir)
 
-//got := cpu.getPort(0x07, 0)
-//want := uint8(0x03)
+	got := getPort(0x07, 0)
+	want := uint8(0xff)
 
-//if got != want {
-//t.Errorf("got %02x, want %02x", got, want)
-//}
-//}
+	if got != want {
+		t.Errorf("got %02x, want %02x", got, want)
+	}
+}
 
 func TestLddr(t *testing.T) {
 	resetAll()
@@ -4409,7 +4371,7 @@ func TestLddr(t *testing.T) {
 	}
 
 	cpu.Tstates = 0
-	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x1111, "DE": 0x2222, "BC": 0x0000, "WZ": 0x0001, "Flags": 0b11100001}, cpu.lddr)
+	checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "A": 0x00, "HL": 0x1111, "DE": 0x2222, "BC": 0x0000, "WZ": 0x0001, "Flags": 0b11001001}, cpu.lddr)
 
 	gotHLA, gotHLB, gotHLC := getMemoryByte(0x1112), getMemoryByte(0x1113), getMemoryByte(0x1114)
 	wantHLA, wantHLB, wantHLC := uint8(0x88), uint8(0x36), uint8(0xa5)
@@ -4474,7 +4436,7 @@ func TestCpdr(t *testing.T) {
 //cpu.setFlags(0b01000000)
 
 //for i := 0; cpu.BC > 512; i++ {
-//cpu.setPort(0x07, ports[i], 0)
+//setPort(0x07, ports[i], 0)
 //cpu.Tstates = 8
 //cpu.indr()
 //got := cpu.Tstates
@@ -4486,7 +4448,7 @@ func TestCpdr(t *testing.T) {
 //}
 
 //cpu.Tstates = 0
-//cpu.setPort(0x07, ports[2], 0)
+//setPort(0x07, ports[2], 0)
 //checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0ffd, "BC": 0x0007, "WZ": 0x0106, "Flags": 0b01000010}, cpu.indr)
 
 //gotA, gotB, gotC := getMemoryByte(0x0ffe), getMemoryByte(0x0fff), getMemoryByte(0x1000)
@@ -4508,7 +4470,7 @@ func TestCpdr(t *testing.T) {
 //for i := 0x1000; cpu.BC > 512; i-- {
 //cpu.Tstates = 8
 //cpu.otdr()
-//gotT, gotPort := cpu.Tstates, cpu.getPort(0x07, 0)
+//gotT, gotPort := cpu.Tstates, getPort(0x07, 0)
 //wantT, wantPort := uint64(21), uint8(getMemoryByte(uint16(i)))
 
 //if gotT != wantT || gotPort != wantPort {
@@ -4519,7 +4481,7 @@ func TestCpdr(t *testing.T) {
 //cpu.Tstates = 0
 //checkCpu(t, 2, 16, map[string]uint16{"PC": 2, "HL": 0x0ffd, "BC": 0x0007, "WZ": 0x0006, "Flags": 0b01000010}, cpu.otdr)
 
-//got := cpu.getPort(0x07, 0)
+//got := getPort(0x07, 0)
 //want := uint8(0x51)
 
 //if got != want {
