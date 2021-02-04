@@ -41,12 +41,14 @@ func (c *CPU) tapeLoad() bool {
 	length := uint16(len(data))
 
 	if length == 0 {
+		// allow tape to be loaded multiple times
+		c.currentTape.Rewind()
+
 		c.HL = (c.HL & 0xff00) | 0x0001
 		c.AF_ = (c.AF_ & 0xff00) | 0x0001
 		c.setC(false)
 		c.PC = 0x05e2
-		panic("length 0")
-		return false
+		return true
 	}
 
 	read := length - 1
@@ -674,6 +676,7 @@ func (c *CPU) LoadSnapshot(snapshot loader.Snapshot) {
 	c.IM = snapshot.IM
 	c.IFF1 = snapshot.IFF1
 	c.IFF2 = snapshot.IFF2
+	c.setPort(0x00, 0xfe, snapshot.Border, 0)
 }
 
 func NewCPU(io *bus.IO, dma *dma.DMA, config CPUConfig) *CPU {
