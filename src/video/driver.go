@@ -1,6 +1,8 @@
 package video
 
 import (
+	"os"
+
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -43,7 +45,7 @@ func (svd *SDLVideoDriver) DrawScreen() {
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch t := event.(type) {
 		case *sdl.QuitEvent:
-			panic("Quit")
+			os.Exit(0)
 			break
 		case *sdl.KeyboardEvent:
 			keyCode := t.Keysym.Sym
@@ -81,7 +83,7 @@ func NewSDLVideoDriver(pixelRenderer *PixelRenderer) *SDLVideoDriver {
 	}
 
 	window, err := sdl.CreateWindow(
-		"test",
+		"GOomiak",
 		sdl.WINDOWPOS_UNDEFINED,
 		sdl.WINDOWPOS_UNDEFINED,
 		int32(fullWidth),

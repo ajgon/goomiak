@@ -122,6 +122,10 @@ func NewMachine(config MachineConfig) *Machine {
 	return machine
 }
 
+func (m *Machine) LoadDataToMemory(address uint16, bytes []byte) {
+	m.DMA.LoadData(address, bytes)
+}
+
 func (m *Machine) LoadFileToMemory(address uint16, filePath string) {
 	file, err := os.Open(filePath)
 	defer file.Close()

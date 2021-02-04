@@ -8,7 +8,7 @@ import (
 
 var z80FileFlag = flag.String("z80file", "", "path to z80 file to be loaded")
 var tapFileFlag = flag.String("tapfile", "", "path to tap file to be loaded")
-var romFileFlag = flag.String("romfile", "roms/48.rom", "path to rom file to be used")
+var romFileFlag = flag.String("romfile", "", "path to rom file to be used")
 var fullSpeedFlag = flag.Bool("fullspeed", false, "run emulator with full speed")
 var tapeAutoloadFlag = flag.Bool("autoload", false, "autoload tape files")
 
@@ -16,7 +16,9 @@ func main() {
 	flag.Parse()
 
 	machine := machine.NewSpectrum48k()
-	machine.LoadFileToMemory(0x0000, *romFileFlag)
+	if *romFileFlag != "" {
+		machine.LoadFileToMemory(0x0000, *romFileFlag)
+	}
 	machine.FullSpeed(*fullSpeedFlag)
 
 	if *tapFileFlag != "" {
