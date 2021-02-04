@@ -23,10 +23,10 @@ func (c *CPU) initializeMnemonics() {
 		}
 
 		baseList := [256]func(){
-			c.nop, c.ldSsNn("BC"), c.ld_Bc_A, c.incSs("BC"), c.incR('B'), c.decR('B'), c.ldRN('B'), c.rlcR(' '),
-			c.exAfAf_, c.addSsRr(reg, "BC"), c.ldA_Bc_, c.decSs("BC"), c.incR('C'), c.decR('C'), c.ldRN('C'), c.rrcR(' '),
-			c.djnzN, c.ldSsNn("DE"), c.ld_De_A, c.incSs("DE"), c.incR('D'), c.decR('D'), c.ldRN('D'), c.rlR(' '),
-			c.jrN, c.addSsRr(reg, "DE"), c.ldA_De_, c.decSs("DE"), c.incR('E'), c.decR('E'), c.ldRN('E'), c.rrR(' '),
+			c.nop, c.ldSsNn("BC"), c.ld_Bc_A, c.incSs("BC"), c.incR('B'), c.decR('B'), c.ldRN('B'), c.rotateSsR("", ' ', c.rlc),
+			c.exAfAf_, c.addSsRr(reg, "BC"), c.ldA_Bc_, c.decSs("BC"), c.incR('C'), c.decR('C'), c.ldRN('C'), c.rotateSsR("", ' ', c.rrc),
+			c.djnzN, c.ldSsNn("DE"), c.ld_De_A, c.incSs("DE"), c.incR('D'), c.decR('D'), c.ldRN('D'), c.rotateSsR("", ' ', c.rl),
+			c.jrN, c.addSsRr(reg, "DE"), c.ldA_De_, c.decSs("DE"), c.incR('E'), c.decR('E'), c.ldRN('E'), c.rotateSsR("", ' ', c.rr),
 			c.jrNzN, c.ldSsNn(reg), c.ld_Nn_Ss(reg), c.incSs(reg), c.incR(highReg), c.decR(highReg), c.ldRN(highReg), c.daa,
 			c.jrZN, c.addSsRr(reg, reg), c.ldSs_Nn_(reg), c.decSs(reg), c.incR(lowReg), c.decR(lowReg), c.ldRN(lowReg), c.cpl,
 			c.jrNcN, c.ldSsNn("SP"), c.ld_Nn_A, c.incSs("SP"), c.inc_Ss_(reg), c.dec_Ss_(reg), c.ld_Ss_N(reg), c.scf,
@@ -57,38 +57,38 @@ func (c *CPU) initializeMnemonics() {
 			c.retM, c.ldSpSs(reg), c.jpMNn, c.ei, c.callMNn, c.nop, c.cpN, c.rst(0x38),
 		}
 		bitList := [256]func(){
-			c.rlcR('B'), c.rlcR('C'), c.rlcR('D'), c.rlcR('E'), c.rlcR('H'), c.rlcR('L'), c.rlcSs(reg), c.rlcR('A'),
-			c.rrcR('B'), c.rrcR('C'), c.rrcR('D'), c.rrcR('E'), c.rrcR('H'), c.rrcR('L'), c.rrcSs(reg), c.rrcR('A'),
-			c.rlR('B'), c.rlR('C'), c.rlR('D'), c.rlR('E'), c.rlR('H'), c.rlR('L'), c.rlSs(reg), c.rlR('A'),
-			c.rrR('B'), c.rrR('C'), c.rrR('D'), c.rrR('E'), c.rrR('H'), c.rrR('L'), c.rrSs(reg), c.rrR('A'),
-			c.slaR('B'), c.slaR('C'), c.slaR('D'), c.slaR('E'), c.slaR('H'), c.slaR('L'), c.slaSs(reg), c.slaR('A'),
-			c.sraR('B'), c.sraR('C'), c.sraR('D'), c.sraR('E'), c.sraR('H'), c.sraR('L'), c.sraSs(reg), c.sraR('A'),
-			c.sllR('B'), c.sllR('C'), c.sllR('D'), c.sllR('E'), c.sllR('H'), c.sllR('L'), c.sllSs(reg), c.sllR('A'),
-			c.srlR('B'), c.srlR('C'), c.srlR('D'), c.srlR('E'), c.srlR('H'), c.srlR('L'), c.srlSs(reg), c.srlR('A'),
-			c.bitBR(0, 'B'), c.bitBR(0, 'C'), c.bitBR(0, 'D'), c.bitBR(0, 'E'), c.bitBR(0, highReg), c.bitBR(0, lowReg), c.bitBSs(0, reg), c.bitBR(0, 'A'),
-			c.bitBR(1, 'B'), c.bitBR(1, 'C'), c.bitBR(1, 'D'), c.bitBR(1, 'E'), c.bitBR(1, highReg), c.bitBR(1, lowReg), c.bitBSs(1, reg), c.bitBR(1, 'A'),
-			c.bitBR(2, 'B'), c.bitBR(2, 'C'), c.bitBR(2, 'D'), c.bitBR(2, 'E'), c.bitBR(2, highReg), c.bitBR(2, lowReg), c.bitBSs(2, reg), c.bitBR(2, 'A'),
-			c.bitBR(3, 'B'), c.bitBR(3, 'C'), c.bitBR(3, 'D'), c.bitBR(3, 'E'), c.bitBR(3, highReg), c.bitBR(3, lowReg), c.bitBSs(3, reg), c.bitBR(3, 'A'),
-			c.bitBR(4, 'B'), c.bitBR(4, 'C'), c.bitBR(4, 'D'), c.bitBR(4, 'E'), c.bitBR(4, highReg), c.bitBR(4, lowReg), c.bitBSs(4, reg), c.bitBR(4, 'A'),
-			c.bitBR(5, 'B'), c.bitBR(5, 'C'), c.bitBR(5, 'D'), c.bitBR(5, 'E'), c.bitBR(5, highReg), c.bitBR(5, lowReg), c.bitBSs(5, reg), c.bitBR(5, 'A'),
-			c.bitBR(6, 'B'), c.bitBR(6, 'C'), c.bitBR(6, 'D'), c.bitBR(6, 'E'), c.bitBR(6, highReg), c.bitBR(6, lowReg), c.bitBSs(6, reg), c.bitBR(6, 'A'),
-			c.bitBR(7, 'B'), c.bitBR(7, 'C'), c.bitBR(7, 'D'), c.bitBR(7, 'E'), c.bitBR(7, highReg), c.bitBR(7, lowReg), c.bitBSs(7, reg), c.bitBR(7, 'A'),
-			c.resBR(0, 'B'), c.resBR(0, 'C'), c.resBR(0, 'D'), c.resBR(0, 'E'), c.resBR(0, 'H'), c.resBR(0, 'L'), c.resBSs(0, reg), c.resBR(0, 'A'),
-			c.resBR(1, 'B'), c.resBR(1, 'C'), c.resBR(1, 'D'), c.resBR(1, 'E'), c.resBR(1, 'H'), c.resBR(1, 'L'), c.resBSs(1, reg), c.resBR(1, 'A'),
-			c.resBR(2, 'B'), c.resBR(2, 'C'), c.resBR(2, 'D'), c.resBR(2, 'E'), c.resBR(2, 'H'), c.resBR(2, 'L'), c.resBSs(2, reg), c.resBR(2, 'A'),
-			c.resBR(3, 'B'), c.resBR(3, 'C'), c.resBR(3, 'D'), c.resBR(3, 'E'), c.resBR(3, 'H'), c.resBR(3, 'L'), c.resBSs(3, reg), c.resBR(3, 'A'),
-			c.resBR(4, 'B'), c.resBR(4, 'C'), c.resBR(4, 'D'), c.resBR(4, 'E'), c.resBR(4, 'H'), c.resBR(4, 'L'), c.resBSs(4, reg), c.resBR(4, 'A'),
-			c.resBR(5, 'B'), c.resBR(5, 'C'), c.resBR(5, 'D'), c.resBR(5, 'E'), c.resBR(5, 'H'), c.resBR(5, 'L'), c.resBSs(5, reg), c.resBR(5, 'A'),
-			c.resBR(6, 'B'), c.resBR(6, 'C'), c.resBR(6, 'D'), c.resBR(6, 'E'), c.resBR(6, 'H'), c.resBR(6, 'L'), c.resBSs(6, reg), c.resBR(6, 'A'),
-			c.resBR(7, 'B'), c.resBR(7, 'C'), c.resBR(7, 'D'), c.resBR(7, 'E'), c.resBR(7, 'H'), c.resBR(7, 'L'), c.resBSs(7, reg), c.resBR(7, 'A'),
-			c.setBR(0, 'B'), c.setBR(0, 'C'), c.setBR(0, 'D'), c.setBR(0, 'E'), c.setBR(0, 'H'), c.setBR(0, 'L'), c.setBSs(0, reg), c.setBR(0, 'A'),
-			c.setBR(1, 'B'), c.setBR(1, 'C'), c.setBR(1, 'D'), c.setBR(1, 'E'), c.setBR(1, 'H'), c.setBR(1, 'L'), c.setBSs(1, reg), c.setBR(1, 'A'),
-			c.setBR(2, 'B'), c.setBR(2, 'C'), c.setBR(2, 'D'), c.setBR(2, 'E'), c.setBR(2, 'H'), c.setBR(2, 'L'), c.setBSs(2, reg), c.setBR(2, 'A'),
-			c.setBR(3, 'B'), c.setBR(3, 'C'), c.setBR(3, 'D'), c.setBR(3, 'E'), c.setBR(3, 'H'), c.setBR(3, 'L'), c.setBSs(3, reg), c.setBR(3, 'A'),
-			c.setBR(4, 'B'), c.setBR(4, 'C'), c.setBR(4, 'D'), c.setBR(4, 'E'), c.setBR(4, 'H'), c.setBR(4, 'L'), c.setBSs(4, reg), c.setBR(4, 'A'),
-			c.setBR(5, 'B'), c.setBR(5, 'C'), c.setBR(5, 'D'), c.setBR(5, 'E'), c.setBR(5, 'H'), c.setBR(5, 'L'), c.setBSs(5, reg), c.setBR(5, 'A'),
-			c.setBR(6, 'B'), c.setBR(6, 'C'), c.setBR(6, 'D'), c.setBR(6, 'E'), c.setBR(6, 'H'), c.setBR(6, 'L'), c.setBSs(6, reg), c.setBR(6, 'A'),
-			c.setBR(7, 'B'), c.setBR(7, 'C'), c.setBR(7, 'D'), c.setBR(7, 'E'), c.setBR(7, 'H'), c.setBR(7, 'L'), c.setBSs(7, reg), c.setBR(7, 'A'),
+			c.rotateSsR(reg, 'B', c.rlc), c.rotateSsR(reg, 'C', c.rlc), c.rotateSsR(reg, 'D', c.rlc), c.rotateSsR(reg, 'E', c.rlc), c.rotateSsR(reg, 'H', c.rlc), c.rotateSsR(reg, 'L', c.rlc), c.rotateSsR(reg, ' ', c.rlc), c.rotateSsR(reg, 'A', c.rlc),
+			c.rotateSsR(reg, 'B', c.rrc), c.rotateSsR(reg, 'C', c.rrc), c.rotateSsR(reg, 'D', c.rrc), c.rotateSsR(reg, 'E', c.rrc), c.rotateSsR(reg, 'H', c.rrc), c.rotateSsR(reg, 'L', c.rrc), c.rotateSsR(reg, ' ', c.rrc), c.rotateSsR(reg, 'A', c.rrc),
+			c.rotateSsR(reg, 'B', c.rl), c.rotateSsR(reg, 'C', c.rl), c.rotateSsR(reg, 'D', c.rl), c.rotateSsR(reg, 'E', c.rl), c.rotateSsR(reg, 'H', c.rl), c.rotateSsR(reg, 'L', c.rl), c.rotateSsR(reg, ' ', c.rl), c.rotateSsR(reg, 'A', c.rl),
+			c.rotateSsR(reg, 'B', c.rr), c.rotateSsR(reg, 'C', c.rr), c.rotateSsR(reg, 'D', c.rr), c.rotateSsR(reg, 'E', c.rr), c.rotateSsR(reg, 'H', c.rr), c.rotateSsR(reg, 'L', c.rr), c.rotateSsR(reg, ' ', c.rr), c.rotateSsR(reg, 'A', c.rr),
+			c.rotateSsR(reg, 'B', c.sla), c.rotateSsR(reg, 'C', c.sla), c.rotateSsR(reg, 'D', c.sla), c.rotateSsR(reg, 'E', c.sla), c.rotateSsR(reg, 'H', c.sla), c.rotateSsR(reg, 'L', c.sla), c.rotateSsR(reg, ' ', c.sla), c.rotateSsR(reg, 'A', c.sla),
+			c.rotateSsR(reg, 'B', c.sra), c.rotateSsR(reg, 'C', c.sra), c.rotateSsR(reg, 'D', c.sra), c.rotateSsR(reg, 'E', c.sra), c.rotateSsR(reg, 'H', c.sra), c.rotateSsR(reg, 'L', c.sra), c.rotateSsR(reg, ' ', c.sra), c.rotateSsR(reg, 'A', c.sra),
+			c.rotateSsR(reg, 'B', c.sll), c.rotateSsR(reg, 'C', c.sll), c.rotateSsR(reg, 'D', c.sll), c.rotateSsR(reg, 'E', c.sll), c.rotateSsR(reg, 'H', c.sll), c.rotateSsR(reg, 'L', c.sll), c.rotateSsR(reg, ' ', c.sll), c.rotateSsR(reg, 'A', c.sll),
+			c.rotateSsR(reg, 'B', c.srl), c.rotateSsR(reg, 'C', c.srl), c.rotateSsR(reg, 'D', c.srl), c.rotateSsR(reg, 'E', c.srl), c.rotateSsR(reg, 'H', c.srl), c.rotateSsR(reg, 'L', c.srl), c.rotateSsR(reg, ' ', c.srl), c.rotateSsR(reg, 'A', c.srl),
+			c.bitBSsR(0, reg, 'B'), c.bitBSsR(0, reg, 'C'), c.bitBSsR(0, reg, 'D'), c.bitBSsR(0, reg, 'E'), c.bitBSsR(0, reg, 'H'), c.bitBSsR(0, reg, 'L'), c.bitBSsR(0, reg, ' '), c.bitBSsR(0, reg, 'A'),
+			c.bitBSsR(1, reg, 'B'), c.bitBSsR(1, reg, 'C'), c.bitBSsR(1, reg, 'D'), c.bitBSsR(1, reg, 'E'), c.bitBSsR(1, reg, 'H'), c.bitBSsR(1, reg, 'L'), c.bitBSsR(1, reg, ' '), c.bitBSsR(1, reg, 'A'),
+			c.bitBSsR(2, reg, 'B'), c.bitBSsR(2, reg, 'C'), c.bitBSsR(2, reg, 'D'), c.bitBSsR(2, reg, 'E'), c.bitBSsR(2, reg, 'H'), c.bitBSsR(2, reg, 'L'), c.bitBSsR(2, reg, ' '), c.bitBSsR(2, reg, 'A'),
+			c.bitBSsR(3, reg, 'B'), c.bitBSsR(3, reg, 'C'), c.bitBSsR(3, reg, 'D'), c.bitBSsR(3, reg, 'E'), c.bitBSsR(3, reg, 'H'), c.bitBSsR(3, reg, 'L'), c.bitBSsR(3, reg, ' '), c.bitBSsR(3, reg, 'A'),
+			c.bitBSsR(4, reg, 'B'), c.bitBSsR(4, reg, 'C'), c.bitBSsR(4, reg, 'D'), c.bitBSsR(4, reg, 'E'), c.bitBSsR(4, reg, 'H'), c.bitBSsR(4, reg, 'L'), c.bitBSsR(4, reg, ' '), c.bitBSsR(4, reg, 'A'),
+			c.bitBSsR(5, reg, 'B'), c.bitBSsR(5, reg, 'C'), c.bitBSsR(5, reg, 'D'), c.bitBSsR(5, reg, 'E'), c.bitBSsR(5, reg, 'H'), c.bitBSsR(5, reg, 'L'), c.bitBSsR(5, reg, ' '), c.bitBSsR(5, reg, 'A'),
+			c.bitBSsR(6, reg, 'B'), c.bitBSsR(6, reg, 'C'), c.bitBSsR(6, reg, 'D'), c.bitBSsR(6, reg, 'E'), c.bitBSsR(6, reg, 'H'), c.bitBSsR(6, reg, 'L'), c.bitBSsR(6, reg, ' '), c.bitBSsR(6, reg, 'A'),
+			c.bitBSsR(7, reg, 'B'), c.bitBSsR(7, reg, 'C'), c.bitBSsR(7, reg, 'D'), c.bitBSsR(7, reg, 'E'), c.bitBSsR(7, reg, 'H'), c.bitBSsR(7, reg, 'L'), c.bitBSsR(7, reg, ' '), c.bitBSsR(7, reg, 'A'),
+			c.resBSsR(0, reg, 'B'), c.resBSsR(0, reg, 'C'), c.resBSsR(0, reg, 'D'), c.resBSsR(0, reg, 'E'), c.resBSsR(0, reg, 'H'), c.resBSsR(0, reg, 'L'), c.resBSsR(0, reg, ' '), c.resBSsR(0, reg, 'A'),
+			c.resBSsR(1, reg, 'B'), c.resBSsR(1, reg, 'C'), c.resBSsR(1, reg, 'D'), c.resBSsR(1, reg, 'E'), c.resBSsR(1, reg, 'H'), c.resBSsR(1, reg, 'L'), c.resBSsR(1, reg, ' '), c.resBSsR(1, reg, 'A'),
+			c.resBSsR(2, reg, 'B'), c.resBSsR(2, reg, 'C'), c.resBSsR(2, reg, 'D'), c.resBSsR(2, reg, 'E'), c.resBSsR(2, reg, 'H'), c.resBSsR(2, reg, 'L'), c.resBSsR(2, reg, ' '), c.resBSsR(2, reg, 'A'),
+			c.resBSsR(3, reg, 'B'), c.resBSsR(3, reg, 'C'), c.resBSsR(3, reg, 'D'), c.resBSsR(3, reg, 'E'), c.resBSsR(3, reg, 'H'), c.resBSsR(3, reg, 'L'), c.resBSsR(3, reg, ' '), c.resBSsR(3, reg, 'A'),
+			c.resBSsR(4, reg, 'B'), c.resBSsR(4, reg, 'C'), c.resBSsR(4, reg, 'D'), c.resBSsR(4, reg, 'E'), c.resBSsR(4, reg, 'H'), c.resBSsR(4, reg, 'L'), c.resBSsR(4, reg, ' '), c.resBSsR(4, reg, 'A'),
+			c.resBSsR(5, reg, 'B'), c.resBSsR(5, reg, 'C'), c.resBSsR(5, reg, 'D'), c.resBSsR(5, reg, 'E'), c.resBSsR(5, reg, 'H'), c.resBSsR(5, reg, 'L'), c.resBSsR(5, reg, ' '), c.resBSsR(5, reg, 'A'),
+			c.resBSsR(6, reg, 'B'), c.resBSsR(6, reg, 'C'), c.resBSsR(6, reg, 'D'), c.resBSsR(6, reg, 'E'), c.resBSsR(6, reg, 'H'), c.resBSsR(6, reg, 'L'), c.resBSsR(6, reg, ' '), c.resBSsR(6, reg, 'A'),
+			c.resBSsR(7, reg, 'B'), c.resBSsR(7, reg, 'C'), c.resBSsR(7, reg, 'D'), c.resBSsR(7, reg, 'E'), c.resBSsR(7, reg, 'H'), c.resBSsR(7, reg, 'L'), c.resBSsR(7, reg, ' '), c.resBSsR(7, reg, 'A'),
+			c.setBSsR(0, reg, 'B'), c.setBSsR(0, reg, 'C'), c.setBSsR(0, reg, 'D'), c.setBSsR(0, reg, 'E'), c.setBSsR(0, reg, 'H'), c.setBSsR(0, reg, 'L'), c.setBSsR(0, reg, ' '), c.setBSsR(0, reg, 'A'),
+			c.setBSsR(1, reg, 'B'), c.setBSsR(1, reg, 'C'), c.setBSsR(1, reg, 'D'), c.setBSsR(1, reg, 'E'), c.setBSsR(1, reg, 'H'), c.setBSsR(1, reg, 'L'), c.setBSsR(1, reg, ' '), c.setBSsR(1, reg, 'A'),
+			c.setBSsR(2, reg, 'B'), c.setBSsR(2, reg, 'C'), c.setBSsR(2, reg, 'D'), c.setBSsR(2, reg, 'E'), c.setBSsR(2, reg, 'H'), c.setBSsR(2, reg, 'L'), c.setBSsR(2, reg, ' '), c.setBSsR(2, reg, 'A'),
+			c.setBSsR(3, reg, 'B'), c.setBSsR(3, reg, 'C'), c.setBSsR(3, reg, 'D'), c.setBSsR(3, reg, 'E'), c.setBSsR(3, reg, 'H'), c.setBSsR(3, reg, 'L'), c.setBSsR(3, reg, ' '), c.setBSsR(3, reg, 'A'),
+			c.setBSsR(4, reg, 'B'), c.setBSsR(4, reg, 'C'), c.setBSsR(4, reg, 'D'), c.setBSsR(4, reg, 'E'), c.setBSsR(4, reg, 'H'), c.setBSsR(4, reg, 'L'), c.setBSsR(4, reg, ' '), c.setBSsR(4, reg, 'A'),
+			c.setBSsR(5, reg, 'B'), c.setBSsR(5, reg, 'C'), c.setBSsR(5, reg, 'D'), c.setBSsR(5, reg, 'E'), c.setBSsR(5, reg, 'H'), c.setBSsR(5, reg, 'L'), c.setBSsR(5, reg, ' '), c.setBSsR(5, reg, 'A'),
+			c.setBSsR(6, reg, 'B'), c.setBSsR(6, reg, 'C'), c.setBSsR(6, reg, 'D'), c.setBSsR(6, reg, 'E'), c.setBSsR(6, reg, 'H'), c.setBSsR(6, reg, 'L'), c.setBSsR(6, reg, ' '), c.setBSsR(6, reg, 'A'),
+			c.setBSsR(7, reg, 'B'), c.setBSsR(7, reg, 'C'), c.setBSsR(7, reg, 'D'), c.setBSsR(7, reg, 'E'), c.setBSsR(7, reg, 'H'), c.setBSsR(7, reg, 'L'), c.setBSsR(7, reg, ' '), c.setBSsR(7, reg, 'A'),
 		}
 		switch reg {
 		case "HL":
@@ -2600,122 +2600,26 @@ func (c *CPU) decSs(ss string) func() {
 // CB07     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RLC A
 // DD07     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RLCA
 // FD07     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RLCA
-func (c *CPU) rlcR(r byte) func() {
-	return func() {
-		var size, rvalue uint8
-		var lhigh bool
-		var lvalue *uint16
+func (c *CPU) rlc(value uint8, simple bool) uint8 {
+	signed := value&128 == 128
+	value = value << 1
 
-		switch r {
-		case 'A', ' ':
-			lhigh, lvalue = true, &c.AF
-		case 'B', 'C':
-			lhigh, lvalue = r == 'B', &c.BC
-		case 'D', 'E':
-			lhigh, lvalue = r == 'D', &c.DE
-		case 'H', 'L':
-			lhigh, lvalue = r == 'H', &c.HL
-		default:
-			panic("Invalid `r` part of the mnemonic")
-		}
-
-		if r != ' ' {
-			size = 1
-			rvalue = c.extractRegister(r)
-		} else {
-			rvalue = c.getAcc()
-		}
-
-		signed := rvalue&128 == 128
-		rvalue = rvalue << 1
-		c.PC += uint16(1 + size)
-
-		if signed {
-			rvalue = rvalue | 0x01
-		}
-
-		if lhigh {
-			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
-		} else {
-			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
-		}
-
-		c.setC(signed)
-		c.setN(false)
-		c.setH(false)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-		if r != ' ' {
-			c.setPV(parityTable[rvalue])
-			c.setZ(rvalue == 0)
-			c.setS(rvalue > 127)
-		}
+	if signed {
+		value = value | 0x01
 	}
-}
 
-// 17       04 00 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 ... 0 RLA
-// CB10     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL B
-// CB11     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL C
-// CB12     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL D
-// CB13     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL E
-// CB14     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL H
-// CB15     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL L
-// CB17     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL A
-// DD17     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RLA
-// FD17     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RLA
-func (c *CPU) rlR(r byte) func() {
-	return func() {
-		var size, rvalue uint8
-		var lhigh bool
-		var lvalue *uint16
-
-		switch r {
-		case 'A', ' ':
-			lhigh, lvalue = true, &c.AF
-		case 'B', 'C':
-			lhigh, lvalue = r == 'B', &c.BC
-		case 'D', 'E':
-			lhigh, lvalue = r == 'D', &c.DE
-		case 'H', 'L':
-			lhigh, lvalue = r == 'H', &c.HL
-		default:
-			panic("Invalid `r` part of the mnemonic")
-		}
-
-		if r != ' ' {
-			size = 1
-			rvalue = c.extractRegister(r)
-		} else {
-			rvalue = c.getAcc()
-		}
-
-		signed := rvalue&128 == 128
-		rvalue = rvalue << 1
-		c.PC += uint16(1 + size)
-
-		if c.getC() {
-			rvalue = rvalue | 0b00000001
-		} else {
-			rvalue = rvalue & 0b11111110
-		}
-
-		if lhigh {
-			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
-		} else {
-			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
-		}
-
-		c.setC(signed)
-		c.setN(false)
-		c.setH(false)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-		if r != ' ' {
-			c.setPV(parityTable[rvalue])
-			c.setZ(rvalue == 0)
-			c.setS(rvalue > 127)
-		}
+	c.setC(signed)
+	c.setN(false)
+	c.setH(false)
+	c.setF5(value&0x20 == 0x20)
+	c.setF3(value&0x08 == 0x08)
+	if !simple {
+		c.setPV(parityTable[value])
+		c.setZ(value == 0)
+		c.setS(value > 127)
 	}
+
+	return value
 }
 
 // 0F       04 00 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 ... 0 RRCA
@@ -2728,57 +2632,60 @@ func (c *CPU) rlR(r byte) func() {
 // CB0F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RRC A
 // DD0F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RRCA
 // FD0F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RRCA
-func (c *CPU) rrcR(r byte) func() {
-	return func() {
-		var size, rvalue uint8
-		var lhigh bool
-		var lvalue *uint16
+func (c *CPU) rrc(value uint8, simple bool) uint8 {
+	signed := value&1 == 1
+	value = value >> 1
 
-		switch r {
-		case 'A', ' ':
-			lhigh, lvalue = true, &c.AF
-		case 'B', 'C':
-			lhigh, lvalue = r == 'B', &c.BC
-		case 'D', 'E':
-			lhigh, lvalue = r == 'D', &c.DE
-		case 'H', 'L':
-			lhigh, lvalue = r == 'H', &c.HL
-		default:
-			panic("Invalid `r` part of the mnemonic")
-		}
-
-		if r != ' ' {
-			size = 1
-			rvalue = c.extractRegister(r)
-		} else {
-			rvalue = c.getAcc()
-		}
-
-		signed := rvalue&1 == 1
-		rvalue = rvalue >> 1
-		c.PC += uint16(1 + size)
-
-		if signed {
-			rvalue = rvalue | 0x80
-		}
-
-		if lhigh {
-			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
-		} else {
-			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
-		}
-
-		c.setC(signed)
-		c.setN(false)
-		c.setH(false)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-		if r != ' ' {
-			c.setPV(parityTable[rvalue])
-			c.setZ(rvalue == 0)
-			c.setS(rvalue > 127)
-		}
+	if signed {
+		value = value | 0x80
 	}
+
+	c.setC(signed)
+	c.setN(false)
+	c.setH(false)
+	c.setF5(value&0x20 == 0x20)
+	c.setF3(value&0x08 == 0x08)
+	if !simple {
+		c.setPV(parityTable[value])
+		c.setZ(value == 0)
+		c.setS(value > 127)
+	}
+
+	return value
+}
+
+// 17       04 00 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 ... 0 RLA
+// CB10     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL B
+// CB11     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL C
+// CB12     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL D
+// CB13     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL E
+// CB14     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL H
+// CB15     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL L
+// CB17     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RL A
+// DD17     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RLA
+// FD17     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RLA
+func (c *CPU) rl(value uint8, simple bool) uint8 {
+	signed := value&128 == 128
+	value = value << 1
+
+	if c.getC() {
+		value = value | 0b00000001
+	} else {
+		value = value & 0b11111110
+	}
+
+	c.setC(signed)
+	c.setN(false)
+	c.setH(false)
+	c.setF5(value&0x20 == 0x20)
+	c.setF3(value&0x08 == 0x08)
+	if !simple {
+		c.setPV(parityTable[value])
+		c.setZ(value == 0)
+		c.setS(value > 127)
+	}
+
+	return value
 }
 
 // 1F       04 00 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 ... 0 RRA
@@ -2791,7 +2698,207 @@ func (c *CPU) rrcR(r byte) func() {
 // CB1F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RR A
 // DD1F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RRA
 // FD1F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RRA
-func (c *CPU) rrR(r byte) func() {
+func (c *CPU) rr(value uint8, simple bool) uint8 {
+	signed := value&1 == 1
+	value = value >> 1
+
+	if c.getC() {
+		value = value | 0b10000000
+	} else {
+		value = value & 0b01111111
+	}
+
+	c.setC(signed)
+	c.setN(false)
+	c.setH(false)
+	c.setF5(value&0x20 == 0x20)
+	c.setF3(value&0x08 == 0x08)
+	if !simple {
+		c.setPV(parityTable[value])
+		c.setZ(value == 0)
+		c.setS(value > 127)
+	}
+
+	return value
+}
+
+// CB20     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA B
+// CB21     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA C
+// CB22     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA D
+// CB23     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA E
+// CB24     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA H
+// CB25     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA L
+// CB27     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA A
+func (c *CPU) sla(value uint8, simple bool) uint8 {
+	c.setC(value&128 == 128)
+	value = value << 1
+
+	c.setS(value > 127)
+	c.setZ(value == 0)
+	c.setN(false)
+	c.setPV(parityTable[value])
+	c.setH(false)
+	c.setF5(value&0x20 == 0x20)
+	c.setF3(value&0x08 == 0x08)
+
+	return value
+}
+
+// CB28     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA B
+// CB29     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA C
+// CB2A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA D
+// CB2B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA E
+// CB2C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA H
+// CB2D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA L
+// CB2F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA A
+func (c *CPU) sra(value uint8, simple bool) uint8 {
+	c.setC(value&1 == 1)
+	value = value >> 1
+	if value&64 == 64 {
+		value = value | 0b10000000
+	} else {
+		value = value & 0b01111111
+	}
+
+	c.setS(value > 127)
+	c.setZ(value == 0)
+	c.setN(false)
+	c.setPV(parityTable[value])
+	c.setH(false)
+	c.setF5(value&0x20 == 0x20)
+	c.setF3(value&0x08 == 0x08)
+
+	return value
+}
+
+// CB30     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL B
+// CB31     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL C
+// CB32     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL D
+// CB33     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL E
+// CB34     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL H
+// CB35     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL L
+// CB37     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL A
+func (c *CPU) sll(value uint8, simple bool) uint8 {
+	c.setC(value&128 == 128)
+	value = (value << 1) + 1
+
+	c.setS(value > 127)
+	c.setZ(value == 0)
+	c.setN(false)
+	c.setPV(parityTable[value])
+	c.setH(false)
+	c.setF5(value&0x20 == 0x20)
+	c.setF3(value&0x08 == 0x08)
+
+	return value
+}
+
+// CB38     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL B
+// CB39     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL C
+// CB3A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL D
+// CB3B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL E
+// CB3C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL H
+// CB3D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL L
+// CB3F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL A
+func (c *CPU) srl(value uint8, simple bool) uint8 {
+	c.setC(value&1 == 1)
+	value = value >> 1
+
+	c.setS(false)
+	c.setZ(value == 0)
+	c.setN(false)
+	c.setPV(parityTable[value])
+	c.setH(false)
+	c.setF5(value&0x20 == 0x20)
+	c.setF3(value&0x08 == 0x08)
+
+	return value
+}
+
+func (c *CPU) rotateSsR(ss string, r byte, rotation func(uint8, bool) uint8) func() {
+	switch ss {
+	case "HL":
+		if r == ' ' {
+			//CB06     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RLC (HL)
+			return func() {
+				rvalue := c.readByte(c.HL, 4)
+
+				c.writeByte(c.HL, rotation(rvalue, false), 3)
+				c.PC += 2
+			}
+		}
+	case "IX":
+		return func() {
+			var rvalue uint8
+			var lhigh bool
+			var lvalue *uint16
+
+			address := c.shiftedAddress(c.IX, c.readByte(c.PC+2, 5))
+			rvalue = rotation(c.readByte(address, 4), false)
+
+			c.writeByte(address, rvalue, 3)
+			c.PC += 4
+
+			if r == ' ' {
+				return
+			}
+
+			switch r {
+			case 'A':
+				lhigh, lvalue = true, &c.AF
+			case 'B', 'C':
+				lhigh, lvalue = r == 'B', &c.BC
+			case 'D', 'E':
+				lhigh, lvalue = r == 'D', &c.DE
+			case 'H', 'L':
+				lhigh, lvalue = r == 'H', &c.HL
+			default:
+				panic("Invalid `r` part of the mnemonic")
+			}
+
+			if lhigh {
+				*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+			} else {
+				*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+			}
+		}
+	case "IY":
+		return func() {
+			var rvalue uint8
+			var lhigh bool
+			var lvalue *uint16
+
+			address := c.shiftedAddress(c.IY, c.readByte(c.PC+2, 5))
+			rvalue = rotation(c.readByte(address, 4), false)
+
+			c.writeByte(address, rvalue, 3)
+			c.PC += 4
+
+			if r == ' ' {
+				return
+			}
+
+			switch r {
+			case 'A':
+				lhigh, lvalue = true, &c.AF
+			case 'B', 'C':
+				lhigh, lvalue = r == 'B', &c.BC
+			case 'D', 'E':
+				lhigh, lvalue = r == 'D', &c.DE
+			case 'H', 'L':
+				lhigh, lvalue = r == 'H', &c.HL
+			default:
+				panic("Invalid `r` part of the mnemonic")
+			}
+
+			if lhigh {
+				*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+			} else {
+				*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+			}
+		}
+	}
+
 	return func() {
 		var size, rvalue uint8
 		var lhigh bool
@@ -2813,645 +2920,21 @@ func (c *CPU) rrR(r byte) func() {
 		if r != ' ' {
 			size = 1
 			rvalue = c.extractRegister(r)
-
 		} else {
 			rvalue = c.getAcc()
 		}
 
-		signed := rvalue&1 == 1
-		rvalue = rvalue >> 1
+		rvalue = rotation(rvalue, r == ' ')
+
+		if lhigh {
+			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+		} else {
+			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+		}
+
 		c.PC += uint16(1 + size)
-
-		if c.getC() {
-			rvalue = rvalue | 0b10000000
-		} else {
-			rvalue = rvalue & 0b01111111
-		}
-
-		if lhigh {
-			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
-		} else {
-			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
-		}
-
-		c.setC(signed)
-		c.setN(false)
-		c.setH(false)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-		if r != ' ' {
-			c.setPV(parityTable[rvalue])
-			c.setZ(rvalue == 0)
-			c.setS(rvalue > 127)
-		}
-	}
-}
-
-func (c *CPU) rlcSs(ss string) func() {
-	if ss == "HL" {
-		//CB06     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RLC (HL)
-		return func() {
-			rvalue := c.readByte(c.HL, 4)
-
-			signed := rvalue&128 == 128
-			rvalue = rvalue << 1
-			c.PC += 2
-
-			if signed {
-				rvalue = rvalue | 0x01
-			}
-
-			c.writeByte(c.HL, rvalue, 3)
-
-			c.setC(signed)
-			c.setN(false)
-			c.setPV(parityTable[rvalue])
-			c.setH(false)
-			c.setZ(rvalue == 0)
-			c.setS(rvalue > 127)
-			c.setF5(rvalue&0x20 == 0x20)
-			c.setF3(rvalue&0x08 == 0x08)
-		}
 	}
 
-	//DDCBS106 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RLC (IX+S8)
-	//FDCBS106 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RLC (IY+S8)
-	return func() {
-		address := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 5))
-		rvalue := c.readByte(address, 4)
-
-		signed := rvalue&128 == 128
-		rvalue = rvalue << 1
-		c.PC += 4
-
-		if signed {
-			rvalue = rvalue | 0x01
-		}
-
-		c.writeByte(address, rvalue, 3)
-
-		c.setC(signed)
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(rvalue > 127)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
-}
-
-func (c *CPU) rlSs(ss string) func() {
-	if ss == "HL" {
-		// CB16     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RL (HL)
-		return func() {
-			rvalue := c.readByte(c.HL, 4)
-
-			signed := rvalue&128 == 128
-			rvalue = rvalue << 1
-			c.PC += 2
-
-			if c.getC() {
-				rvalue = rvalue | 0b00000001
-			} else {
-				rvalue = rvalue & 0b11111110
-			}
-
-			c.writeByte(c.HL, rvalue, 3)
-
-			c.setC(signed)
-			c.setN(false)
-			c.setPV(parityTable[rvalue])
-			c.setH(false)
-			c.setZ(rvalue == 0)
-			c.setS(rvalue > 127)
-			c.setF5(rvalue&0x20 == 0x20)
-			c.setF3(rvalue&0x08 == 0x08)
-		}
-	}
-
-	// DDCBS116 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RL (IX+S8)
-	// FDCBS116 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RL (IY+S8)
-	return func() {
-		address := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 5))
-		rvalue := c.readByte(address, 4)
-
-		signed := rvalue&128 == 128
-		rvalue = rvalue << 1
-		c.PC += 4
-
-		if c.getC() {
-			rvalue = rvalue | 0b00000001
-		} else {
-			rvalue = rvalue & 0b11111110
-		}
-
-		c.writeByte(address, rvalue, 3)
-
-		c.setC(signed)
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(rvalue > 127)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
-}
-
-func (c *CPU) rrcSs(ss string) func() {
-	if ss == "HL" {
-		// CB0E     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RRC (HL)
-		return func() {
-			rvalue := c.readByte(c.HL, 4)
-
-			signed := rvalue&1 == 1
-			rvalue = rvalue >> 1
-			c.PC += 2
-
-			if signed {
-				rvalue = rvalue | 0x80
-			}
-
-			c.writeByte(c.HL, rvalue, 3)
-
-			c.setC(signed)
-			c.setN(false)
-			c.setPV(parityTable[rvalue])
-			c.setH(false)
-			c.setZ(rvalue == 0)
-			c.setS(rvalue > 127)
-			c.setF5(rvalue&0x20 == 0x20)
-			c.setF3(rvalue&0x08 == 0x08)
-		}
-	}
-
-	// DDCBS10E 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RRC (IX+S8)
-	// FDCBS10E 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RRC (IY+S8)
-	return func() {
-		address := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 5))
-		rvalue := c.readByte(address, 4)
-
-		signed := rvalue&1 == 1
-		rvalue = rvalue >> 1
-		c.PC += 4
-
-		if signed {
-			rvalue = rvalue | 0x80
-		}
-
-		c.writeByte(address, rvalue, 3)
-
-		c.setC(signed)
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(rvalue > 127)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
-}
-
-func (c *CPU) rrSs(ss string) func() {
-	if ss == "HL" {
-		// CB1E     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RR (HL)
-		return func() {
-			rvalue := c.readByte(c.HL, 4)
-
-			signed := rvalue&1 == 1
-			rvalue = rvalue >> 1
-			c.PC += 2
-
-			if c.getC() {
-				rvalue = rvalue | 0b10000000
-			} else {
-				rvalue = rvalue & 0b01111111
-			}
-
-			c.writeByte(c.HL, rvalue, 3)
-
-			c.setC(signed)
-			c.setN(false)
-			c.setPV(parityTable[rvalue])
-			c.setH(false)
-			c.setZ(rvalue == 0)
-			c.setS(rvalue > 127)
-			c.setF5(rvalue&0x20 == 0x20)
-			c.setF3(rvalue&0x08 == 0x08)
-		}
-	}
-
-	// DDCBS11E 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RR (IX+S8)
-	// FDCBS11E 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RR (IY+S8)
-	return func() {
-		address := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 5))
-		rvalue := c.readByte(address, 4)
-
-		signed := rvalue&1 == 1
-		rvalue = rvalue >> 1
-		c.PC += 4
-
-		if c.getC() {
-			rvalue = rvalue | 0b10000000
-		} else {
-			rvalue = rvalue & 0b01111111
-		}
-
-		c.writeByte(address, rvalue, 3)
-
-		c.setC(signed)
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(rvalue > 127)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
-}
-
-// CB20     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA B
-// CB21     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA C
-// CB22     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA D
-// CB23     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA E
-// CB24     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA H
-// CB25     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA L
-// CB27     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLA A
-func (c *CPU) slaR(r byte) func() {
-	return func() {
-		var rvalue uint8
-		var lhigh bool
-		var lvalue *uint16
-
-		switch r {
-		case 'A':
-			lhigh, lvalue = true, &c.AF
-		case 'B', 'C':
-			lhigh, lvalue = r == 'B', &c.BC
-		case 'D', 'E':
-			lhigh, lvalue = r == 'D', &c.DE
-		case 'H', 'L':
-			lhigh, lvalue = r == 'H', &c.HL
-		default:
-			panic("Invalid `r` part of the mnemonic")
-		}
-
-		rvalue = c.extractRegister(r)
-
-		c.setC(rvalue&128 == 128)
-		rvalue = rvalue << 1
-		c.PC += 2
-
-		if lhigh {
-			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
-		} else {
-			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
-		}
-
-		c.setS(rvalue > 127)
-		c.setZ(rvalue == 0)
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
-}
-
-func (c *CPU) slaSs(ss string) func() {
-	if ss == "HL" {
-		// CB26     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SLA (HL)
-		return func() {
-			rvalue := c.readByte(c.HL, 4)
-
-			c.setC(rvalue&128 == 128)
-			rvalue = rvalue << 1
-			c.PC += 2
-
-			c.writeByte(c.HL, rvalue, 3)
-
-			c.setN(false)
-			c.setPV(parityTable[rvalue])
-			c.setH(false)
-			c.setZ(rvalue == 0)
-			c.setS(rvalue > 127)
-			c.setF5(rvalue&0x20 == 0x20)
-			c.setF3(rvalue&0x08 == 0x08)
-		}
-	}
-
-	// DDCBS126 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SLA (IX+S8)
-	// FDCBS126 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SLA (IY+S8)
-	return func() {
-		address := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 5))
-		rvalue := c.readByte(address, 4)
-
-		c.setC(rvalue&128 == 128)
-		rvalue = rvalue << 1
-		c.PC += 4
-
-		c.writeByte(address, rvalue, 3)
-
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(rvalue > 127)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
-}
-
-// CB28     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA B
-// CB29     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA C
-// CB2A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA D
-// CB2B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA E
-// CB2C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA H
-// CB2D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA L
-// CB2F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRA A
-func (c *CPU) sraR(r byte) func() {
-	return func() {
-		var rvalue uint8
-		var lhigh bool
-		var lvalue *uint16
-
-		switch r {
-		case 'A':
-			lhigh, lvalue = true, &c.AF
-		case 'B', 'C':
-			lhigh, lvalue = r == 'B', &c.BC
-		case 'D', 'E':
-			lhigh, lvalue = r == 'D', &c.DE
-		case 'H', 'L':
-			lhigh, lvalue = r == 'H', &c.HL
-		default:
-			panic("Invalid `r` part of the mnemonic")
-		}
-
-		rvalue = c.extractRegister(r)
-
-		c.setC(rvalue&1 == 1)
-		rvalue = rvalue >> 1
-		if rvalue&64 == 64 {
-			rvalue = rvalue | 0b10000000
-		} else {
-			rvalue = rvalue & 0b01111111
-		}
-		c.PC += 2
-
-		if lhigh {
-			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
-		} else {
-			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
-		}
-
-		c.setS(rvalue > 127)
-		c.setZ(rvalue == 0)
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
-}
-
-func (c *CPU) sraSs(ss string) func() {
-	if ss == "HL" {
-		// CB2E     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SRA (HL)
-		return func() {
-			rvalue := c.readByte(c.HL, 4)
-
-			c.setC(rvalue&1 == 1)
-			rvalue = rvalue >> 1
-			if rvalue&64 == 64 {
-				rvalue = rvalue | 0b10000000
-			} else {
-				rvalue = rvalue & 0b01111111
-			}
-			c.PC += 2
-
-			c.writeByte(c.HL, rvalue, 3)
-
-			c.setN(false)
-			c.setPV(parityTable[rvalue])
-			c.setH(false)
-			c.setZ(rvalue == 0)
-			c.setS(rvalue > 127)
-			c.setF5(rvalue&0x20 == 0x20)
-			c.setF3(rvalue&0x08 == 0x08)
-		}
-	}
-
-	// DDCBS12E 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SRA (IX+S8)
-	// FDCBS12E 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SRA (IY+S8)
-	return func() {
-		address := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 5))
-		rvalue := c.readByte(address, 4)
-
-		c.setC(rvalue&1 == 1)
-		rvalue = rvalue >> 1
-		if rvalue&64 == 64 {
-			rvalue = rvalue | 0b10000000
-		} else {
-			rvalue = rvalue & 0b01111111
-		}
-		c.PC += 4
-
-		c.writeByte(address, rvalue, 3)
-
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(rvalue > 127)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
-}
-
-// CB38     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL B
-// CB39     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL C
-// CB3A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL D
-// CB3B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL E
-// CB3C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL H
-// CB3D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL L
-// CB3F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SRL A
-func (c *CPU) srlR(r byte) func() {
-	return func() {
-		var rvalue uint8
-		var lhigh bool
-		var lvalue *uint16
-
-		switch r {
-		case 'A':
-			lhigh, lvalue = true, &c.AF
-		case 'B', 'C':
-			lhigh, lvalue = r == 'B', &c.BC
-		case 'D', 'E':
-			lhigh, lvalue = r == 'D', &c.DE
-		case 'H', 'L':
-			lhigh, lvalue = r == 'H', &c.HL
-		default:
-			panic("Invalid `r` part of the mnemonic")
-		}
-
-		rvalue = c.extractRegister(r)
-
-		c.setC(rvalue&1 == 1)
-		rvalue = rvalue >> 1
-		c.PC += 2
-
-		if lhigh {
-			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
-		} else {
-			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
-		}
-
-		c.setS(false)
-		c.setZ(rvalue == 0)
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
-}
-
-func (c *CPU) srlSs(ss string) func() {
-	if ss == "HL" {
-		// CB3E     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SRL (HL)
-		return func() {
-			rvalue := c.readByte(c.HL, 4)
-
-			c.setC(rvalue&1 == 1)
-			rvalue = rvalue >> 1
-			c.PC += 2
-
-			c.writeByte(c.HL, rvalue, 3)
-
-			c.setN(false)
-			c.setPV(parityTable[rvalue])
-			c.setH(false)
-			c.setZ(rvalue == 0)
-			c.setS(false)
-			c.setF5(rvalue&0x20 == 0x20)
-			c.setF3(rvalue&0x08 == 0x08)
-		}
-	}
-
-	// DDCBS13E 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SRL (IX+S8)
-	// FDCBS13E 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SRL (IY+S8)
-	return func() {
-		address := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 5))
-		rvalue := c.readByte(address, 4)
-
-		c.setC(rvalue&1 == 1)
-		rvalue = rvalue >> 1
-		c.PC += 4
-
-		c.writeByte(address, rvalue, 3)
-
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(false)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
-}
-
-// CB30     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL B
-// CB31     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL C
-// CB32     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL D
-// CB33     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL E
-// CB34     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL H
-// CB35     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL L
-// CB37     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SLL A
-func (c *CPU) sllR(r byte) func() {
-	return func() {
-		var rvalue uint8
-		var lhigh bool
-		var lvalue *uint16
-
-		switch r {
-		case 'A':
-			lhigh, lvalue = true, &c.AF
-		case 'B', 'C':
-			lhigh, lvalue = r == 'B', &c.BC
-		case 'D', 'E':
-			lhigh, lvalue = r == 'D', &c.DE
-		case 'H', 'L':
-			lhigh, lvalue = r == 'H', &c.HL
-		default:
-			panic("Invalid `r` part of the mnemonic")
-		}
-
-		rvalue = c.extractRegister(r)
-
-		c.setC(rvalue&128 == 128)
-		rvalue = (rvalue << 1) + 1
-		c.PC += 2
-
-		if lhigh {
-			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
-		} else {
-			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
-		}
-
-		c.setS(rvalue > 127)
-		c.setZ(rvalue == 0)
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
-}
-
-func (c *CPU) sllSs(ss string) func() {
-	if ss == "HL" {
-		// CB36     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SLL (HL)
-		return func() {
-			rvalue := c.readByte(c.HL, 4)
-
-			c.setC(rvalue&128 == 128)
-			rvalue = (rvalue << 1) + 1
-			c.PC += 2
-
-			c.writeByte(c.HL, rvalue, 3)
-
-			c.setN(false)
-			c.setPV(parityTable[rvalue])
-			c.setH(false)
-			c.setZ(rvalue == 0)
-			c.setS(rvalue > 127)
-			c.setF5(rvalue&0x20 == 0x20)
-			c.setF3(rvalue&0x08 == 0x08)
-		}
-	}
-
-	// DDCBS136 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SLL (IX+S8)
-	// FDCBS136 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SLL (IY+S8)
-	return func() {
-		address := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 5))
-		rvalue := c.readByte(address, 4)
-
-		c.setC(rvalue&128 == 128)
-		rvalue = (rvalue << 1) + 1
-		c.PC += 4
-
-		c.writeByte(address, rvalue, 3)
-
-		c.setN(false)
-		c.setPV(parityTable[rvalue])
-		c.setH(false)
-		c.setZ(rvalue == 0)
-		c.setS(rvalue > 127)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setF3(rvalue&0x08 == 0x08)
-	}
 }
 
 // ED6F     18 00 M1R 4 M1R 4 MRD 3 NON 4 MWR 3 ... 0 ... 0 RLD
@@ -3504,81 +2987,154 @@ func (c *CPU) rrd() {
 	c.PC += 2
 }
 
-// CB40     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,B
-// CB41     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,C
-// CB42     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,D
-// CB43     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,E
-// CB44     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,H
-// CB45     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,L
-// CB47     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,A
-// CB48     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,B
-// CB49     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,C
-// CB4A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,D
-// CB4B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,E
-// CB4C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,H
-// CB4D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,L
-// CB4F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,A
-// CB50     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,B
-// CB51     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,C
-// CB52     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,D
-// CB53     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,E
-// CB54     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,H
-// CB55     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,L
-// CB57     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,A
-// CB58     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,B
-// CB59     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,C
-// CB5A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,D
-// CB5B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,E
-// CB5C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,H
-// CB5D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,L
-// CB5F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,A
-// CB60     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,B
-// CB61     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,C
-// CB62     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,D
-// CB63     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,E
-// CB64     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,H
-// CB65     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,L
-// CB67     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,A
-// CB68     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,B
-// CB69     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,C
-// CB6A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,D
-// CB6B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,E
-// CB6C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,H
-// CB6D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,L
-// CB6F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,A
-// CB70     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,B
-// CB71     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,C
-// CB72     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,D
-// CB73     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,E
-// CB74     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,H
-// CB75     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,L
-// CB77     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,A
-// CB78     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,B
-// CB79     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,C
-// CB7A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,D
-// CB7B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,E
-// CB7C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,H
-// CB7D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,L
-// CB7F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,A
-func (c *CPU) bitBR(b uint8, r byte) func() {
-	return func() {
-		rvalue := c.extractRegister(r)
-		mask := uint8(1 << b)
+func (c *CPU) bitBSsR(b uint8, ss string, r byte) func() {
+	if ss == "IX" || ss == "IY" {
+		// DDCBS240 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
+		// DDCBS241 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
+		// DDCBS242 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
+		// DDCBS243 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
+		// DDCBS244 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
+		// DDCBS245 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
+		// DDCBS246 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
+		// DDCBS247 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
+		// DDCBS248 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
+		// DDCBS249 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
+		// DDCBS24A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
+		// DDCBS24B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
+		// DDCBS24C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
+		// DDCBS24D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
+		// DDCBS24E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
+		// DDCBS24F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
+		// DDCBS250 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
+		// DDCBS251 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
+		// DDCBS252 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
+		// DDCBS253 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
+		// DDCBS254 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
+		// DDCBS255 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
+		// DDCBS256 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
+		// DDCBS257 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
+		// DDCBS258 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
+		// DDCBS259 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
+		// DDCBS25A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
+		// DDCBS25B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
+		// DDCBS25C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
+		// DDCBS25D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
+		// DDCBS25E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
+		// DDCBS25F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
+		// DDCBS260 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
+		// DDCBS261 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
+		// DDCBS262 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
+		// DDCBS263 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
+		// DDCBS264 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
+		// DDCBS265 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
+		// DDCBS266 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
+		// DDCBS267 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
+		// DDCBS268 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
+		// DDCBS269 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
+		// DDCBS26A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
+		// DDCBS26B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
+		// DDCBS26C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
+		// DDCBS26D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
+		// DDCBS26E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
+		// DDCBS26F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
+		// DDCBS270 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
+		// DDCBS271 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
+		// DDCBS272 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
+		// DDCBS273 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
+		// DDCBS274 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
+		// DDCBS275 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
+		// DDCBS276 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
+		// DDCBS277 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
+		// DDCBS278 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
+		// DDCBS279 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
+		// DDCBS27A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
+		// DDCBS27B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
+		// DDCBS27C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
+		// DDCBS27D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
+		// DDCBS27E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
+		// DDCBS27F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
+		// FDCBS240 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
+		// FDCBS241 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
+		// FDCBS242 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
+		// FDCBS243 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
+		// FDCBS244 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
+		// FDCBS245 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
+		// FDCBS246 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
+		// FDCBS247 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
+		// FDCBS248 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
+		// FDCBS249 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
+		// FDCBS24A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
+		// FDCBS24B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
+		// FDCBS24C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
+		// FDCBS24D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
+		// FDCBS24E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
+		// FDCBS24F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
+		// FDCBS250 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
+		// FDCBS251 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
+		// FDCBS252 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
+		// FDCBS253 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
+		// FDCBS254 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
+		// FDCBS255 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
+		// FDCBS256 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
+		// FDCBS257 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
+		// FDCBS258 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
+		// FDCBS259 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
+		// FDCBS25A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
+		// FDCBS25B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
+		// FDCBS25C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
+		// FDCBS25D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
+		// FDCBS25E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
+		// FDCBS25F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
+		// FDCBS260 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
+		// FDCBS261 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
+		// FDCBS262 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
+		// FDCBS263 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
+		// FDCBS264 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
+		// FDCBS265 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
+		// FDCBS266 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
+		// FDCBS267 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
+		// FDCBS268 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
+		// FDCBS269 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
+		// FDCBS26A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
+		// FDCBS26B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
+		// FDCBS26C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
+		// FDCBS26D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
+		// FDCBS26E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
+		// FDCBS26F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
+		// FDCBS270 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
+		// FDCBS271 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
+		// FDCBS272 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
+		// FDCBS273 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
+		// FDCBS274 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
+		// FDCBS275 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
+		// FDCBS276 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
+		// FDCBS277 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
+		// FDCBS278 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
+		// FDCBS279 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
+		// FDCBS27A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
+		// FDCBS27B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
+		// FDCBS27C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
+		// FDCBS27D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
+		// FDCBS27E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
+		// FDCBS27F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
+		return func() {
+			address := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 5))
+			rvalue := c.readByte(address, 4)
+			mask := uint8(1 << b)
 
-		c.PC += 2
+			c.PC += 4
 
-		c.setS(b == 7 && rvalue > 127)
-		c.setZ(rvalue&mask == 0)
-		c.setF5(rvalue&0x20 == 0x20)
-		c.setH(true)
-		c.setF3(rvalue&0x08 == 0x08)
-		c.setPV(rvalue&mask == 0)
-		c.setN(false)
+			c.setS(b == 7 && rvalue > 127)
+			c.setZ(rvalue&mask == 0)
+			c.setF5(address&0x2000 == 0x2000)
+			c.setH(true)
+			c.setF3(address&0x0800 == 0x0800)
+			c.setPV(rvalue&mask == 0)
+			c.setN(false)
+		}
 	}
-}
 
-func (c *CPU) bitBSs(b uint8, ss string) func() {
-	if ss == "HL" {
+	if r == ' ' {
 		// CB46     12 00 M1R 4 M1R 4 MRD 4 ... 0 ... 0 ... 0 ... 0 BIT 0,(HL)
 		// CB4E     12 00 M1R 4 M1R 4 MRD 4 ... 0 ... 0 ... 0 ... 0 BIT 1,(HL)
 		// CB56     12 00 M1R 4 M1R 4 MRD 4 ... 0 ... 0 ... 0 ... 0 BIT 2,(HL)
@@ -3603,252 +3159,81 @@ func (c *CPU) bitBSs(b uint8, ss string) func() {
 		}
 	}
 
-	// DDCBS240 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
-	// DDCBS241 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
-	// DDCBS242 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
-	// DDCBS243 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
-	// DDCBS244 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
-	// DDCBS245 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
-	// DDCBS246 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
-	// DDCBS247 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IX+S8)
-	// DDCBS248 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
-	// DDCBS249 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
-	// DDCBS24A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
-	// DDCBS24B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
-	// DDCBS24C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
-	// DDCBS24D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
-	// DDCBS24E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
-	// DDCBS24F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IX+S8)
-	// DDCBS250 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
-	// DDCBS251 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
-	// DDCBS252 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
-	// DDCBS253 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
-	// DDCBS254 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
-	// DDCBS255 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
-	// DDCBS256 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
-	// DDCBS257 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IX+S8)
-	// DDCBS258 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
-	// DDCBS259 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
-	// DDCBS25A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
-	// DDCBS25B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
-	// DDCBS25C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
-	// DDCBS25D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
-	// DDCBS25E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
-	// DDCBS25F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IX+S8)
-	// DDCBS260 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
-	// DDCBS261 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
-	// DDCBS262 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
-	// DDCBS263 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
-	// DDCBS264 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
-	// DDCBS265 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
-	// DDCBS266 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
-	// DDCBS267 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IX+S8)
-	// DDCBS268 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
-	// DDCBS269 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
-	// DDCBS26A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
-	// DDCBS26B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
-	// DDCBS26C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
-	// DDCBS26D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
-	// DDCBS26E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
-	// DDCBS26F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IX+S8)
-	// DDCBS270 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
-	// DDCBS271 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
-	// DDCBS272 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
-	// DDCBS273 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
-	// DDCBS274 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
-	// DDCBS275 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
-	// DDCBS276 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
-	// DDCBS277 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IX+S8)
-	// DDCBS278 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
-	// DDCBS279 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
-	// DDCBS27A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
-	// DDCBS27B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
-	// DDCBS27C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
-	// DDCBS27D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
-	// DDCBS27E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
-	// DDCBS27F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IX+S8)
-	// FDCBS240 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
-	// FDCBS241 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
-	// FDCBS242 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
-	// FDCBS243 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
-	// FDCBS244 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
-	// FDCBS245 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
-	// FDCBS246 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
-	// FDCBS247 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 0,(IY+S8)
-	// FDCBS248 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
-	// FDCBS249 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
-	// FDCBS24A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
-	// FDCBS24B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
-	// FDCBS24C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
-	// FDCBS24D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
-	// FDCBS24E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
-	// FDCBS24F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 1,(IY+S8)
-	// FDCBS250 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
-	// FDCBS251 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
-	// FDCBS252 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
-	// FDCBS253 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
-	// FDCBS254 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
-	// FDCBS255 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
-	// FDCBS256 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
-	// FDCBS257 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 2,(IY+S8)
-	// FDCBS258 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
-	// FDCBS259 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
-	// FDCBS25A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
-	// FDCBS25B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
-	// FDCBS25C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
-	// FDCBS25D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
-	// FDCBS25E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
-	// FDCBS25F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 3,(IY+S8)
-	// FDCBS260 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
-	// FDCBS261 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
-	// FDCBS262 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
-	// FDCBS263 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
-	// FDCBS264 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
-	// FDCBS265 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
-	// FDCBS266 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
-	// FDCBS267 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 4,(IY+S8)
-	// FDCBS268 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
-	// FDCBS269 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
-	// FDCBS26A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
-	// FDCBS26B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
-	// FDCBS26C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
-	// FDCBS26D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
-	// FDCBS26E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
-	// FDCBS26F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 5,(IY+S8)
-	// FDCBS270 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
-	// FDCBS271 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
-	// FDCBS272 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
-	// FDCBS273 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
-	// FDCBS274 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
-	// FDCBS275 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
-	// FDCBS276 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
-	// FDCBS277 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 6,(IY+S8)
-	// FDCBS278 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
-	// FDCBS279 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
-	// FDCBS27A 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
-	// FDCBS27B 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
-	// FDCBS27C 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
-	// FDCBS27D 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
-	// FDCBS27E 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
-	// FDCBS27F 20 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 ... 0 ... 0 BIT 7,(IY+S8)
+	// CB40     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,B
+	// CB41     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,C
+	// CB42     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,D
+	// CB43     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,E
+	// CB44     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,H
+	// CB45     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,L
+	// CB47     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 0,A
+	// CB48     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,B
+	// CB49     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,C
+	// CB4A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,D
+	// CB4B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,E
+	// CB4C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,H
+	// CB4D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,L
+	// CB4F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 1,A
+	// CB50     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,B
+	// CB51     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,C
+	// CB52     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,D
+	// CB53     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,E
+	// CB54     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,H
+	// CB55     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,L
+	// CB57     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 2,A
+	// CB58     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,B
+	// CB59     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,C
+	// CB5A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,D
+	// CB5B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,E
+	// CB5C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,H
+	// CB5D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,L
+	// CB5F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 3,A
+	// CB60     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,B
+	// CB61     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,C
+	// CB62     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,D
+	// CB63     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,E
+	// CB64     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,H
+	// CB65     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,L
+	// CB67     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 4,A
+	// CB68     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,B
+	// CB69     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,C
+	// CB6A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,D
+	// CB6B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,E
+	// CB6C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,H
+	// CB6D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,L
+	// CB6F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 5,A
+	// CB70     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,B
+	// CB71     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,C
+	// CB72     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,D
+	// CB73     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,E
+	// CB74     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,H
+	// CB75     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,L
+	// CB77     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 6,A
+	// CB78     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,B
+	// CB79     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,C
+	// CB7A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,D
+	// CB7B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,E
+	// CB7C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,H
+	// CB7D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,L
+	// CB7F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 BIT 7,A
 	return func() {
-		address := c.shiftedAddress(c.extractRegisterPair(ss), c.readByte(c.PC+2, 5))
-		rvalue := c.readByte(address, 4)
+		rvalue := c.extractRegister(r)
 		mask := uint8(1 << b)
 
-		c.PC += 4
+		c.PC += 2
 
 		c.setS(b == 7 && rvalue > 127)
 		c.setZ(rvalue&mask == 0)
-		c.setF5(address&0x2000 == 0x2000)
+		c.setF5(rvalue&0x20 == 0x20)
 		c.setH(true)
-		c.setF3(address&0x0800 == 0x0800)
+		c.setF3(rvalue&0x08 == 0x08)
 		c.setPV(rvalue&mask == 0)
 		c.setN(false)
 	}
+
 }
 
-// CBC0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,B
-// CBC1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,C
-// CBC2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,D
-// CBC3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,E
-// CBC4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,H
-// CBC5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,L
-// CBC7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,A
-// CBC8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,B
-// CBC9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,C
-// CBCA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,D
-// CBCB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,E
-// CBCC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,H
-// CBCD     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,L
-// CBCF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,A
-// CBD0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,B
-// CBD1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,C
-// CBD2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,D
-// CBD3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,E
-// CBD4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,H
-// CBD5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,L
-// CBD7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,A
-// CBD8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,B
-// CBD9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,C
-// CBDA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,D
-// CBDB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,E
-// CBDC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,H
-// CBDD     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,L
-// CBDF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,A
-// CBE0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,B
-// CBE1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,C
-// CBE2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,D
-// CBE3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,E
-// CBE4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,H
-// CBE5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,L
-// CBE7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,A
-// CBE8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,B
-// CBE9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,C
-// CBEA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,D
-// CBEB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,E
-// CBEC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,H
-// CBED     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,L
-// CBEF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,A
-// CBF0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,B
-// CBF1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,C
-// CBF2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,D
-// CBF3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,E
-// CBF4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,H
-// CBF5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,L
-// CBF7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,A
-// CBF8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,B
-// CBF9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,C
-// CBFA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,D
-// CBFB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,E
-// CBFC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,H
-// CBFD     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,L
-// CBFF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,A
-func (c *CPU) setBR(b uint8, r byte) func() {
-	return func() {
-		var lhigh bool
-		var lvalue *uint16
-
-		switch r {
-		case 'A':
-			lhigh, lvalue = true, &c.AF
-		case 'B', 'C':
-			lhigh, lvalue = r == 'B', &c.BC
-		case 'D', 'E':
-			lhigh, lvalue = r == 'D', &c.DE
-		case 'H', 'L':
-			lhigh, lvalue = r == 'H', &c.HL
-		default:
-			panic("Invalid `r` part of the mnemonic")
-		}
-
-		rvalue := c.extractRegister(r) | uint8(1<<b)
-
-		if lhigh {
-			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
-		} else {
-			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
-		}
-
-		c.PC += 2
-	}
-}
-
-func (c *CPU) setBSs(b uint8, ss string) func() {
+func (c *CPU) setBSsR(b uint8, ss string, r byte) func() {
 	switch ss {
-	case "HL":
-		// CBC6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 0,(HL)
-		// CBCE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 1,(HL)
-		// CBD6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 2,(HL)
-		// CBDE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 3,(HL)
-		// CBE6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 4,(HL)
-		// CBEE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 5,(HL)
-		// CBF6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 6,(HL)
-		// CBFE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 7,(HL)
-		return func() {
-			c.writeByte(c.HL, c.readByte(c.HL, 4)|uint8(1<<b), 3)
-			c.PC += 2
-		}
 	case "IX":
 		// DDCBS2C0 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SET 0,(IX+S8),B
 		// DDCBS2C1 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SET 0,(IX+S8),C
@@ -3915,9 +3300,37 @@ func (c *CPU) setBSs(b uint8, ss string) func() {
 		// DDCBS2FE 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SET 7,(IX+S8)
 		// DDCBS2FF 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SET 7,(IX+S8),A
 		return func() {
+			var lhigh bool
+			var lvalue *uint16
+
 			address := c.shiftedAddress(c.IX, c.readByte(c.PC+2, 5))
-			c.writeByte(address, c.readByte(address, 4)|uint8(1<<b), 3)
+			rvalue := c.readByte(address, 4) | uint8(1<<b)
+
+			c.writeByte(address, rvalue, 3)
 			c.PC += 4
+
+			if r == ' ' {
+				return
+			}
+
+			switch r {
+			case 'A':
+				lhigh, lvalue = true, &c.AF
+			case 'B', 'C':
+				lhigh, lvalue = r == 'B', &c.BC
+			case 'D', 'E':
+				lhigh, lvalue = r == 'D', &c.DE
+			case 'H', 'L':
+				lhigh, lvalue = r == 'H', &c.HL
+			default:
+				panic("Invalid `r` part of the mnemonic")
+			}
+
+			if lhigh {
+				*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+			} else {
+				*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+			}
 		}
 	case "IY":
 		// FDCBS2C0 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SET 0,(IY+S8),B
@@ -3985,72 +3398,110 @@ func (c *CPU) setBSs(b uint8, ss string) func() {
 		// FDCBS2FE 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SET 7,(IY+S8)
 		// FDCBS2FF 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 SET 7,(IY+S8),A
 		return func() {
+			var lhigh bool
+			var lvalue *uint16
+
 			address := c.shiftedAddress(c.IY, c.readByte(c.PC+2, 5))
-			c.writeByte(address, c.readByte(address, 4)|uint8(1<<b), 3)
+			rvalue := c.readByte(address, 4) | uint8(1<<b)
+
+			c.writeByte(address, rvalue, 3)
 			c.PC += 4
+
+			if r == ' ' {
+				return
+			}
+
+			switch r {
+			case 'A':
+				lhigh, lvalue = true, &c.AF
+			case 'B', 'C':
+				lhigh, lvalue = r == 'B', &c.BC
+			case 'D', 'E':
+				lhigh, lvalue = r == 'D', &c.DE
+			case 'H', 'L':
+				lhigh, lvalue = r == 'H', &c.HL
+			default:
+				panic("Invalid `r` part of the mnemonic")
+			}
+
+			if lhigh {
+				*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+			} else {
+				*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+			}
 		}
 	}
 
-	panic("Invalid `ss` type")
-}
-
-// CB80     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,B
-// CB81     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,C
-// CB82     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,D
-// CB83     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,E
-// CB84     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,H
-// CB85     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,L
-// CB87     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,A
-// CB88     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,B
-// CB89     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,C
-// CB8A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,D
-// CB8B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,E
-// CB8C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,H
-// CB8D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,L
-// CB8F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,A
-// CB90     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,B
-// CB91     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,C
-// CB92     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,D
-// CB93     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,E
-// CB94     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,H
-// CB95     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,L
-// CB97     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,A
-// CB98     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,B
-// CB99     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,C
-// CB9A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,D
-// CB9B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,E
-// CB9C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,H
-// CB9D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,L
-// CB9F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,A
-// CBA0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,B
-// CBA1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,C
-// CBA2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,D
-// CBA3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,E
-// CBA4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,H
-// CBA5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,L
-// CBA7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,A
-// CBA8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,B
-// CBA9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,C
-// CBAA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,D
-// CBAB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,E
-// CBAC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,H
-// CBAD     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,L
-// CBAF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,A
-// CBB0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,B
-// CBB1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,C
-// CBB2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,D
-// CBB3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,E
-// CBB4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,H
-// CBB5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,L
-// CBB7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,A
-// CBB8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,B
-// CBB9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,C
-// CBBA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,D
-// CBBB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,E
-// CBBC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,H
-// CBBD     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,L
-// CBBF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,A
-func (c *CPU) resBR(b uint8, r byte) func() {
+	if r == ' ' {
+		// CBC6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 0,(HL)
+		// CBCE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 1,(HL)
+		// CBD6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 2,(HL)
+		// CBDE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 3,(HL)
+		// CBE6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 4,(HL)
+		// CBEE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 5,(HL)
+		// CBF6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 6,(HL)
+		// CBFE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 SET 7,(HL)
+		return func() {
+			c.writeByte(c.HL, c.readByte(c.HL, 4)|uint8(1<<b), 3)
+			c.PC += 2
+		}
+	}
+	// CBC0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,B
+	// CBC1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,C
+	// CBC2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,D
+	// CBC3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,E
+	// CBC4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,H
+	// CBC5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,L
+	// CBC7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 0,A
+	// CBC8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,B
+	// CBC9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,C
+	// CBCA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,D
+	// CBCB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,E
+	// CBCC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,H
+	// CBCD     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,L
+	// CBCF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 1,A
+	// CBD0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,B
+	// CBD1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,C
+	// CBD2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,D
+	// CBD3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,E
+	// CBD4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,H
+	// CBD5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,L
+	// CBD7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 2,A
+	// CBD8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,B
+	// CBD9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,C
+	// CBDA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,D
+	// CBDB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,E
+	// CBDC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,H
+	// CBDD     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,L
+	// CBDF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 3,A
+	// CBE0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,B
+	// CBE1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,C
+	// CBE2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,D
+	// CBE3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,E
+	// CBE4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,H
+	// CBE5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,L
+	// CBE7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 4,A
+	// CBE8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,B
+	// CBE9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,C
+	// CBEA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,D
+	// CBEB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,E
+	// CBEC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,H
+	// CBED     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,L
+	// CBEF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 5,A
+	// CBF0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,B
+	// CBF1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,C
+	// CBF2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,D
+	// CBF3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,E
+	// CBF4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,H
+	// CBF5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,L
+	// CBF7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 6,A
+	// CBF8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,B
+	// CBF9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,C
+	// CBFA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,D
+	// CBFB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,E
+	// CBFC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,H
+	// CBFD     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,L
+	// CBFF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 SET 7,A
 	return func() {
 		var lhigh bool
 		var lvalue *uint16
@@ -4068,7 +3519,7 @@ func (c *CPU) resBR(b uint8, r byte) func() {
 			panic("Invalid `r` part of the mnemonic")
 		}
 
-		rvalue := c.extractRegister(r) & (uint8(1<<b) ^ 0xff)
+		rvalue := c.extractRegister(r) | uint8(1<<b)
 
 		if lhigh {
 			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
@@ -4080,21 +3531,8 @@ func (c *CPU) resBR(b uint8, r byte) func() {
 	}
 }
 
-func (c *CPU) resBSs(b uint8, ss string) func() {
+func (c *CPU) resBSsR(b uint8, ss string, r byte) func() {
 	switch ss {
-	case "HL":
-		// CB86     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 0,(HL)
-		// CB8E     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 1,(HL)
-		// CB96     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 2,(HL)
-		// CB9E     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 3,(HL)
-		// CBA6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 4,(HL)
-		// CBAE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 5,(HL)
-		// CBB6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 6,(HL)
-		// CBBE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 7,(HL)
-		return func() {
-			c.writeByte(c.HL, c.readByte(c.HL, 4)&(uint8(1<<b)^0xff), 3)
-			c.PC += 2
-		}
 	case "IX":
 		// DDCBS280 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RES 0,(IX+S8),B
 		// DDCBS281 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RES 0,(IX+S8),C
@@ -4161,9 +3599,37 @@ func (c *CPU) resBSs(b uint8, ss string) func() {
 		// DDCBS2BE 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RES 7,(IX+S8)
 		// DDCBS2BF 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RES 7,(IX+S8),A
 		return func() {
+			var lhigh bool
+			var lvalue *uint16
+
 			address := c.shiftedAddress(c.IX, c.readByte(c.PC+2, 5))
-			c.writeByte(address, c.readByte(address, 4)&(uint8(1<<b)^0xff), 3)
+			rvalue := c.readByte(address, 4) & (uint8(1<<b) ^ 0xff)
+
+			c.writeByte(address, rvalue, 3)
 			c.PC += 4
+
+			if r == ' ' {
+				return
+			}
+
+			switch r {
+			case 'A':
+				lhigh, lvalue = true, &c.AF
+			case 'B', 'C':
+				lhigh, lvalue = r == 'B', &c.BC
+			case 'D', 'E':
+				lhigh, lvalue = r == 'D', &c.DE
+			case 'H', 'L':
+				lhigh, lvalue = r == 'H', &c.HL
+			default:
+				panic("Invalid `r` part of the mnemonic")
+			}
+
+			if lhigh {
+				*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+			} else {
+				*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+			}
 		}
 	case "IY":
 		// FDCBS280 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RES 0,(IY+S8),B
@@ -4231,13 +3697,138 @@ func (c *CPU) resBSs(b uint8, ss string) func() {
 		// FDCBS2BE 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RES 7,(IY+S8)
 		// FDCBS2BF 23 00 M1R 4 M1R 4 MRD 3 MRD 5 MRD 4 MWR 3 ... 0 RES 7,(IY+S8),A
 		return func() {
+			var lhigh bool
+			var lvalue *uint16
+
 			address := c.shiftedAddress(c.IY, c.readByte(c.PC+2, 5))
-			c.writeByte(address, c.readByte(address, 4)&(uint8(1<<b)^0xff), 3)
+			rvalue := c.readByte(address, 4) & (uint8(1<<b) ^ 0xff)
+
+			c.writeByte(address, rvalue, 3)
 			c.PC += 4
+
+			if r == ' ' {
+				return
+			}
+
+			switch r {
+			case 'A':
+				lhigh, lvalue = true, &c.AF
+			case 'B', 'C':
+				lhigh, lvalue = r == 'B', &c.BC
+			case 'D', 'E':
+				lhigh, lvalue = r == 'D', &c.DE
+			case 'H', 'L':
+				lhigh, lvalue = r == 'H', &c.HL
+			default:
+				panic("Invalid `r` part of the mnemonic")
+			}
+
+			if lhigh {
+				*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+			} else {
+				*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+			}
 		}
 	}
 
-	panic("Invalid `ss` type")
+	if r == ' ' {
+		// CB86     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 0,(HL)
+		// CB8E     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 1,(HL)
+		// CB96     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 2,(HL)
+		// CB9E     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 3,(HL)
+		// CBA6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 4,(HL)
+		// CBAE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 5,(HL)
+		// CBB6     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 6,(HL)
+		// CBBE     15 00 M1R 4 M1R 4 MRD 4 MWR 3 ... 0 ... 0 ... 0 RES 7,(HL)
+		return func() {
+			c.writeByte(c.HL, c.readByte(c.HL, 4)&(uint8(1<<b)^0xff), 3)
+			c.PC += 2
+		}
+	}
+
+	// CB80     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,B
+	// CB81     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,C
+	// CB82     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,D
+	// CB83     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,E
+	// CB84     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,H
+	// CB85     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,L
+	// CB87     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 0,A
+	// CB88     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,B
+	// CB89     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,C
+	// CB8A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,D
+	// CB8B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,E
+	// CB8C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,H
+	// CB8D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,L
+	// CB8F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 1,A
+	// CB90     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,B
+	// CB91     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,C
+	// CB92     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,D
+	// CB93     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,E
+	// CB94     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,H
+	// CB95     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,L
+	// CB97     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 2,A
+	// CB98     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,B
+	// CB99     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,C
+	// CB9A     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,D
+	// CB9B     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,E
+	// CB9C     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,H
+	// CB9D     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,L
+	// CB9F     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 3,A
+	// CBA0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,B
+	// CBA1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,C
+	// CBA2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,D
+	// CBA3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,E
+	// CBA4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,H
+	// CBA5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,L
+	// CBA7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 4,A
+	// CBA8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,B
+	// CBA9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,C
+	// CBAA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,D
+	// CBAB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,E
+	// CBAC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,H
+	// CBAD     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,L
+	// CBAF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 5,A
+	// CBB0     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,B
+	// CBB1     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,C
+	// CBB2     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,D
+	// CBB3     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,E
+	// CBB4     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,H
+	// CBB5     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,L
+	// CBB7     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 6,A
+	// CBB8     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,B
+	// CBB9     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,C
+	// CBBA     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,D
+	// CBBB     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,E
+	// CBBC     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,H
+	// CBBD     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,L
+	// CBBF     08 00 M1R 4 M1R 4 ... 0 ... 0 ... 0 ... 0 ... 0 RES 7,A
+	return func() {
+		var lhigh bool
+		var lvalue *uint16
+
+		switch r {
+		case 'A':
+			lhigh, lvalue = true, &c.AF
+		case 'B', 'C':
+			lhigh, lvalue = r == 'B', &c.BC
+		case 'D', 'E':
+			lhigh, lvalue = r == 'D', &c.DE
+		case 'H', 'L':
+			lhigh, lvalue = r == 'H', &c.HL
+		default:
+			panic("Invalid `r` part of the mnemonic")
+		}
+
+		rvalue := c.extractRegister(r) & (uint8(1<<b) ^ 0xff)
+
+		if lhigh {
+			*lvalue = (*lvalue & 0x00ff) | (uint16(rvalue) << 8)
+		} else {
+			*lvalue = (*lvalue & 0xff00) | uint16(rvalue)
+		}
+
+		c.PC += 2
+	}
 }
 
 // C3L1H1   10 00 M1R 4 MRD 3 MRD 3 ... 0 ... 0 ... 0 ... 0 JP U16
