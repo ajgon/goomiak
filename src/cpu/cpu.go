@@ -1,7 +1,6 @@
 package cpu
 
 import (
-	"fmt"
 	"z80/bus"
 	"z80/dma"
 	"z80/loader"
@@ -81,13 +80,13 @@ func (c *CPU) tapeLoad() bool {
 		// LOAD
 		for i = 0; i < read; i++ {
 			parity ^= data[i]
-			c.writeByte(c.IX+i, data[i], 3)
+			c.writeByte(c.IX+i, data[i])
 		}
 	} else {
 		// VERIFY
 		for i = 0; i < read; i++ {
 			parity ^= data[i]
-			if data[i] != c.readByte(c.IX+i, 3) {
+			if data[i] != c.readByte(c.IX+i) {
 				c.HL = (c.HL & 0xff00) | uint16(data[i])
 				// this is error routine, it repeats few times here, refactor it @todo
 				c.setC(false)
@@ -286,11 +285,11 @@ func (c *CPU) increaseR() {
 
 func (c *CPU) pushStack(value uint16) {
 	c.SP -= 2
-	c.writeWord(c.SP, value, 3, 3)
+	c.writeWord(c.SP, value)
 }
 
 func (c *CPU) popStack() (value uint16) {
-	value = c.readWord(c.SP, 3, 3)
+	value = c.readWord(c.SP)
 	c.SP += 2
 
 	return
@@ -332,43 +331,64 @@ func (c *CPU) shiftedAddress(base uint16, shift uint8) uint16 {
 	return c.WZ
 }
 
-func (c *CPU) readByte(address uint16, usedTstates uint) uint8 {
+func (c *CPU) contendMemory(address uint16, tstates uint) {
+	_, contended := c.dma.GetMemoryByte(address)
+	if contended {
+		c.Tstates += uint(c.config.ContentionDelays[c.Tstates%c.config.FrameLength])
+	}
+
+	c.Tstates += tstates
+}
+
+func (c *CPU) readOpcode(address uint16) uint8 {
 	value, contended := c.dma.GetMemoryByte(address)
 
 	if contended {
 		c.Tstates += uint(c.config.ContentionDelays[c.Tstates%c.config.FrameLength])
 	}
 
-	c.Tstates += usedTstates
+	c.Tstates += 4
 
 	return value
 }
 
-func (c *CPU) writeByte(address uint16, value uint8, usedTstates uint) {
-	contended := c.dma.SetMemoryByte(address, value)
+func (c *CPU) readByte(address uint16) uint8 {
+	value, contended := c.dma.GetMemoryByte(address)
 
-	if contended && usedTstates > 0 {
+	if contended {
 		c.Tstates += uint(c.config.ContentionDelays[c.Tstates%c.config.FrameLength])
 	}
 
-	c.Tstates += usedTstates
+	c.Tstates += 3
+
+	return value
+}
+
+func (c *CPU) writeByte(address uint16, value uint8) {
+	contended := c.dma.SetMemoryByte(address, value)
+
+	if contended {
+		c.Tstates += uint(c.config.ContentionDelays[c.Tstates%c.config.FrameLength])
+	}
+
+	c.Tstates += 3
 }
 
 // reads word and maintains endianess
 // example:
 // 0040 34 21
 // readWord(0x0040) => 0x1234
-func (c *CPU) readWord(address uint16, usedTstates1, usedTstates2 uint) uint16 {
-	return uint16(c.readByte(address+1, usedTstates1))<<8 | uint16(c.readByte(address, usedTstates2))
+func (c *CPU) readWord(address uint16) uint16 {
+	return uint16(c.readByte(address)) | uint16(c.readByte(address+1))<<8
 }
 
 // writes word to given address and address+1 and maintains endianess
 // example:
 // writeWord(0x1234, 0x5678)
 // 1234  78 56
-func (c *CPU) writeWord(address uint16, value uint16, usedTstates1, usedTstates2 uint) {
-	c.writeByte(address, uint8(value), usedTstates1)
-	c.writeByte(address+1, uint8(value>>8), usedTstates2)
+func (c *CPU) writeWord(address uint16, value uint16) {
+	c.writeByte(address+1, uint8(value>>8))
+	c.writeByte(address, uint8(value))
 }
 
 func (c *CPU) extractRegister(r byte) uint8 {
@@ -501,63 +521,9 @@ func (c *CPU) adc16bit(addendLeft, addendRight uint16) (result uint16) {
 	return
 }
 
-func (c *CPU) DebugStep() (tstates uint8) {
-	c.increaseR()
-	debugT := c.Tstates % c.config.FrameLength
-
-	opcode := c.readByte(c.PC, 4)
-	if !c.handleTrap(opcode) {
-		return
-	}
-	dbOpcode := opcode
-
-	if dbOpcode == 0xcb || dbOpcode == 0xdd || dbOpcode == 0xed || dbOpcode == 0xfd {
-		dbOpcode = c.readByte(c.PC+1, 0)
-		if dbOpcode == 0xcb {
-			dbOpcode = c.readByte(c.PC+3, 0)
-		}
-	}
-
-	fmt.Printf(
-		"%x: AF=%d BC=%d DE=%d HL=%d AF_=%d BC_=%d DE_=%d HL_=%d IX=%d IY=%d SP=%d PC=%d (HL)=%d t=%d\n",
-		dbOpcode, c.AF, c.BC, c.DE, c.HL, c.AF_, c.BC_, c.DE_, c.HL_, c.IX, c.IY, c.SP, c.PC, c.readByte(c.HL, 0), debugT,
-	)
-
-	switch opcode {
-	case 0xcb:
-		opcode = c.readByte(c.PC+1, 4)
-		c.mnemonics.xxBITxx[opcode]()
-	case 0xdd:
-		opcode = c.readByte(c.PC+1, 4)
-		switch opcode {
-		case 0xcb:
-			opcode = c.readByte(c.PC+3, 3)
-			c.mnemonics.xxIXBITxx[opcode]()
-		default:
-			c.mnemonics.xxIXxx[opcode]()
-		}
-	case 0xed:
-		opcode = c.readByte(c.PC+1, 4)
-		c.mnemonics.xx80xx[opcode]()
-	case 0xfd:
-		opcode = c.readByte(c.PC+1, 4)
-		switch opcode {
-		case 0xcb:
-			opcode = c.readByte(c.PC+3, 3)
-			c.mnemonics.xxIYBITxx[opcode]()
-		default:
-			c.mnemonics.xxIYxx[opcode]()
-		}
-	default:
-		c.mnemonics.base[opcode]()
-	}
-
-	return
-}
-
 func (c *CPU) Step() {
 	c.increaseR()
-	opcode := c.readByte(c.PC, 4)
+	opcode := c.readOpcode(c.PC)
 	if !c.handleTrap(opcode) {
 		return
 	}
@@ -565,28 +531,30 @@ func (c *CPU) Step() {
 	switch opcode {
 	case 0xcb:
 		c.increaseR()
-		opcode = c.readByte(c.PC+1, 4)
+		opcode = c.readOpcode(c.PC + 1)
 		c.mnemonics.xxBITxx[opcode]()
 	case 0xdd:
 		c.increaseR()
-		opcode = c.readByte(c.PC+1, 4)
+		opcode = c.readOpcode(c.PC + 1)
 		switch opcode {
 		case 0xcb:
-			opcode = c.readByte(c.PC+3, 3)
+			// read mnemonic directly without worrying about contention, mnemonic itself would handle that
+			opcode, _ = c.dma.GetMemoryByte(c.PC + 3)
 			c.mnemonics.xxIXBITxx[opcode]()
 		default:
 			c.mnemonics.xxIXxx[opcode]()
 		}
 	case 0xed:
 		c.increaseR()
-		opcode = c.readByte(c.PC+1, 4)
+		opcode = c.readOpcode(c.PC + 1)
 		c.mnemonics.xx80xx[opcode]()
 	case 0xfd:
 		c.increaseR()
-		opcode = c.readByte(c.PC+1, 4)
+		opcode = c.readOpcode(c.PC + 1)
 		switch opcode {
 		case 0xcb:
-			opcode = c.readByte(c.PC+3, 3)
+			// read mnemonic directly without worrying about contention, mnemonic itself would handle that
+			opcode, _ = c.dma.GetMemoryByte(c.PC + 3)
 			c.mnemonics.xxIYBITxx[opcode]()
 		default:
 			c.mnemonics.xxIYxx[opcode]()
@@ -624,8 +592,8 @@ func (c *CPU) HandleInterrupt() bool {
 		c.Tstates += 7
 	case 2:
 		inttemp := uint16((uint16(c.I) << 8) | 0x00ff)
-		c.PC = c.readWord(inttemp, 3, 3)
-		c.Tstates += 7
+		c.PC = c.readWord(inttemp)
+		c.Tstates += 13
 	}
 
 	return true
