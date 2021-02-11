@@ -12,9 +12,11 @@ GOomiak (pron. ɡũmʲjak) is a ZX Spectrum 48K emulator written in GO.
 ## Features
 
 * Pretty good Zilog Z80 chip emulation
-  * Passes [zexall](http://mdfs.net/Software/Z80/Exerciser/Spectrum/) & [zexdoc](http://mdfs.net/Software/Z80/Exerciser/Spectrum/) excercisers
-  * Full memptr (also known as WZ shadow register) emulation
   * All undocumented opcodes support (`DD CB`, `FD CB`, `SLL` etc.)
+  * Full memptr (also known as WZ shadow register) emulation
+  * Full emulation of odd behavior of SCF/CCF flags (also known as Q shadow register)
+  * Passes [zexall](http://mdfs.net/Software/Z80/Exerciser/Spectrum/) & [zexdoc](http://mdfs.net/Software/Z80/Exerciser/Spectrum/) excercisers
+  * Passes all tests from [z80test](https://github.com/raxoft/z80test)
 * Basic level ULA emulation
   * Screen drawing is more-or-less similar to how ULA draws screen and blocks CPU in a process
   * No contended memory support
@@ -54,16 +56,13 @@ Most of the emulator has proper test coverage (especially CPU). To run tests:
 ~/goomiak/src$ go test ./...
 ```
 
-You can also run some pre-made tap files with tests, to see them in action:
+You can also run some pre-made tap files with tests, to see them in action (you need to quit emulator everytime tests program finish, to load next one):
 
 ```
-~/goomiak$ make zexall
-~/goomiak$ make zexbit
-~/goomiak$ make zexdoc
-~/goomiak$ make z80tests
+~/goomiak$ make all
 ```
 
-There are also many tests which I found in the [tests/other](tests/other) directory. If you plan to write your own Z80 emulator, they may provide some help.
+There are also many tests, which I found, in the [tests/other](tests/other) directory. If you plan to write your own Z80 emulator, they may provide some help.
 
 ## License
 

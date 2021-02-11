@@ -35,7 +35,7 @@ func (svd *SDLVideoDriver) DrawScreen() {
 	pixels := svd.PixelRenderer.Pixels()
 
 	for _, mask := range [8]uint8{0xfe, 0xfd, 0xfb, 0xf7, 0xef, 0xdf, 0xbf, 0x7f} {
-		svd.keyPressedMasks[mask] = 0x1f
+		svd.keyPressedMasks[mask] = 0xbf
 	}
 
 	svd.Texture.Update(nil, pixels, int(fullWidth*4))

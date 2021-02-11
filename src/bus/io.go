@@ -26,11 +26,13 @@ func (io *IO) Read(source uint8, address uint16) uint8 {
 			valueRight := io.keysPressed[addressRight]
 
 			value := valueLeft & valueRight
-			// if no key is pressed, then return 0xff as ULA doesn't expose anything
+			// if no key is pressed, then return 0xbf as ULA doesn't expose anything
 			// (assuming EAR is not used - @todo)
-			if value != 0x1f {
+			if value < 0x20 {
 				return valueLeft & valueRight
 			}
+
+			return 0xbf
 		}
 	}
 
@@ -48,7 +50,7 @@ func (io *IO) Write(source uint8, address uint16, value uint8) {
 
 		if source == sourceULA {
 			// ULA writes BUS, wants to set keystroke
-			io.keysPressed[address] = value & 0x1f
+			io.keysPressed[address] = value & 0xbf
 		}
 	}
 }

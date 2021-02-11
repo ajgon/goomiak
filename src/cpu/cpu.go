@@ -145,7 +145,6 @@ type CPUConfig struct {
 type CPU struct {
 	PC  uint16
 	SP  uint16
-	WZ  uint16
 	AF  uint16
 	AF_ uint16
 	BC  uint16
@@ -158,6 +157,9 @@ type CPU struct {
 	R   uint8
 	IX  uint16
 	IY  uint16
+
+	Q  uint8
+	WZ uint16
 
 	Halt bool
 	IFF1 bool
@@ -453,6 +455,7 @@ func (c *CPU) addRegisters(left *uint16, right uint16) {
 	c.setH((*left^right^sum)&0x1000 == 0x1000)
 	c.setF5(sum&0x2000 == 0x2000)
 	c.setF3(sum&0x0800 == 0x0800)
+	c.Q = uint8(c.AF)
 
 	*left = sum
 }
@@ -487,6 +490,7 @@ func (c *CPU) adcValueToAcc(value uint8) {
 	c.setS(result > 127)
 	c.setF5(result&0x20 == 0x20)
 	c.setF3(result&0x08 == 0x08)
+	c.Q = uint8(c.AF)
 }
 
 func (c *CPU) adc16bit(addendLeft, addendRight uint16) (result uint16) {
@@ -517,6 +521,7 @@ func (c *CPU) adc16bit(addendLeft, addendRight uint16) (result uint16) {
 	c.setS(result > 0x7fff)
 	c.setF5(result&0x2000 == 0x2000)
 	c.setF3(result&0x0800 == 0x0800)
+	c.Q = uint8(c.AF)
 
 	return
 }
@@ -586,10 +591,11 @@ func (c *CPU) HandleInterrupt() bool {
 
 	switch c.IM {
 	case 0:
-		panic("IM 0")
+		c.PC = 0x0038
+		c.Tstates += 13
 	case 1:
 		c.PC = 0x0038
-		c.Tstates += 7
+		c.Tstates += 13
 	case 2:
 		inttemp := uint16((uint16(c.I) << 8) | 0x00ff)
 		c.PC = c.readWord(inttemp)
