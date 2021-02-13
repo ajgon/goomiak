@@ -1,4 +1,7 @@
-all: zexall zexbit zexdoc z80ccf z80docflags z80doc z80flags z80full z80memptr z80tests
+all: keyboard zexall zexbit zexdoc z80ccf z80docflags z80doc z80flags z80full z80memptr z80tests
+
+keyboard:
+	@go run main.go -autoload -tapfile ../tests/passing/keyboard.tap
 
 zexall:
 	@go run main.go -autoload -fullspeed -tapfile ../tests/passing/zexall.tap

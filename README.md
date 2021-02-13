@@ -37,7 +37,7 @@ Both provide amazing quality of emulation (especially the latter one).
 
 ## Legal
 
-* Spectrum ROM images are freely available. [Amstrad have kindly given their permission for the redistribution of their copyrighted material but retain that copyright](doc/roms-legal.txt). Kudos to them.
+* Spectrum ROM images are freely available. [Amstrad have kindly given their permission for the redistribution of their copyrighted material but retain that copyright](doc/roms-legal.txt#L61-L65). Kudos to them.
 * [DiagROM Homepage](http://blog.retroleum.co.uk/electronics-articles/a-diagnostic-rom-image-for-the-zx-spectrum/)
 
 ## How to run it?
@@ -62,7 +62,7 @@ You can also run some pre-made tap files with tests, to see them in action (you 
 ~/goomiak$ make all
 ```
 
-There are also many tests, which I found, in the [tests/other](tests/other) directory. If you plan to write your own Z80 emulator, they may provide some help.
+There are also many tests, which I found, in the [tests](tests) directory. If you plan to write your own Z80 emulator, they may provide some help.
 
 ## License
 
