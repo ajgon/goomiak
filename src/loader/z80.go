@@ -29,6 +29,45 @@ func extractMemoryBlock(data []byte, fileOffset uint, isCompressed bool, unpacke
 	return memoryBytes
 }
 
+func Z80Write(filePath string, snapshot Snapshot) {
+	data := []byte{
+		byte(snapshot.AF >> 8), byte(snapshot.AF),
+		byte(snapshot.BC), byte(snapshot.BC >> 8),
+		byte(snapshot.HL), byte(snapshot.HL >> 8),
+		byte(snapshot.PC), byte(snapshot.PC >> 8),
+		byte(snapshot.SP), byte(snapshot.SP >> 8),
+		byte(snapshot.I), byte(snapshot.R),
+		(snapshot.R >> 7) | (snapshot.Border << 1),
+		byte(snapshot.DE), byte(snapshot.DE >> 8),
+		byte(snapshot.BC_), byte(snapshot.BC_ >> 8),
+		byte(snapshot.DE_), byte(snapshot.DE_ >> 8),
+		byte(snapshot.HL_), byte(snapshot.HL_ >> 8),
+		byte(snapshot.AF_ >> 8), byte(snapshot.AF_),
+		byte(snapshot.IY), byte(snapshot.IY >> 8),
+		byte(snapshot.IX), byte(snapshot.IX >> 8),
+		0, 0,
+		byte(snapshot.IM),
+	}
+
+	if snapshot.IFF1 {
+		data[27] = 1
+	} else {
+		data[27] = 0
+	}
+
+	if snapshot.IFF2 {
+		data[28] = 1
+	} else {
+		data[28] = 0
+	}
+
+	for i := 0; i < len(snapshot.Memory); i++ {
+		data = append(data, snapshot.Memory[i])
+	}
+
+	writeFile(filePath, data)
+}
+
 func Z80(filePath string) Snapshot {
 	var header [30]uint16
 

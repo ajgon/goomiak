@@ -35,6 +35,7 @@ func (svd *SDLVideoDriver) KeyPressedOut() [256]uint8 {
 func (svd *SDLVideoDriver) DrawScreen() {
 	pixels := svd.PixelRenderer.Pixels()
 
+	svd.keyPressedMasks[0xff] = 0xbd
 	svd.Texture.Update(nil, pixels, int(fullWidth*4))
 	svd.Renderer.Copy(svd.Texture, nil, nil)
 	svd.Renderer.Present()
@@ -108,6 +109,10 @@ func (svd *SDLVideoDriver) DrawScreen() {
 				if svd.keyPressedMasks[i] == 0xbf {
 					svd.keyPressedMasks[i] = mergedValue
 				}
+			}
+
+			if keyCode == 1073741886 {
+				svd.keyPressedMasks[0xff] = 0x33
 			}
 		}
 	}

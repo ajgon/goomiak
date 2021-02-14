@@ -3,4 +3,5 @@ Odd behavior of SCF/CCF instructions
 
 Source: https://worldofspectrum.org/forums/discussion/comment/666508/#Comment_666508
 
-If an instruction modifies the flags, the immediately following SCF/CCF does move of bits 5+3 from A to F, whereas if an instruction doesn't modify the flags, the SCF/CCF does OR of bits 5+3 from A to F.
+If an instruction modifies the flags, the immediately following SCF/CCF does move of bits 5+3 from A to F,
+whereas if an instruction doesn't modify the flags, the SCF/CCF does OR of bits 5+3 from A to F.

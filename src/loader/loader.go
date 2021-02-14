@@ -41,3 +41,16 @@ func loadFile(filePath string) []byte {
 
 	return bytes
 }
+
+func writeFile(filePath string, data []byte) error {
+	file, err := os.Create(filePath)
+	defer file.Close()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = file.Write(data)
+
+	return err
+}

@@ -2,6 +2,7 @@ package machine
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"time"
 	"z80/bus"
@@ -71,6 +72,7 @@ func (m *Machine) FullSpeed(value bool) {
 func (m *Machine) Run() {
 	running := true
 	frames := 0
+	saveTime := time.Now()
 	for running {
 		startTime := time.Now()
 		for m.ULA.Tstates < m.Config.FrameLength {
@@ -93,6 +95,12 @@ func (m *Machine) Run() {
 		frames++
 		m.VideoDriver.DrawScreen() // @todo this goes to ULA as it needs to handle SDL events as well
 		keyPressedMasks := m.VideoDriver.KeyPressedOut()
+		if keyPressedMasks[0xff] == 0x33 && time.Since(saveTime) > time.Second {
+			fileName := fmt.Sprintf("./snap-%d.z80", time.Now().Unix())
+			loader.Z80Write(fileName, m.CPU.BuildSnapshot())
+			fmt.Printf("Saved snapshot to: %s\n", fileName)
+			saveTime = time.Now()
+		}
 		for kpAddr, kpValue := range keyPressedMasks {
 			// @todo this goes to ULA
 			m.IO.Write(1, (uint16(kpAddr)<<8)|0xfe, kpValue)

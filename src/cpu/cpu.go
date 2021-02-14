@@ -653,6 +653,37 @@ func (c *CPU) LoadSnapshot(snapshot loader.Snapshot) {
 	c.setPort(0x00, 0xfe, snapshot.Border, 0)
 }
 
+func (c *CPU) BuildSnapshot() (snapshot loader.Snapshot) {
+	snapshot = loader.Snapshot{
+		PC:     c.PC,
+		SP:     c.SP,
+		AF:     c.AF,
+		AF_:    c.AF_,
+		BC:     c.BC,
+		BC_:    c.BC_,
+		DE:     c.DE,
+		DE_:    c.DE_,
+		HL:     c.HL,
+		HL_:    c.HL_,
+		I:      c.I,
+		R:      c.R,
+		IX:     c.IX,
+		IY:     c.IY,
+		IM:     c.IM,
+		IFF1:   c.IFF1,
+		IFF2:   c.IFF2,
+		Border: c.io.Read(1, 0x00fe),
+		Memory: make([]byte, 0),
+	}
+
+	for addr := uint(0x4000); addr <= 0xffff; addr++ {
+		value, _ := c.dma.GetMemoryByte(uint16(addr))
+		snapshot.Memory = append(snapshot.Memory, value)
+	}
+
+	return
+}
+
 func NewCPU(io *bus.IO, dma *dma.DMA, config CPUConfig) *CPU {
 	cpu := new(CPU)
 	cpu.dma = dma
